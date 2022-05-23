@@ -174,12 +174,12 @@ class get:
 	remove_commands = ["help"] # default commands to remove
 
 	c = "cogs.{}".format
-	init_extensions = list(map(lambda x: "cogs."+x, [
+	init_extensions = ["cogs"+i for i in [
 		# "levels",
 		"misc",
 		"help",
 		"snipe",
-	]))
+	]]
 
 	cogfiles = [str(i)[:-3] if i != "__pycache__" else "" for i in os.listdir("cogs")]
 
@@ -289,9 +289,9 @@ async def main():
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
 	# client.conn = psycopg2.connect(client.db_url, sslmode='require')
-	with psycopg2.connect(client.db_url, sslmode='require') as client.conn:
+	with psycopg2.connect(client.db_url, sslmode='require') as client.conn, client:
 
-		for ext in get.init_extensions:
+		for ext in ["cogs.misc", "cogs.snipe"]:
 			await client.load_extension(ext)
 
 		await client.run(get.token())
