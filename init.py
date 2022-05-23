@@ -208,7 +208,7 @@ for cmd in get.remove_commands:
 	client.remove_command(cmd)
 	printv(2, "\tRemoved command:", cmd)
 
-async def load_extension_cogs(client):
+def load_extension_cogs():
 	# loads extention cogs
 	if get.init_extensions: printv(2, "\nLoading cogs:")
 	for ext in get.init_extensions:
@@ -216,7 +216,7 @@ async def load_extension_cogs(client):
 		# exec("import " + ext)
 		# await client.add_cog(eval(ext+"."+ext.lstrip("cogs.").capitalize()+"(bot)"))
 		# exec("await " + ext + ".setup(bot)")
-		await client.load_extension(ext)
+		client.load_extension(ext)
 		printv(2, "\tLoaded", ext, "cog")
 
 @client.command(name="kill", pass_context=True)
@@ -291,8 +291,8 @@ async def main():
 	# client.conn = psycopg2.connect(client.db_url, sslmode='require')
 	with psycopg2.connect(client.db_url, sslmode='require') as client.conn:
 
-		await load_extension_cogs(client)
+		load_extension_cogs()
 
-		await client.start(get.token())
+		client.run(get.token())
 
 asyncio.run(main())
