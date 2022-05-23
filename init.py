@@ -290,6 +290,6 @@ async def main():
 			for ext in ["cogs.misc", "cogs.snipe"]:
 				await client.load_extension(ext)
 
-			await client.run(get.token())
+			await client.start(get.token())
 
 asyncio.run(main())
