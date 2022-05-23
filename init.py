@@ -279,13 +279,7 @@ def main():
 	if not client.db_url:
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
-	class with_cursor_wrapper():
-		def __init__(self, conn):
-			self = super(*args, **kwargs)
-		def __enter__(self):
-
-	client.conn = with_cursor_wrapper(psycopg2.connect(client.db_url, sslmode='require'))
-	client.conn.cursor.__open__ =
+	client.conn = psycopg2.connect(client.db_url, sslmode='require')
 	client.run(get.token())
 
 main()
