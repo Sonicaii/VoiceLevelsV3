@@ -1,2 +1,2 @@
 git+https://github.com/Rapptz/discord.py
-sqlalchemy==1.4.36
+SQLAlchemy==1.4.36
