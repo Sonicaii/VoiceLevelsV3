@@ -6,7 +6,7 @@ if __name__ != "__main__":
 
 # second pass imports
 import time; s = time.time()
-import datetime, socket, asyncio, random, json, os, subprocess, math
+import datetime, socket, asyncio, random, json, os, math
 from threading import Thread
 from aiohttp.client_exceptions import ClientConnectionError
 from asyncio.exceptions import TimeoutError

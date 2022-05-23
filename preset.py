@@ -371,14 +371,6 @@ class Preset:
 					(_ := datetime.datetime.now().strftime("%d/%m, %X").strip()),
 					(" "*(20-len(_))), " ".join(str(i) for i in args)
 				)
-				
-				#### faster than
-				# if verbose == 3:
-				# 	_ = datetime.datetime.now().strftime("%d/%m, %X").strip()
-				# 	out = _, " "*(20-len(_)), " ".join(str(i) for i in args)
-				# else:
-				# 	out = args
-				####
 
 				print(*out)
 				return True
@@ -453,8 +445,9 @@ types = pTypes().types
 ## ----------------
 # declaring variables that take time to declare
 input_times.append(time.time())
-# is_connected = (socket.gethostbyname(socket.gethostname()) != "127.0.0.1") if not manual_dc else False
-is_connected = ("Reply from 1.1.1.1" in subprocess.run(["ping","1.1.1.1","-w","1","-n","1","-l","0"], shell=True, capture_output=True).stdout.decode()) if not manual_dc else False
+# import subprocess
+# is_connected = ("Reply from 1.1.1.1" in subprocess.run(["ping","1.1.1.1","-w","1","-n","1","-l","0"], shell=True, capture_output=True).stdout.decode()) if not manual_dc else False
+is_connected = "DYNO" in os.environ # For Heroku
 # only checks if connected, doesn't check if connection does not work.
 input_times[-1] = time.time() - input_times[-1]
 ## ----------------
