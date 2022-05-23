@@ -6,7 +6,15 @@ if __name__ != "__main__":
 
 # second pass imports
 import time; s = time.time()
-import datetime, socket, asyncio, random, json, os, math
+import datetime
+import socket
+import asyncio
+import random
+import json
+import os
+import math
+import sqlalchemy
+from sqlalchemy.engine.create import create_engine
 from threading import Thread
 from aiohttp.client_exceptions import ClientConnectionError
 from asyncio.exceptions import TimeoutError
@@ -245,9 +253,12 @@ def main():
 	printv(2, (
 	(fg.g("\n\n--! ")+bg.w(" ")+ fm["u"]("  ACTIVATING BOT  ")+bg.w(" ")+fg.g(" !--\n")))
 	) if verbose >= 2 else printv(1, fg.g("\n --! ACTIVATING BOT !-- \n"))
-	printv(2, f"database URL: {os.environ['DATABASE_URL']}")
+	client.db_url = os.environ.get("DATABASE_URL")
+	client.secret_key = os.environ.get("SECRET_KEY")
+	printv(2, f"database URL: {client.db_url}")
+	client.engine = create_engine("postgresql+psycopg2://"+client.db_url.lstrip("postgres://"))
 	
-	get.token()
+	# client.run(get.token())
 
 
 main()
