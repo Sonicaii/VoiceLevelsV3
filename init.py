@@ -129,7 +129,6 @@ class get:
 	def token() -> str:
 		""" Gets token from token.txt for run() """
 		return ""
-		# return open("token.txt", "r", encoding="utf8").read().strip()
 
 
 	def prefix(_bot, message):
