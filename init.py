@@ -27,8 +27,6 @@ from preset import (
 	debugs,
 	ferror,
 )
-# import Funny # 'tis fun e
-import synccmd # live editing of variables and cmds w/o Discord
 
 # thrid pass imports
 if is_connected: # note: discord is a phat import.
