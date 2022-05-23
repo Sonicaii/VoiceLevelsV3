@@ -131,10 +131,10 @@ class get:
 			with client.conn.cursor() as cur:
 				cur.execute("SELECT token FROM token")
 				return cur.fetchone()[0]
-		except psycopg2.errors.UndefinedTable:
+		except Exception: # psycopg2.errors.UndefinedTable
 			import new_db
 
-			ferror("NO TOKEN IN DATABASE!")
+			ferror(f"NO TOKEN IN DATABASE! cursor is {"" if cur.closed else "not "} closed")
 			ferror("Edit new_db.py to insert bot token or run:")
 			print ("\t\t"+"INSERT INTO token (token) VALUES ('BOT_TOKEN');")
 

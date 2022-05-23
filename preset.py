@@ -104,11 +104,14 @@ fm = {  # TODO: compact
 	"i":"\033[8m{}\033[0m".format
 }
 
+def printr(*args):
+	print(*args)
+	return [*args]
 
 # format an error message
 def ferror(*text: str):
 	# bold, background red, foreground black
-	return fm[1](bg.R(">     :")+" "+str(*text))
+	return printr(fm[1](bg.R(">     :")+" "+str(*text)))
 
 
 ###
@@ -453,9 +456,6 @@ input_times[-1] = time.time() - input_times[-1]
 
 # redefine in file scope
 printv = pre.printv
-def printr(*args):
-	print(*args)
-	return [*args]
 
 # deletes
 
