@@ -6,7 +6,7 @@ if __name__ == "__main__":
 
 from __main__ import *
 
-class HelpCommands(commands.Cog, name='Help'):
+class Help(commands.Cog, name='Help'):
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -98,4 +98,4 @@ Commands just for you~''', value=desc[2])
 			await ctx.send(embed=embed)
 
 async def setup(bot):
-	await bot.add_cog(HelpCommands(bot))
+	await bot.add_cog(Help(bot))

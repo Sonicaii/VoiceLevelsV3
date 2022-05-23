@@ -80,7 +80,7 @@ class org_msg:
 org_msg = org_msg()
 
 
-class SnipeCog(commands.Cog):
+class Snipe(commands.Cog):
 
 	def __init__(self, bot, msg):
 		self.bot = bot
@@ -277,4 +277,4 @@ class SnipeCog(commands.Cog):
 			return new_msg
 
 async def setup(bot):
-	await bot.add_cog(SnipeCog(b, msg))
+	await bot.add_cog(Snipe(b, msg))
