@@ -212,7 +212,7 @@ async def load_extension_cogs():
 	# loads extention cogs
 	if get.init_extensions: printv(2, "\nLoading cogs:")
 	for ext in get.init_extensions:
-		await client.load_extension(ext)
+		await client.load_extension(name=ext)
 		printv(2, "\tLoaded", ext, "cog")
 
 @client.command(name="kill", pass_context=True)
