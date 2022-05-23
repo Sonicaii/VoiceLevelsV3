@@ -127,11 +127,15 @@ class get:
 
 	def token(recursion: int = 0) -> str:
 		""" Gets token from token.txt for run() """
+		new_db = False
 		try:
 			with client.conn.cursor() as cur:
 				cur.execute("SELECT token FROM token")
 				return cur.fetchone()[0]
 		except Exception: # psycopg2.errors.UndefinedTable
+			new_db = True
+
+		if new_db:
 			import new_db
 
 			ferror(f"NO TOKEN IN DATABASE! cursor is { '' if cur.closed else 'not '} closed")
