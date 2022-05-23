@@ -152,15 +152,22 @@ class get:
 
 	top_level_users = set()
 
-
-# the discord bot client
-client = commands.Bot(command_prefix=get.prefix, case_insensitive=True, intents=discord.Intents().all(),
-description='''User levels based on time spent in voice channels.''')
-
-get.top_level_users.add(client.owner_id)
-
 ## initialising
 printv(1, "\ninitialising bot")
+
+intents = discord.Intents(**{i:True for i in [
+	"message_content",
+	"voice_states",
+	"members"
+]})
+
+# the discord bot client
+client = commands.Bot(
+	command_prefix=get.prefix,
+	case_insensitive=True,
+	intents=intents,
+	description="""User levels based on time spent in voice channels."""
+)
 
 # removes commands
 if get.remove_commands: printv(2, "\nRemoving commands: ")
@@ -173,7 +180,6 @@ if get.init_extensions: printv(2, "\nLoading cogs:")
 for ext in get.init_extensions:
 	client.load_extension(ext)
 	printv(2, "\tLoaded", ext, "cog")
-
 
 
 @client.command(name="kill", pass_context=True)
@@ -224,13 +230,24 @@ async def load(ctx):
 		else:
 			return await ctx.send(f"Available cogs: {', '.join(get.cogfiles)[:-2]}")
 
-def main():	
+@client.event
+async def on_ready():
+	pre.cogpr("Main", client)
+	get.top_level_users.add( (await bot.application_info()).owner.id )
+
+
+class client(commands.Bot):
+	def __init__(self): ...
+
+
+def main():
 	# activate bot
 	printv(2, (
 	(fg.g("\n\n--! ")+bg.w(" ")+ fm["u"]("  ACTIVATING BOT  ")+bg.w(" ")+fg.g(" !--\n")))
 	) if verbose >= 2 else printv(1, fg.g("\n --! ACTIVATING BOT !-- \n"))
 	printv(2, f"database URL: {os.environ['DATABASE_URL']}")
-	client.run(get.token())
+	
+	get.token()
 
 
 main()

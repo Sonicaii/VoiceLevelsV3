@@ -438,7 +438,6 @@ class Preset:
 		return "%.1f %s%s" % (num, "Yi", suffix)
 
 # finishes globalising variables after class definitions
-global pre, printv
 preset = pre = Preset()
 types = pTypes().types
 
