@@ -208,7 +208,7 @@ for cmd in get.remove_commands:
 	client.remove_command(cmd)
 	printv(2, "\tRemoved command:", cmd)
 
-async def load_extension_cogs():
+async def load_extension_cogs(client):
 	# loads extention cogs
 	if get.init_extensions: printv(2, "\nLoading cogs:")
 	for ext in get.init_extensions:
@@ -283,8 +283,6 @@ async def main():
 	(fg.g("\n\n--! ")+bg.w(" ")+ fm["u"]("  ACTIVATING BOT  ")+bg.w(" ")+fg.g(" !--\n")))
 	) if verbose >= 2 else printv(1, fg.g("\n --! ACTIVATING BOT !-- \n"))
 
-	await load_extension_cogs()
-
 	client.db_url = os.environ.get("DATABASE_URL")
 	printv(2, f"database URL: {client.db_url}")
 	if not client.db_url:
@@ -294,6 +292,8 @@ async def main():
 	async with \
 		client, \
 		psycopg2.connect(client.db_url, sslmode='require') as client.conn:
+
+		await load_extension_cogs(client)
 
 		await client.start(get.token())
 
