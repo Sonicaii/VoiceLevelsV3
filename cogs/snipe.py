@@ -276,5 +276,5 @@ class SnipeCog(commands.Cog):
 			
 			return new_msg
 
-def setup(b):
-	b.add_cog(SnipeCog(b, msg))
+async def setup(bot):
+	await bot.add_cog(SnipeCog(b, msg))
