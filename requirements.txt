@@ -1,1 +1,2 @@
-discord.py==1.7.3 
+git+https://github.com/Rapptz/discord.py
+sqlalchemy
