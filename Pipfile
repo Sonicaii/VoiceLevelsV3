@@ -4,7 +4,6 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"discord.py" = {git = "https://github.com/Rapptz/discord.py"}
 
 [dev-packages]
 
