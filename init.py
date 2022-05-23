@@ -289,8 +289,7 @@ async def main():
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
 	# client.conn = asyncpg.connect(client.db_url, sslmode='require')
-	async with client, \
-		asyncpg.connect(client.db_url, sslmode='require') as client.conn:
+	async with asyncpg.connect(client.db_url, sslmode='require') as client.conn:
 
 		await load_extension_cogs(client)
 
