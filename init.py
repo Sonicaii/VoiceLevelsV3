@@ -14,7 +14,6 @@ import json
 import os
 import math
 import psycopg2
-from sqlalchemy.engine.create import create_engine
 from threading import Thread
 from aiohttp.client_exceptions import ClientConnectionError
 from asyncio.exceptions import TimeoutError
