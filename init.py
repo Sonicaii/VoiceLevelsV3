@@ -216,7 +216,7 @@ def load_extension_cogs():
 		# exec("import " + ext)
 		# await client.add_cog(eval(ext+"."+ext.lstrip("cogs.").capitalize()+"(bot)"))
 		# exec("await " + ext + ".setup(bot)")
-		client.load_extension(ext)
+		client.load_extension(name=ext)
 		printv(2, "\tLoaded", ext, "cog")
 
 @client.command(name="kill", pass_context=True)
