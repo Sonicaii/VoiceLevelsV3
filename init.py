@@ -137,7 +137,7 @@ class get:
 
 		if new_db:
 			import new_db
-			del cur
+			client.conn.rollback() # Need to rollback after exception
 
 			ferror(f"NO TOKEN IN DATABASE!")
 			ferror("Edit new_db.py to insert bot token or run:")
