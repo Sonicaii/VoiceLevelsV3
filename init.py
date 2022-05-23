@@ -153,7 +153,7 @@ class get:
 				with client.conn.cursor() as cur:
 					cur.execute(new_db.create_vl)
 
-		return token(recursion+1) if recursion < 1 else ""
+		return this.token(recursion+1) if recursion < 1 else ""
 
 
 	def prefix(_bot, message):
