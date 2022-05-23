@@ -203,10 +203,10 @@ client = discord.Client(
 )
 
 # removes commands
-if get.remove_commands: printv(2, "\nRemoving commands: ")
-for cmd in get.remove_commands:
-	client.remove_command(cmd)
-	printv(2, "\tRemoved command:", cmd)
+# if get.remove_commands: printv(2, "\nRemoving commands: ")
+# for cmd in get.remove_commands:
+# 	client.remove_command(cmd)
+# 	printv(2, "\tRemoved command:", cmd)
 
 async def load_cogs():
 	# loads extention cogs
