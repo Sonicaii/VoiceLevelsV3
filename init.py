@@ -142,7 +142,7 @@ class get:
 
 	c = "cogs.{}".format
 	init_extensions = list(map(lambda x: "cogs."+x, [
-		"levels",
+		# "levels",
 		"misc",
 		"help",
 		"snipe",
