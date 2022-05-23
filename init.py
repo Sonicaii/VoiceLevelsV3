@@ -195,7 +195,7 @@ intents = discord.Intents(**{i:True for i in [
 ]})
 
 # the discord bot client
-client = commands.Bot(
+client = discord.Client(
 	command_prefix=get.prefix,
 	case_insensitive=True,
 	intents=intents,
