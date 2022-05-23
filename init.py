@@ -137,10 +137,11 @@ class get:
 
 		if new_db:
 			import new_db
+			del cur
 
-			ferror(f"NO TOKEN IN DATABASE! cursor is { '' if cur.closed else 'not '} closed")
+			ferror(f"NO TOKEN IN DATABASE!")
 			ferror("Edit new_db.py to insert bot token or run:")
-			print ("\t\t"+"INSERT INTO token (token) VALUES ('BOT_TOKEN');")
+			print (">\t\t"+"INSERT INTO token (token) VALUES ('BOT_TOKEN');")
 
 			with client.conn.cursor() as cur:
 				cur.execute(new_db.create_token)
