@@ -1,3 +1,3 @@
 # Using pipfile lock?
-git+https://github.com/Rxwr/discord.py#egg=discord.py
+git+https://github.com/Rapptz/discord.py#egg=discord.py
 psycopg2-binary>=2.9.3
