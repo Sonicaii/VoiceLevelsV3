@@ -215,8 +215,6 @@ async def load_extension_cogs():
 		await client.load_extension(ext)
 		printv(2, "\tLoaded", ext, "cog")
 
-asyncio.start(load_extension_cogs())
-
 @client.command(name="kill", pass_context=True)
 async def kill(ctx):
 	""" force stop """
@@ -281,13 +279,18 @@ async def main():
 	(fg.g("\n\n--! ")+bg.w(" ")+ fm["u"]("  ACTIVATING BOT  ")+bg.w(" ")+fg.g(" !--\n")))
 	) if verbose >= 2 else printv(1, fg.g("\n --! ACTIVATING BOT !-- \n"))
 
+	await load_extension_cogs()
+
 	client.db_url = os.environ.get("DATABASE_URL")
 	printv(2, f"database URL: {client.db_url}")
 	if not client.db_url:
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
-	client.conn = psycopg2.connect(client.db_url, sslmode='require')
+	# client.conn = psycopg2.connect(client.db_url, sslmode='require')
+	async with \
+		client, \
+		psycopg2.connect(client.db_url, sslmode='require') as client.conn:
 
-	await client.run(get.token())
+		await client.start(get.token())
 
-asyncio.start(main())
+asyncio.run(main())
