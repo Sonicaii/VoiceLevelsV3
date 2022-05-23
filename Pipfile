@@ -4,9 +4,9 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-"discord.py" = {git = "https://github.com/Rapptz/discord.py"}
 psycopg2-binary = "*"
 setuptools = "==41"
+"discord.py" = {git = "https://github.com/Rxwr/discord.py"}
 
 [dev-packages]
 
