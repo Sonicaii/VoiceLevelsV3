@@ -213,9 +213,10 @@ async def load_extension_cogs():
 	if get.init_extensions: printv(2, "\nLoading cogs:")
 	for ext in get.init_extensions:
 		# temp fix, TODO, find fix...
-		exec("import " + ext)
-		await client.load_extension(eval(ext.lstrip("cogs.")+"."+ext.lstrip("cogs.").capitalize()+"(bot)"))
+		# exec("import " + ext)
+		# await client.add_cog(eval(ext+"."+ext.lstrip("cogs.").capitalize()+"(bot)"))
 		# exec("await " + ext + ".setup(bot)")
+		await client.load_extension(ext)
 		printv(2, "\tLoaded", ext, "cog")
 
 @client.command(name="kill", pass_context=True)
