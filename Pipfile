@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 "discord.py" = {git = "https://github.com/Rapptz/discord.py"}
 psycopg2-binary = "*"
+setuptools = "==41"
 
 [dev-packages]
 
