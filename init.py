@@ -238,4 +238,5 @@ def main():
 	# Start bot
 	client.run(get.token())
 
-	main()
+
+main()
