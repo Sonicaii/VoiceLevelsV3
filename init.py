@@ -208,12 +208,14 @@ for cmd in get.remove_commands:
 	client.remove_command(cmd)
 	printv(2, "\tRemoved command:", cmd)
 
-# loads extention cogs
-if get.init_extensions: printv(2, "\nLoading cogs:")
-for ext in get.init_extensions:
-	client.load_extension(ext)
-	printv(2, "\tLoaded", ext, "cog")
+async def load_extension_cogs():
+	# loads extention cogs
+	if get.init_extensions: printv(2, "\nLoading cogs:")
+	for ext in get.init_extensions:
+		await client.load_extension(ext)
+		printv(2, "\tLoaded", ext, "cog")
 
+asyncio.start(load_extension_cogs())
 
 @client.command(name="kill", pass_context=True)
 async def kill(ctx):
@@ -273,7 +275,7 @@ class client(commands.Bot):
 	def __init__(self): ...
 
 
-def main():
+async def main():
 	# activate bot
 	printv(2, (
 	(fg.g("\n\n--! ")+bg.w(" ")+ fm["u"]("  ACTIVATING BOT  ")+bg.w(" ")+fg.g(" !--\n")))
@@ -285,6 +287,7 @@ def main():
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
 	client.conn = psycopg2.connect(client.db_url, sslmode='require')
-	client.run(get.token())
 
-main()
+	await client.run(get.token())
+
+asyncio.start(main())
