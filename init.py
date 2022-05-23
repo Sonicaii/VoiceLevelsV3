@@ -195,7 +195,7 @@ intents = discord.Intents(**{i:True for i in [
 ]})
 
 # the discord bot client
-client = discord.Client(
+client = commands.Bot(
 	command_prefix=get.prefix,
 	case_insensitive=True,
 	intents=intents,
@@ -203,10 +203,10 @@ client = discord.Client(
 )
 
 # removes commands
-# if get.remove_commands: printv(2, "\nRemoving commands: ")
-# for cmd in get.remove_commands:
-# 	client.remove_command(cmd)
-# 	printv(2, "\tRemoved command:", cmd)
+if get.remove_commands: printv(2, "\nRemoving commands: ")
+for cmd in get.remove_commands:
+	client.remove_command(cmd)
+	printv(2, "\tRemoved command:", cmd)
 
 async def load_cogs():
 	# loads extention cogs
@@ -271,10 +271,6 @@ async def load(ctx):
 async def on_ready():
 	pre.cogpr("Main", client)
 	get.top_level_users.add( (await bot.application_info()).owner.id )
-
-
-class client(commands.Bot):
-	def __init__(self): ...
 
 
 async def main():
