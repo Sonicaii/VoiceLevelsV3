@@ -274,13 +274,12 @@ def main():
 	(fg.g("\n\n--! ")+bg.w(" ")+ fm["u"]("  ACTIVATING BOT  ")+bg.w(" ")+fg.g(" !--\n")))
 	) if verbose >= 2 else printv(1, fg.g("\n --! ACTIVATING BOT !-- \n"))
 
+	client.db_url = os.environ.get("DATABASE_URL")
 	printv(2, f"database URL: {client.db_url}")
-
-	db_url = os.environ.get("DATABASE_URL")
-	if not db_url:
+	if not client.db_url:
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
-	client.conn = psycopg2.connect(db_url, sslmode='require')
+	client.conn = psycopg2.connect(client.db_url, sslmode='require')
 	
 	client.run(get.token())
 
