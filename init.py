@@ -13,7 +13,7 @@ import random
 import json
 import os
 import math
-import asyncpg
+import psycopg2
 from threading import Thread
 from aiohttp.client_exceptions import ClientConnectionError
 from asyncio.exceptions import TimeoutError
@@ -132,7 +132,7 @@ class get:
 			with client.conn.cursor() as cur:
 				cur.execute("SELECT token FROM token")
 				return cur.fetchone()[0]
-		except Exception: # asyncpg.errors.UndefinedTable
+		except Exception: # psycopg2.errors.UndefinedTable
 			new_db = True
 
 		if new_db:
@@ -288,8 +288,8 @@ async def main():
 	if not client.db_url:
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
-	# client.conn = asyncpg.connect(client.db_url, sslmode='require')
-	async with asyncpg.connect(client.db_url, ssl='require') as client.conn:
+	# client.conn = psycopg2.connect(client.db_url, sslmode='require')
+	with psycopg2.connect(client.db_url, sslmode='require') as client.conn:
 
 		await load_extension_cogs(client)
 
