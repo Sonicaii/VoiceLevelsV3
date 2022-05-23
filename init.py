@@ -224,18 +224,12 @@ async def load(ctx):
 		else:
 			return await ctx.send(f"Available cogs: {', '.join(get.cogfiles)[:-2]}")
 
-
-get.func.reload = reload
-get.func.load = load
-
-# activate bot
-printv(2, (
-(fg.g("\n\n--! ")+bg.w(" ")+ fm["u"]("  ACTIVATING BOT  ")+bg.w(" ")+fg.g(" !--\n")))
-) if verbose >= 2 else printv(1, fg.g("\n --! ACTIVATING BOT !-- \n"))
-
-def main():
-	
-	# Start bot
+def main():	
+	# activate bot
+	printv(2, (
+	(fg.g("\n\n--! ")+bg.w(" ")+ fm["u"]("  ACTIVATING BOT  ")+bg.w(" ")+fg.g(" !--\n")))
+	) if verbose >= 2 else printv(1, fg.g("\n --! ACTIVATING BOT !-- \n"))
+	printv(2, f"database URL: {os.environ['DATABASE_URL']}")
 	client.run(get.token())
 
 
