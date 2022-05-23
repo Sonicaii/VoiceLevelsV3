@@ -285,11 +285,11 @@ async def main():
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
 	# client.conn = psycopg2.connect(client.db_url, sslmode='require')
-	with psycopg2.connect(client.db_url, sslmode='require') as client.conn, client:
+	with psycopg2.connect(client.db_url, sslmode='require') as client.conn:
+		async with client:
+			for ext in ["cogs.misc", "cogs.snipe"]:
+				await client.load_extension(ext)
 
-		for ext in ["cogs.misc", "cogs.snipe"]:
-			await client.load_extension(ext)
-
-		await client.run(get.token())
+			await client.run(get.token())
 
 asyncio.run(main())
