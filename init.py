@@ -128,7 +128,7 @@ class get:
 	def token(recursion: int = 0) -> str:
 		""" Gets token from token.txt for run() """
 		try:
-			with client.conn.cursor as cur:
+			with client.conn.cursor() as cur:
 				cur.execute("SELECT token FROM token")
 				return cur.fetchone()[0]
 		except psycopg2.errors.UndefinedTable:
@@ -138,14 +138,14 @@ class get:
 			ferror("Edit new_db.py to insert bot token or run:")
 			print ("\t\t"+"INSERT INTO token (token) VALUES ('BOT_TOKEN');")
 
-			with client.conn.cursor as cur:
+			with client.conn.cursor() as cur:
 				cur.execute(new_db.create_token)
 				cur.execute(new_db.detect)
 				has_tables = cur.fetchone()[0]
 
 			if not has_tables:
 				ferror("You do not have any tables in your database, setting up now")
-				with client.conn.cursor as cur:
+				with client.conn.cursor() as cur:
 					cur.execute(new_db.create_vl)
 
 		return token(recursion+1) if recursion < 1 else ""
@@ -279,9 +279,13 @@ def main():
 	if not client.db_url:
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
-	client.conn = psycopg2.connect(client.db_url, sslmode='require')
-	
-	client.run(get.token())
+	class with_cursor_wrapper():
+		def __init__(self, conn):
+			self = super(*args, **kwargs)
+		def __enter__(self):
 
+	client.conn = with_cursor_wrapper(psycopg2.connect(client.db_url, sslmode='require'))
+	client.conn.cursor.__open__ =
+	client.run(get.token())
 
 main()
