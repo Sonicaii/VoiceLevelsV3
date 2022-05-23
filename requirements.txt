@@ -1,2 +1,2 @@
 git+https://github.com/Rapptz/discord.py
-SQLAlchemy==1.4.36
+psycopg2-binary

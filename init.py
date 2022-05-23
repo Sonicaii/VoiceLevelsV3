@@ -13,7 +13,7 @@ import random
 import json
 import os
 import math
-import sqlalchemy
+import psycopg2
 from sqlalchemy.engine.create import create_engine
 from threading import Thread
 from aiohttp.client_exceptions import ClientConnectionError
@@ -126,9 +126,30 @@ class get:
 
 	class func: pass
 
-	def token() -> str:
+	def token(recursion: int = 0) -> str:
 		""" Gets token from token.txt for run() """
-		return ""
+		try:
+			with client.conn.cursor as cur:
+				cur.execute("SELECT token FROM token")
+				return cur.fetchone()[0]
+		except psycopg2.errors.UndefinedTable:
+			import new_db
+
+			ferror("NO TOKEN IN DATABASE!")
+			ferror("Edit new_db.py to insert bot token or run:")
+			print ("\t\t"+"INSERT INTO token (token) VALUES ('BOT_TOKEN');")
+
+			with client.conn.cursor as cur:
+				cur.execute(new_db.create_token)
+				cur.execute(new_db.detect)
+				has_tables = cur.fetchone()[0]
+
+			if not has_tables:
+				ferror("You do not have any tables in your database, setting up now")
+				with client.conn.cursor as cur:
+					cur.execute(new_db.create_vl)
+
+		return token(recursion+1) if recursion < 1 else ""
 
 
 	def prefix(_bot, message):
@@ -253,12 +274,16 @@ def main():
 	printv(2, (
 	(fg.g("\n\n--! ")+bg.w(" ")+ fm["u"]("  ACTIVATING BOT  ")+bg.w(" ")+fg.g(" !--\n")))
 	) if verbose >= 2 else printv(1, fg.g("\n --! ACTIVATING BOT !-- \n"))
-	client.db_url = os.environ.get("DATABASE_URL")
-	client.secret_key = os.environ.get("SECRET_KEY")
+
 	printv(2, f"database URL: {client.db_url}")
-	client.engine = create_engine("postgresql+psycopg2://"+client.db_url.lstrip("postgres://"))
+
+	db_url = os.environ.get("DATABASE_URL")
+	if not db_url:
+		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
+
+	client.conn = psycopg2.connect(db_url, sslmode='require')
 	
-	# client.run(get.token())
+	client.run(get.token())
 
 
 main()

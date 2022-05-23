@@ -1,4 +1,5 @@
-stmt = """
+detect = "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE table_schema = current_database()"
+create_vl = """
 --
 -- Database: voice_levels
 --
@@ -21,7 +22,19 @@ CREATE TABLE levels (
 INSERT INTO levels (right_two, json_contents) VALUES
 {};
 
--- --------------------------------------------------------
+--
+-- Indexes for table levels
+--
+ALTER TABLE levels
+  ADD PRIMARY KEY (right_two);
+
+COMMIT;
+""".format(f"\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(","))
+
+create_token = """
+--
+-- Database: voice_levels
+--
 
 --
 -- Table structure for table token
@@ -38,17 +51,8 @@ CREATE TABLE token (
 INSERT INTO token (token) VALUES
 ('{}');
 
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table levels
---
-ALTER TABLE levels
-  ADD PRIMARY KEY (right_two);
 COMMIT;
-""".format(f"\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(","),
+""".format(
 
   "YOUR_BOT_TOKEN"
 
