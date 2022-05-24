@@ -53,11 +53,11 @@ class Misc(commands.Cog):
 		else:
 			return await ctx.send(f"{msg} ``{id_}`` translates to ``{utc}`` UTC")
 
-	@commands.Cog.listener()
-	async def on_message(self, ctx):
-		if ctx.author.id in get.top_level_users and "..stop" in ctx.content.lower():
-			ctx.channel.send("Killed process")
-			exit()
+	@commands.command(pass_context=True, name="stop")
+	@commands.is_owner()
+	async def stop(self, ctx):
+		ctx.channel.send("Killed process")
+		exit()
 
 
 async def setup(bot):
