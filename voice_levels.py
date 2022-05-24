@@ -188,12 +188,13 @@ class get:
 ## initialising
 printv(1, "\ninitialising bot")
 
-intents = discord.Intents(**{i:True for i in [
-	"message_content",
-	"voice_states",
-	"members",
-	"integrations",
-]})
+# intents = discord.Intents(**{i:True for i in [
+# 	"message_content",
+# 	"voice_states",
+# 	"members",
+# 	"integrations",
+# ]})
+intents = discord.Intents().all()
 
 # the discord bot client
 client = commands.Bot(
