@@ -10,7 +10,7 @@ from aiohttp import ClientSession
 from urllib.parse import urlparse
 
 global debug
-debug = True if "snipe" in debugs else False
+debug = False
 
 del_ammo_out, used_comb = [], []
 snipe_target = {}
