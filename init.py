@@ -50,7 +50,9 @@ async def on_ready():
 @bot.event
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
 	print(f"joined, {guild.name}, id: {guild.id}")
-	ctx = type("ctx", tuple(), {"send": (lambda *args, **kwargs: None), "guild": guild})
+	class ctx:
+		async def send(*args, **kwargs): pass
+	ctx.guild = guild
 	await sync(ctx, []) # sync(ctx, [], "")
 
 
