@@ -157,7 +157,7 @@ class get:
 		return ""  # failed...
 
 
-	def prefix(_bot, message):
+	async def prefix(bot, message):
 		""" sets the bot's prefix """
 
 		prefixes = [
@@ -166,7 +166,7 @@ class get:
 			'..', '<@695805789050241034>', '<@!695805789050241034>', '']
 		# no prefix needed if not in dm
 
-		return commands.when_mentioned_or(*prefixes)(_bot, message)
+		return commands.when_mentioned_or(*prefixes)(bot, message)
 
 	def prefix_filter(message):
 		# print(message.content.split())
