@@ -33,7 +33,7 @@ bot = commands.Bot(
 
 @bot.event
 async def on_message(message):
-	if message.author == client.user:
+	if message.author == bot.user:
 		return
 
 	if message.content.startswith('$hello'):
@@ -42,7 +42,7 @@ async def on_message(message):
 @bot.event
 async def on_ready():
 	print("READY!")
-	cogpr("Main", client)
+	cogpr("Main", bot)
 	await bot.change_presence(activity=discord.Activity(
 		name="Testing",
 		type=discord.ActivityType.playing
