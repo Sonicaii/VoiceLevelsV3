@@ -51,8 +51,10 @@ async def on_ready():
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
 	await asyncio.sleep(10)  # wait for stuff to register?
 	print(f"joined, {guild.name}, id: {guild.id}")
-	# await sync()
-	await bot.tree.sync(guild=discord.Object(id=guild.id))
+	class ctx:
+		send = lambda *args, **kwargs: None
+		guild = guild
+	await sync(ctx, []) # sync(ctx, [], "")
 
 
 @bot.command()
@@ -67,7 +69,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 	print(f"Syncing for {ctx.guild.id}")
 	if not guilds:
 		if spec == "~":
-			fmt = await bot.tree.sync(guild=discord.Object(id=ctx.guild.id))
+			fmt = await bot.tree.sync(guild=ctx.guild)
 		else:
 			fmt = await bot.tree.sync()
 
