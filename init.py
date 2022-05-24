@@ -54,16 +54,17 @@ async def on_guild_join(guild):  # Can be abused and rate limit the bot
 
 @bot.command()
 # @commands.is_owner()
-async def sync(self, ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
+async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
 	"""
 		Usage:
 			`!sync` -> globally sync all commands (WARNING)
 			`!sync ~! -> sync to current guild only.
 			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
 	"""
+	print(f"Syncing for {ctx.guild.id}")
 	if not guilds:
 		if spec == "~":
-			fmt = await bot.tree.sync(guild=discord.Object(id=ctx.guild.id))
+			fmt = await bot.tree.sync(guild==ctx.guild.id)
 		else:
 			fmt = await bot.tree.sync()
 
