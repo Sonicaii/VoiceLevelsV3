@@ -1,5 +1,6 @@
 """ Voice Levels header"""
 from psycopg2.extensions import connection
+import time
 
 # colours.py ------
 letters = ["k", "r", "g", "y", "b", "m", "c", "w", "K", "R", "G", "Y", "B", "M", "C", "W"]
