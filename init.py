@@ -15,8 +15,9 @@ from header import (
 print("Creating commands.Bot object")
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
 bot = commands.Bot(
-	command_prefix="!", # get.prefix,
 	case_insensitive=True,
+	help_command=None,
+	command_prefix="!", # get.prefix,
 	intents=discord.Intents(**{i:True for i in [
 		"message_content",
 		"voice_states",
