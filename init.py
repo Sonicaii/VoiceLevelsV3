@@ -31,11 +31,19 @@ bot = commands.Bot(
 	description="""User levels based on time spent in voice channels."""
 )
 
+@bot.event
+async def on_message(message):
+	if message.author == client.user:
+		return
+
+	if message.content.startswith('$hello'):
+		await message.channel.send('Hello!')
+
 async def main():
 	print("Connecting to database...")
 
 	bot.db_url = os.environ.get("DATABASE_URL")
-	if bot.db_url:
+	if not bot.db_url:
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
 	with psycopg2.connect(bot.db_url, sslmode='require') as bot.conn:
@@ -43,9 +51,10 @@ async def main():
 		async with bot:
 			for ext in ["cogs."+i for i in [
 					# "levels",
-					"misc",
-					"help",
-					"snipe",
+					# "misc",
+					# "help",
+					# "snipe",
+					"simple"
 				]]:
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)
