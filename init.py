@@ -96,9 +96,9 @@ async def main():
 		async with bot:
 			for ext in ["cogs."+i for i in [
 					# "levels",
-					"misc",
+					# "misc",
 					# "help",
-					"snipe",
+					# "snipe",
 					"simple"
 				]]:
 				print(f"loading extension: {ext}")
