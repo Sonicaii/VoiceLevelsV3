@@ -275,6 +275,12 @@ async def on_ready():
 	pre.cogpr("Main", client)
 	get.top_level_users.add( (await client.application_info()).owner.id )
 
+@client.event
+async def on_message(ctx):
+	print(f"recieved: {ctx.message.content}")
+	if message.content.startswith(",,echo"):
+		ctx.channel.send("recieved")
+
 
 async def main():
 	# activate bot
