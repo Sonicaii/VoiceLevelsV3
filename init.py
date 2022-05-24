@@ -63,7 +63,7 @@ async def sync(self, ctx: Context, guilds: Greedy[Object], spec: Optional[Litera
 	"""
 	if not guilds:
 		if spec == "~":
-			fmt = await bot.tree.sync(guild=ctx.guild)
+			fmt = await bot.tree.sync(guild=discord.Object(id=ctx.guild.id))
 		else:
 			fmt = await bot.tree.sync()
 
