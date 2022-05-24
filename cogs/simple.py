@@ -7,7 +7,7 @@ class MyCog(commands.Cog):
 	def __init__(self, bot: commands.Bot) -> None:
 		self.bot = bot
 		
-	@app_commands.command(name="command-1")
+	@app_commands.command(name="command", description="command 1")
 	async def my_command(self, interaction: discord.Interaction) -> None:
 		""" /command-1 """
 		await interaction.response.send_message("Hello from command 1!", ephemeral=True)
