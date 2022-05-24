@@ -1,3 +1,6 @@
+import asyncio
+import math
+import os
 import psycopg2
 import discord
 from discord import app_commands
@@ -9,6 +12,7 @@ from header import (
 	get_prefix
 )
 
+print("Creating commands.Bot object")
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
 bot = commands.Bot(
 	command_prefix="!", # get.prefix,
