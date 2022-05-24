@@ -13,12 +13,12 @@ def ferror(*text: str):
 	return printr(">\t! "+str(*text))
 
 
-def cogpr(self, name: str, client: object, colour: str="c") -> str:
+def cogpr(name: str, bot: object, colour: str="c") -> str:
 	""" format cog start output"""
 	return fg.d[colour](f"\n{client.user.name} ")+name+fg.d[colour](" Activated")+f"\n{time.ctime()}"
 
 
-def printv(self, level, *args):
+def printv(level, *args):
 	""" TODO depricate, relace with logging module """
 	if type(level) == int:
 		print(*args)
