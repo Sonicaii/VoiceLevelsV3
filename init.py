@@ -50,6 +50,8 @@ async def on_ready():
 @bot.event
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
 	await asyncio.sleep(10)  # wait for stuff to register?
+	print(f"joined, {guild.name}, id: {guild.id}")
+	# await sync()
 	await bot.tree.sync(guild=discord.Object(id=guild.id))
 
 
