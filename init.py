@@ -49,11 +49,8 @@ async def on_ready():
 
 @bot.event
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
-	await asyncio.sleep(10)  # wait for stuff to register?
 	print(f"joined, {guild.name}, id: {guild.id}")
-	class ctx:
-		send = lambda *args, **kwargs: None
-		guild = guild
+	ctx = type("ctx", tuple(), {"send": (lambda *args, **kwargs: None), "guild": guild})
 	await sync(ctx, []) # sync(ctx, [], "")
 
 
