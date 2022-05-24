@@ -125,35 +125,36 @@ class get:
 
 	class func: pass
 
-	def token(self, recursion: int = 0) -> str:
-		""" Gets token from token.txt for run() """
-		new_db = False
-		try:
-			with client.conn.cursor() as cur:
-				cur.execute("SELECT token FROM token")
-				return cur.fetchone()[0]
-		except Exception: # psycopg2.errors.UndefinedTable
-			new_db = True
-
-		if new_db:
-			import new_db
-			client.conn.rollback() # Need to rollback after exception
-
-			ferror(f"NO TOKEN IN DATABASE!")
-			ferror("Edit new_db.py to insert bot token or run:")
-			print (">\t\t"+"INSERT INTO token (token) VALUES ('BOT_TOKEN');")
-
-			with client.conn.cursor() as cur:
-				cur.execute(new_db.create_token)
-				cur.execute(new_db.detect)
-				has_tables = cur.fetchone()[0]
-
-			if not has_tables:
-				ferror("You do not have any tables in your database, setting up now")
+	def token() -> str:
+		""" static method? Gets token from token.txt for run() """
+		for i in range(2):  # loop to retry once
+			new_db = False
+			try:
 				with client.conn.cursor() as cur:
-					cur.execute(new_db.create_vl)
+					cur.execute("SELECT token FROM token")
+					return cur.fetchone()[0]
+			except Exception: # psycopg2.errors.UndefinedTable
+				new_db = True
 
-		return self.token(recursion+1) if recursion < 1 else ""
+			if new_db:
+				import new_db
+				client.conn.rollback() # Need to rollback after exception
+
+				ferror(f"NO TOKEN IN DATABASE!")
+				ferror("Edit new_db.py to insert bot token or run:")
+				print (">\t\t"+"INSERT INTO token (token) VALUES ('BOT_TOKEN');")
+
+				with client.conn.cursor() as cur:
+					cur.execute(new_db.create_token)
+					cur.execute(new_db.detect)
+					has_tables = cur.fetchone()[0]
+
+				if not has_tables:
+					ferror("You do not have any tables in your database, setting up now")
+					with client.conn.cursor() as cur:
+						cur.execute(new_db.create_vl)
+
+		return ""  # failed...
 
 
 	def prefix(_bot, message):
