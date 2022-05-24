@@ -16,7 +16,10 @@ def cogpr(self, name: str, client: object, colour: str="c") -> str:
 
 def printv(self, level, *args):
 	""" TODO depricate, relace with logging module """
-	print(*args if level == int else *(level, *args))
+	if type(level) == int:
+		print(*args)
+	else:
+		print(level, *args)
 
 def get_token(conn: connection, recurse: int = 0) -> str:
 	""" static method? Gets token from token.txt for run() """
