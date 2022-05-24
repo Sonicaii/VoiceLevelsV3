@@ -197,7 +197,7 @@ intents = discord.Intents(**{i:True for i in [
 
 # the discord bot client
 client = commands.Bot(
-	command_prefix=get.prefix,
+	command_prefix=",,", # get.prefix,
 	case_insensitive=True,
 	intents=intents,
 	description="""User levels based on time spent in voice channels."""
