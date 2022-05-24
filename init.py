@@ -49,11 +49,7 @@ async def on_ready():
 
 @bot.event
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
-	print(f"joined, {guild.name}, id: {guild.id}")
-	class ctx:
-		async def send(*args, **kwargs): pass
-	ctx.guild = guild
-	await sync(ctx, []) # sync(ctx, [], "")
+	await bot.tree.sync(guild=ctx.guild)
 
 
 @bot.command()
@@ -80,7 +76,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 	fmt = 0
 	for guild in guilds:
 		try:
-			await ctx.bot.tree.sync(guild=guild)
+			await bot.tree.sync(guild=guild)
 		except discord.HTTPException:
 			pass
 		else:
