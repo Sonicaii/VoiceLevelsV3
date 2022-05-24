@@ -17,15 +17,9 @@ class Misc(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 		printv(pre.cogpr("Misc", client))
-		# print(dir(synccmd))
-		try:
-			await self.refresh_globals.start()
-		except RuntimeError:
-			pass
 
 	async def cog_unload(self):
-		await self.refresh_globals.cancel()
-
+		pass
 
 	@commands.command(pass_context=True, name="echo", aliases=["e"])
 	async def echo(self, ctx):
