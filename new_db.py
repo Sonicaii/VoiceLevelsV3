@@ -41,7 +41,9 @@ create_token = """
 --
 
 CREATE TABLE token (
-  token text NOT NULL
+  onerow bool PRIMARY KEY DEFAULT TRUE,
+  token text NOT NULL,
+  CONSTRAINT onerow CHECK (onerow_id)
 );
 
 --
@@ -50,6 +52,10 @@ CREATE TABLE token (
 
 INSERT INTO token (token) VALUES
 ('{}');
+
+--
+-- Indexes for table levels
+--
 
 COMMIT;
 """.format(
