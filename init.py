@@ -125,7 +125,7 @@ class get:
 
 	class func: pass
 
-	def token(recursion: int = 0) -> str:
+	def token(self, recursion: int = 0) -> str:
 		""" Gets token from token.txt for run() """
 		new_db = False
 		try:
@@ -153,7 +153,7 @@ class get:
 				with client.conn.cursor() as cur:
 					cur.execute(new_db.create_vl)
 
-		return this.token(recursion+1) if recursion < 1 else ""
+		return self.token(recursion+1) if recursion < 1 else ""
 
 
 	def prefix(_bot, message):
