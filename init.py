@@ -28,7 +28,7 @@ bot = commands.Bot(
 	# 	"voice_states",
 	# 	"members"
 	# ]}),
-	intents=discord.Intents().all()
+	intents=discord.Intents().all(),
 	description="""User levels based on time spent in voice channels."""
 )
 
