@@ -88,17 +88,8 @@ class bg:
 		8 = hide
 		9 = crossthrough
 """
-fm = {  # TODO: compact
-	0 : "\033[0m{}\033[0m".format,
-	1 : "\033[1m{}\033[0m".format,
-	2 : "\033[2m{}\033[0m".format,
-	3 : "\033[3m{}\033[0m".format,
-	4 : "\033[4m{}\033[0m".format,
-	5 : "\033[5m{}\033[0m".format,
-	6 : "\033[6m{}\033[0m".format,
-	7 : "\033[7m{}\033[0m".format,
-	8 : "\033[8m{}\033[0m".format,
-	9 : "\033[9m{}\033[0m".format,
+fm = {
+	**{i : "\033[{}m{{}}\033[0m".format(i).format for i in range(10)},
 	"c":"\033[0m{}\033[0m".format,
 	"u":"\033[4m{}\033[0m".format,
 	"i":"\033[8m{}\033[0m".format
