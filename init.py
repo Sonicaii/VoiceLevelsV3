@@ -264,6 +264,12 @@ async def load(ctx):
 		else:
 			return await ctx.send(f"Available cogs: {', '.join(get.cogfiles)[:-2]}")
 
+
+@client.command(name="echo")
+async def echo(ctx):
+	await ctx.send("echo")
+
+
 @client.event
 async def on_ready():
 	pre.cogpr("Main", client)

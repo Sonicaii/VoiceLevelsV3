@@ -17,9 +17,9 @@ class Misc(commands.Cog):
 	async def cog_unload(self):
 		pass
 
-	@commands.command(pass_context=True, name="echo", aliases=["e"])
-	async def echo(self, ctx):
-		await ctx.send("echo")
+	# @commands.command(pass_context=True, name="echo", aliases=["e"])
+	# async def echo(self, ctx):
+	# 	await ctx.send("echo")
 
 	@commands.command(pass_context=True, aliases=["m"])
 	async def members(self, ctx):
