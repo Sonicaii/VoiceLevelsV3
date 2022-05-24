@@ -191,7 +191,8 @@ printv(1, "\ninitialising bot")
 intents = discord.Intents(**{i:True for i in [
 	"message_content",
 	"voice_states",
-	"members"
+	"members",
+	"integrations",
 ]})
 
 # the discord bot client
