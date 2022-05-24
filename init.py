@@ -39,6 +39,15 @@ async def on_message(message):
 	if message.content.startswith('$hello'):
 		await message.channel.send('Hello!')
 
+@bot.event
+async def on_ready():
+	print("READY!")
+	cogpr("Main", client)
+	await client.change_presence(activity=discord.Activity(
+		name="Testing",
+		type=discord.ActivityType.playing
+	))
+
 async def main():
 	print("Connecting to database...")
 
