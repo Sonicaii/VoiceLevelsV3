@@ -132,10 +132,8 @@ def get_token(conn: connection, recurse: int = 0) -> str:
 async def get_prefix(bot, message):
 	""" sets the bot's prefix """
 
-	prefixes = [
-		'..', '<@695805789050241034>', '<@!695805789050241034>'
-	] if message.guild else [
-		'..', '<@695805789050241034>', '<@!695805789050241034>', '']
+	prefixes = [',,', '<@708260446242734130>', '<@!708260446242734130>']
+	if message.guild: prefixes.append('')
 	# no prefix needed if not in dm
 
 	return commands.when_mentioned_or(*prefixes)(bot, message)

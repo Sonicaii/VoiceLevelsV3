@@ -22,8 +22,8 @@ print("Creating commands.Bot object")
 bot = commands.Bot(
 	case_insensitive=True,
 	help_command=None,
-	command_prefix="!", # get_prefix,
-	intents=discord.Intents(**{i:True for i in [
+	command_prefix=get_prefix,
+	intents=discord.Intents(**{i:True for i in [  # TODO !!! ADD VOICE CHANNEL DETECTION IN INTENTS
 		"message_content",
 		"voice_states",
 		"members",
@@ -32,18 +32,8 @@ bot = commands.Bot(
 		"guilds",
 		"messages",
 	]}),
-	# intents=discord.Intents().all(),
 	description="""User levels based on time spent in voice channels."""
 )
-
-@bot.event
-async def on_message(message):
-	print(f"Recieved message: {message.content}")
-	if message.author == bot.user:
-		return
-
-	if message.content.startswith('$hello'):
-		await message.channel.send('Hello!')
 
 @bot.event
 async def on_ready():
@@ -53,6 +43,39 @@ async def on_ready():
 		name="Testing",
 		type=discord.ActivityType.playing
 	))
+
+
+@bot.command()
+@commands.is_owner()
+async def sync(self, ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
+	"""
+		Usage:
+			`!sync` -> globally sync all commands (WARNING)
+			`!sync ~! -> sync to current guild only.
+			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
+	"""
+	if not guilds:
+		if spec == "~":
+			fmt = await ctx.bot.tree.sync(guild=ctx.guild)
+		else:
+			fmt = await ctx.bot.tree.sync()
+
+		await ctx.send(
+			f"Synced {len(fmt)} commands {'globally' if spec is not None else 'to the current guild.'}"
+		)
+		return
+
+	fmt = 0
+	for guild in guilds:
+		try:
+			await ctx.bot.tree.sync(guild=guild)
+		except discord.HTTPException:
+			pass
+		else:
+			fmt += 1
+
+	await ctx.send(f"Synced the tree to {fmt}/{len(guilds)} guilds.")
+
 
 async def main():
 	print("Connecting to database...")
@@ -66,9 +89,9 @@ async def main():
 		async with bot:
 			for ext in ["cogs."+i for i in [
 					# "levels",
-					# "misc",
+					"misc",
 					# "help",
-					# "snipe",
+					"snipe",
 					"simple"
 				]]:
 				print(f"loading extension: {ext}")
