@@ -10,7 +10,9 @@ from discord.ext import tasks, commands
 from header import (
 	ferror,
 	get_token,
-	get_prefix
+	get_prefix,
+	cogpr,
+	printv,
 )
 
 from preset import printv
