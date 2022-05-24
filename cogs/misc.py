@@ -12,7 +12,7 @@ class Misc(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		printv(pre.cogpr("Misc", client))
+		printv(cogpr("Misc", client))
 
 	async def cog_unload(self):
 		pass

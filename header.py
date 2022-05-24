@@ -10,6 +10,14 @@ def ferror(*text: str):
 	""" indents """
 	return printr(">\t! "+str(*text))
 
+def cogpr(self, name: str, client: object, colour: str="c") -> str:
+	""" format cog start output"""
+	return fg.d[colour](f"\n{client.user.name} ")+name+fg.d[colour](" Activated")+f"\n{time.ctime()}"
+
+def printv(self, level, *args):
+	""" TODO depricate, relace with logging module """
+	print(*args if level == int else *(level, *args))
+
 def get_token(conn: connection, recurse: int = 0) -> str:
 	""" static method? Gets token from token.txt for run() """
 	try:
