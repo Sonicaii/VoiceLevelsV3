@@ -13,7 +13,11 @@ from header import (
 bot = commands.Bot(
 	command_prefix="!", # get.prefix,
 	case_insensitive=True,
-	intents=intents,
+	intents=discord.Intents(**{i:True for i in [
+		"message_content",
+		"voice_states",
+		"members"
+	]}),
 	description="""User levels based on time spent in voice channels."""
 )
 
@@ -36,7 +40,8 @@ async def main():
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)
 			
-			await client.start(get.token())
+			await bot.start(get.token())
+
 
 if __name__ == "__main__":
 	asyncio.run(main())
