@@ -12,7 +12,7 @@ class Misc(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		printv(cogpr("Misc", client))
+		printv(cogpr("Misc", bot))
 
 	async def cog_unload(self):
 		pass
@@ -27,7 +27,7 @@ class Misc(commands.Cog):
 
 	@commands.command(pass_context=True, name="ping", aliases=["latency"])
 	async def ping(self, ctx):
-		await ctx.send(f"Current latency is {round(client.latency * 1000)}ms")
+		await ctx.send(f"Current latency is {round(bot.latency * 1000)}ms")
 
 	@commands.command(pass_context=True, name="lookup", aliases=["lk", "snowflake", "when"])
 	async def lookup(self, ctx):

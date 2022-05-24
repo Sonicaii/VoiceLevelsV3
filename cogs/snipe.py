@@ -89,13 +89,13 @@ class Snipe(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		printv(cogpr("Snipe", client))
+		printv(cogpr("Snipe", bot))
 
 
 	@commands.Cog.listener()
 	async def on_reaction_add(self, reaction, user):
 		# user is who sniped, i_temp is the key to link to original message's target
-		if user == client.user or user.bot:  # self check, bot check
+		if user == bot.user or user.bot:  # self check, bot check
 			return
 
 		r_id = reaction.message.id
@@ -134,7 +134,7 @@ class Snipe(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_message_delete(self, message):
-		if message.author == client.user:
+		if message.author == bot.user:
 			# Don't log itself
 			return
 
@@ -190,7 +190,7 @@ class Snipe(commands.Cog):
 		pre = get.prefix_filter(message)
 		pre = ".."
 
-		if message.author != client.user:  # self check
+		if message.author != bot.user:  # self check
 			return
 
 		if len(message.content) > 10 and len(message.mentions) != 0:

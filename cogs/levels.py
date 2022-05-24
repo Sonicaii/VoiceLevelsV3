@@ -119,11 +119,8 @@ class Levels(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 
-		await client.change_presence(activity=discord.Activity(name="Mega" + 'lov' + 'ania',
-		type=discord.ActivityType.listening))
-
-		printv(fg.g(f"\n{client.user.name} Main Activated")+f"\n{time.ctime()}")
-		printv(2, "user ID:", client.user.id)
+		printv(fg.g(f"\n{bot.user.name} Main Activated")+f"\n{time.ctime()}")
+		printv(2, "user ID:", bot.user.id)
 		printv(2, f"Discord.py Version: {fg.c(discord.__version__)}\n")
 
 		# reset when activated, prevents faulty overnight join times
@@ -263,7 +260,7 @@ class Levels(commands.Cog):
 
 		all_check = ctx.author.id in get.top_level_users and "all" in ctx.message.content
 		if all_check:
-			total_members = len([member for server in client.guilds for member in server.members])
+			total_members = len([member for server in bot.guilds for member in server.members])
 
 		# leaderboard in DMs ( joke )
 		# if not ctx.guild:
@@ -281,8 +278,8 @@ class Levels(commands.Cog):
 					guild_mem_valid.append((ctx.author.id, n_def(namestr, ctx.author.id)))
 					guild_members_id.append(ctx.author.id)
 
-				guild_mem_valid.append((client.user.id, n_def(namestr, client.user.id)))
-				guild_members_id.append(client.user.id)
+				guild_mem_valid.append((bot.user.id, n_def(namestr, bot.user.id)))
+				guild_members_id.append(bot.user.id)
 
 
 		page = (int(ctx.message.content.split()[1]) if ctx.message.content.split()[1].isdigit() else 1) if len(ctx.message.content.split()) != 1 else 1
@@ -304,7 +301,7 @@ class Levels(commands.Cog):
 				if all_check:
 					sorted_d = {i: j for i, j in sorted(large_dict, key=lambda item: item[1], reverse=True)}
 					dict_nicknames = {}
-					for server in client.guilds:
+					for server in bot.guilds:
 						dict_nicknames.update({str(member.id): member.name for member in server.members})
 
 				formatted = """Leaderboard of global scores from users of {}\n>>> ```md\n#Rank  Hours   Level    Name\n""".format("all servers" if all_check else "this server")
@@ -338,7 +335,7 @@ class Levels(commands.Cog):
 
 		member = member(0)
 
-		for server in client.guilds: # list of guilds
+		for server in bot.guilds: # list of guilds
 			for details in server.channels: # list of server channels
 				if str(details.type) == "voice":
 					if details.voice_states:
