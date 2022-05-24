@@ -21,7 +21,7 @@ class Misc(commands.Cog):
 	# async def echo(self, ctx):
 	# 	await ctx.send("echo")
 
-	@commands.command(pass_context=True, aliases=["m"])
+	@app_commands.command(name="members", description)
 	async def members(self, ctx):
 		await ctx.send(f"Number of members in this server: {ctx.guild.member_count}")
 
