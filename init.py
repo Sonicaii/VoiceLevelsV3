@@ -17,7 +17,7 @@ print("Creating commands.Bot object")
 bot = commands.Bot(
 	case_insensitive=True,
 	help_command=None,
-	command_prefix="!", # get.prefix,
+	command_prefix="!", # get_prefix,
 	intents=discord.Intents(**{i:True for i in [
 		"message_content",
 		"voice_states",
@@ -45,7 +45,7 @@ async def main():
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)
 			
-			await bot.start(get.token())
+			await bot.start(get_token())
 
 
 if __name__ == "__main__":
