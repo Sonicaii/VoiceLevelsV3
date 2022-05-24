@@ -34,7 +34,7 @@ async def main():
 
 	with psycopg2.connect(bot.db_url, sslmode='require') as bot.conn:
 		print("Connected to database")
-		async with client:
+		async with bot:
 			for ext in ["cogs."+i for i in [
 					# "levels",
 					"misc",
