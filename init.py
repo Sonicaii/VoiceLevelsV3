@@ -20,7 +20,8 @@ bot = commands.Bot(
 async def main():
 	print("Connecting to database...")
 
-	if bot.db_url := os.environ.get("DATABASE_URL"):
+	bot.db_url = os.environ.get("DATABASE_URL")
+	if bot.db_url:
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
 	with psycopg2.connect(bot.db_url, sslmode='require') as bot.conn:
