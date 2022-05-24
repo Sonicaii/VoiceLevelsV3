@@ -267,7 +267,7 @@ async def load(ctx):
 @client.event
 async def on_ready():
 	pre.cogpr("Main", client)
-	get.top_level_users.add( (await bot.application_info()).owner.id )
+	get.top_level_users.add( (await client.application_info()).owner.id )
 
 
 async def main():
