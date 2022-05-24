@@ -272,8 +272,13 @@ async def echo(ctx):
 
 @client.event
 async def on_ready():
+	print("READY!")
 	pre.cogpr("Main", client)
 	get.top_level_users.add( (await client.application_info()).owner.id )
+	await client.change_presence(activity=discord.Activity(
+		name="Testing",
+		type=discord.ActivityType.listening)
+	)
 
 @client.event
 async def on_message(ctx):
