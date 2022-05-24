@@ -1,5 +1,5 @@
 """ Voice Levels header"""
-import discord
+import discord.commands
 
 def printr(*args):
 	""" prints and returns """
@@ -10,7 +10,7 @@ def ferror(*text: str):
 	""" indents """
 	return printr(">\t! "+str(*text))
 
-def get_token(bot: discord.commands.Bot, recurse: int = 0) -> str:
+def get_token(bot: commands.Bot, recurse: int = 0) -> str:
 	""" static method? Gets token from token.txt for run() """
 	try:
 		with bot.conn.cursor() as cur:
