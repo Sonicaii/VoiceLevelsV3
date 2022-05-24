@@ -6,7 +6,7 @@ from discord.ext import tasks, commands
 from header import (
 	ferror,
 	get_token,
-	get_    wsxprefix
+	get_prefix
 )
 
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
