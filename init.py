@@ -45,7 +45,7 @@ async def main():
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)
 			
-			await bot.start(get_token())
+			await bot.start(get_token(bot.conn))
 
 
 if __name__ == "__main__":
