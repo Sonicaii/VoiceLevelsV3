@@ -10,13 +10,13 @@ class MyCog(commands.Cog):
 	@app_commands.command(name="command-1")
 	async def my_command(self, interaction: discord.Interaction) -> None:
 		""" /command-1 """
-		await interaction.response.send_message("Hello from command 1!", ephemeral=False)
+		await interaction.response.send_message("Hello from command 1!", ephemeral=True)
 
 	@app_commands.command(name="command-2")
 	# @app_commands.guilds(discord.Object(id=...), ...)
 	async def my_private_command(self, interaction: discord.Interaction) -> None:
 		""" /command-2 """
-		await interaction.response.send_message("Hello from private command!", ephemeral=False)
+		await interaction.response.send_message("Hello from private command!", ephemeral=True)
 
 async def setup(bot: commands.Bot) -> None:
 	await bot.add_cog(MyCog(bot))
