@@ -287,7 +287,7 @@ async def main():
 	# client.conn = psycopg2.connect(client.db_url, sslmode='require')
 	with psycopg2.connect(client.db_url, sslmode='require') as client.conn:
 		async with client:
-			for ext in ["cogs.misc", "cogs.snipe"]:
+			for ext in get.init_extensions:
 				await client.load_extension(ext)
 
 			await client.start(get.token())

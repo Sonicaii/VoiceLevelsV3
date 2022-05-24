@@ -43,7 +43,7 @@ create_token = """
 CREATE TABLE token (
   onerow bool PRIMARY KEY DEFAULT TRUE,
   token text NOT NULL,
-  CONSTRAINT onerow CHECK (onerow_id)
+  CONSTRAINT onerow CHECK (onerow)
 );
 
 --
