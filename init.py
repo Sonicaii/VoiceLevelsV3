@@ -23,16 +23,18 @@ bot = commands.Bot(
 	case_insensitive=True,
 	help_command=None,
 	command_prefix="!", # get_prefix,
-	intents=discord.Intents(**{i:True for i in [
-		"message_content",
-		"voice_states",
-		"members"
-	]}),
+	# intents=discord.Intents(**{i:True for i in [
+	# 	"message_content",
+	# 	"voice_states",
+	# 	"members"
+	# ]}),
+	intents=discord.Intents().all()
 	description="""User levels based on time spent in voice channels."""
 )
 
 @bot.event
 async def on_message(message):
+	print(f"Recieved message: {message.content}")
 	if message.author == bot.user:
 		return
 
