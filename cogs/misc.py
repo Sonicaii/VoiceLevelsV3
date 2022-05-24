@@ -23,11 +23,12 @@ class Misc(commands.Cog):
 
 	@app_commands.command(name="members", description="Gets the number of members in the server")
 	async def members(self, interaction: discord.Interaction):
-		await interaction.response.send_message(f"Number of members in this server: {ctx.guild.member_count}", ephemeral=False)
+		await interaction.response.send_message(f"Number of members in this server: {interaction.guild.member_count}")
 
-	@commands.command(pass_context=True, name="ping", aliases=["latency"])
+	# alias: latency
+	@app_commands.command(name="ping", description="current latency of bot")
 	async def ping(self, ctx):
-		await ctx.send(f"Current latency is {round(bot.latency * 1000)}ms")
+		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
 	@commands.command(pass_context=True, name="lookup", aliases=["lk", "snowflake", "when"])
 	async def lookup(self, ctx):
