@@ -12,6 +12,8 @@ from header import (
 	get_prefix
 )
 
+from preset import printv
+
 print("Creating commands.Bot object")
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
 bot = commands.Bot(
