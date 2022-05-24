@@ -43,7 +43,7 @@ async def on_message(message):
 async def on_ready():
 	print("READY!")
 	cogpr("Main", client)
-	await client.change_presence(activity=discord.Activity(
+	await bot.change_presence(activity=discord.Activity(
 		name="Testing",
 		type=discord.ActivityType.playing
 	))
