@@ -174,7 +174,7 @@ class get:
 	remove_commands = ["help"] # default commands to remove
 
 	c = "cogs.{}".format
-	init_extensions = ["cogs"+i for i in [
+	init_extensions = ["cogs."+i for i in [
 		# "levels",
 		"misc",
 		"help",
