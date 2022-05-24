@@ -49,7 +49,7 @@ async def on_ready():
 
 @bot.event
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
-	await bot.tree.sync(guild=ctx.guild)
+	await bot.tree.sync(guild=guild)
 
 
 @bot.command()
