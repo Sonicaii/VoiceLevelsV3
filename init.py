@@ -53,7 +53,7 @@ async def on_guild_join(guild):  # Can be abused and rate limit the bot
 
 
 @bot.command()
-@commands.is_owner()
+# @commands.is_owner()
 async def sync(self, ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
 	"""
 		Usage:
@@ -63,9 +63,9 @@ async def sync(self, ctx: Context, guilds: Greedy[Object], spec: Optional[Litera
 	"""
 	if not guilds:
 		if spec == "~":
-			fmt = await ctx.bot.tree.sync(guild=ctx.guild)
+			fmt = await bot.tree.sync(guild=ctx.guild)
 		else:
-			fmt = await ctx.bot.tree.sync()
+			fmt = await bot.tree.sync()
 
 		await ctx.send(
 			f"Synced {len(fmt)} commands {'globally' if spec is not None else 'to the current guild.'}"
