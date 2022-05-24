@@ -15,7 +15,7 @@ from header import (
 	printv,
 )
 
-from preset import printv, fg
+from preset import printv
 
 print("Creating commands.Bot object")
 # Bot is a wrapper around discord.Client, therefore called bot instead of client

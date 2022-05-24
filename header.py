@@ -1,6 +1,81 @@
 """ Voice Levels header"""
 from psycopg2.extensions import connection
 
+# colours.py ------
+letters = ["k", "r", "g", "y", "b", "m", "c", "w", "K", "R", "G", "Y", "B", "M", "C", "W"]
+class fg:
+	"""
+		Console foreground colouriser
+		Usage:
+			fg.color("string")
+		k = black
+		r = red
+		g = green
+		y = yellow
+		b = blue
+		m = magenta
+		c = cyan
+		w = white
+
+			fg.d["colour"]("string")
+
+
+		capital = bold (not working)
+	"""
+	d = {}
+	for num, letter in enumerate(letters[:8]):
+		exec(letter+"= '\033["+str(num+30)+"m{}\033[0m'.format")
+		d[letter] = "\033[{}m{}\033[0m".format(num+30, "{}").format
+	for num, letter in enumerate(letters[8:]):
+		exec(letter+"= '\033["+str(num+30)+"m{}\033[0m'.format")
+		d[letter] = "\033[{}m;1m{}\033[0m".format(num+38, "{}").format
+
+class bg:
+	"""
+	Console background colouriser
+		Usage:
+			bg.color("string")
+		k = black
+		r = red
+		g = green
+		y = yellow
+		b = blue
+		m = magenta
+		c = cyan
+		w = white
+
+			bg.d["colour"]("string")
+
+
+		capital = bold (not working)
+	"""
+	d = {}
+	for num, letter in enumerate(letters):
+		exec(letter+"= '\033["+str(num+40)+"m{}\033[0m'.format")
+		d[letter] = "\033[{}m{}\033[0m".format(num+40, "{}").format
+
+"""
+	Console text formatter
+		Usage:
+			fm[int]("string")
+		0 = reset
+		1 = bold
+		2 = darken
+		3 = italic
+		4 = underlined
+		5 = blinking
+		6 = un-inverse colour
+		7 = inverse colour
+		8 = hide
+		9 = crossthrough
+"""
+fm = {
+	**{i : "\033[{}m{{}}\033[0m".format(i).format for i in range(10)},
+	"c":"\033[0m{}\033[0m".format,
+	"u":"\033[4m{}\033[0m".format,
+	"i":"\033[8m{}\033[0m".format
+}
+# -----------------
 
 def printr(*args):
 	""" prints and returns """
