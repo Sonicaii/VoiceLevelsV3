@@ -4,8 +4,10 @@ import os
 import psycopg2
 import time, datetime
 import discord
-from discord import app_commands
+from discord import app_commands, Object
 from discord.ext import tasks, commands
+from discord.ext.commands import Context, Greedy
+from typing import Optional, Literal
 
 from header import (
 	ferror,
@@ -43,6 +45,11 @@ async def on_ready():
 		name="Testing",
 		type=discord.ActivityType.playing
 	))
+
+
+@bot.event
+async def on_guild_join(guild):  # Can be abused and rate limit the bot
+	await ctx.bot.tree.sync(guild=guild.id)
 
 
 @bot.command()
