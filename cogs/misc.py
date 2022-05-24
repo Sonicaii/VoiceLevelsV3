@@ -21,9 +21,9 @@ class Misc(commands.Cog):
 	# async def echo(self, ctx):
 	# 	await ctx.send("echo")
 
-	@app_commands.command(name="members", description)
-	async def members(self, ctx):
-		await ctx.send(f"Number of members in this server: {ctx.guild.member_count}")
+	@app_commands.command(name="members", description="Gets the number of members in the server")
+	async def members(self, interaction: discord.Interaction):
+		await interaction.response.send_message(f"Number of members in this server: {ctx.guild.member_count}", ephemeral=False)
 
 	@commands.command(pass_context=True, name="ping", aliases=["latency"])
 	async def ping(self, ctx):
