@@ -1,5 +1,5 @@
 """ Voice Levels header"""
-import discord.commands
+from discord.ext import commands
 
 def printr(*args):
 	""" prints and returns """
