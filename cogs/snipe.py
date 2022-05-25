@@ -15,6 +15,20 @@ debug = False
 del_ammo_out, used_comb = [], []
 snipe_target = {}
 
+class View(discord.ui.View):
+	def __init__(self, *args, **kwargs):
+		super().__init__(*args, **kwargs)
+
+	@discord.ui.select(
+		custom_id="Some identifier",
+		placeholder="Placeholder",
+		min_values=1, max_values=1,
+		options=[discord.SelectOption(label="Bin", emoji="\U0001f5d1️")]
+	)
+	async def callback(self, select: discord.ui.select, interaction: discord.Interaction):
+		await interaction.response.send_message('Hello', ephemeral=True)
+
+
 class msg():
 	""" contains message attributes """
 	def __init__(self, **kwargs):
@@ -242,10 +256,12 @@ class Snipe(commands.Cog):
 				send,
 				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
 				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING
+				view=View()
 			)
 			# nmc_id = new_msg.channel.id
 			org_msg.id_set(new_msg.channel.id, new_msg.id, msg.id)
 			
+			# TODO: BUTTONS!
 			try:
 				await new_msg.add_reaction('\U0001f5d1️')
 			except Exception as e:

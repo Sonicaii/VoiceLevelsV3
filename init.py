@@ -68,6 +68,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 			`!sync ~` -> sync to current guild only.
 			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
 	"""
+	await ctx.send("Sycning global...")
 	await ctx.bot.tree.sync()  # this bot only has global commands so this must be run
 
 
