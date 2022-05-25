@@ -58,6 +58,9 @@ async def on_ready():
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
 	await bot.tree.sync(guild=guild)
 
+@app_commands.command(name="ping", description="current latency of bot")
+async def ping(self, interaction: discord.Interaction):
+	await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
 @bot.command()
 # @commands.is_owner()
@@ -91,7 +94,6 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 
 	await ctx.send(f"Synced the tree to {fmt}/{len(guilds)} guilds.")
 '''
-
 @bot.command()
 async def sync(ctx: Context, guilds: Greedy[int], *, spec: Optional[Literal["~"]] = None) -> None:
 	"""
@@ -135,7 +137,7 @@ async def main():
 		async with bot:
 			for ext in ["cogs."+i for i in [
 					# "levels",
-					"misc",
+					# "misc",
 					# "help",
 					# "snipe",
 				]]:
