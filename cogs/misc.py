@@ -22,8 +22,8 @@ class Misc(commands.Cog):
 	# alias: latency
 	@app_commands.command(name="ping", description="current latency of bot")
 	async def ping(self, interaction: discord.Interaction):
-		await interaction.pong()
-		# await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
+		# await interaction.pong()  # can't use in this context
+		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
 	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int], fmt) -> None:
 		try:

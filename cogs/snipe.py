@@ -23,7 +23,7 @@ class View(discord.ui.View):
 		emoji="\U0001f5d1️",
 		# style=discord.ButtonStyle.secondary
 	)
-	async def callback(self, select: discord.ui.button, interaction: discord.Interaction):
+	async def callback(self, interaction: discord.Interaction, select: discord.ui.button):
 		await interaction.response.send_message('Hello', ephemeral=True)
 
 
