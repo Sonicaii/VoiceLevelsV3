@@ -5,6 +5,7 @@ import psycopg2
 import time, datetime
 import discord
 from discord import app_commands, Object
+from discord.app_commands import Choice
 from discord.ext import tasks, commands
 from discord.ext.commands import Context, Greedy
 from typing import List, Literal, Optional, Union

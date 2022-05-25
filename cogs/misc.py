@@ -1,6 +1,7 @@
 # recycled
 
 # import asyncio
+# bad practice but ... fix later
 from __main__ import *
 from discord.utils import snowflake_time
 
@@ -16,11 +17,7 @@ class Misc(commands.Cog):
 
 	async def cog_unload(self):
 		pass
-
-	# @commands.command(pass_context=True, name="echo", aliases=["e"])
-	# async def echo(self, ctx):
-	# 	await ctx.send("echo")
-
+		
 	@app_commands.command(name="members", description="Gets the number of members in the server")
 	async def members(self, interaction: discord.Interaction):
 		await interaction.response.send_message(f"Number of members in this server: {interaction.guild.member_count}")
@@ -49,9 +46,9 @@ class Misc(commands.Cog):
 	async def user(self, interaction: discord.Interaction, User: discord.User):
 		await _process_id(interaction, user, f"Account creation of {User.name} with the ID of `{User.id}`\ntranslates to `{{snowflake_time}}` UTC")
 
-	@app_commands.command(name="channel", description="Get when channel was made")
-	async def channel(self, interaction: discord.Interaction, Channel: discord.AppCommandOptionType.channel):
-		await _process_id(interaction, user, f"{Channel.name} with the ID of `{Channel.id}`\nwas created at `{{snowflake_time}}` UTC")
+	# @app_commands.command(name="channel", description="Get when channel was made")
+	# async def channel(self, interaction: discord.Interaction, Channel: Choice[discord.TextChannel]):
+	# 	await _process_id(interaction, user, f"{Channel.name} with the ID of `{Channel.id}`\nwas created at `{{snowflake_time}}` UTC")
 
 	@commands.command(pass_context=True, name="stop")
 	@commands.is_owner()
