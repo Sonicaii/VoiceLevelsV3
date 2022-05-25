@@ -79,12 +79,16 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 			`!sync ~` -> sync to current guild only.
 			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
 	"""
+	print(type(discord.Object(id=ctx.guild.id)))
 	try:
 		print(f"Syncing from {ctx.guild.id}", dir(guilds[0]))
 		for d in dir(guilds[0]):
-			exec(f"print(guilds[0].{d})")
+			exec(f"print({d}, guilds[0].{d})")
 	except IndexError:
-		pass
+		print("IndexError")
+		for d in dir(discord.Object(id=ctx.guild.id)):
+			exec(f"print({d}, discord.Object(id=ctx.guild.id).{d})") 
+
 	if not guilds:
 		if spec == "~":
 			fmt = await ctx.bot.tree.sync(guild=discord.Object(id=ctx.guild.id))
