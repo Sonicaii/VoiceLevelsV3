@@ -7,7 +7,7 @@ import discord
 from discord import app_commands, Object
 from discord.ext import tasks, commands
 from discord.ext.commands import Context, Greedy
-from typing import Optional, Literal
+from typing import Optional, Literal, Union
 
 from header import (
 	ferror,

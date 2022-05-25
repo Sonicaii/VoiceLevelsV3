@@ -31,8 +31,8 @@ class Misc(commands.Cog):
 		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
 	@app_commands.command(name="when", description="Translates any Discord element's ID to the time when it was created")
-	async def when(self, interaction: discord.Interaction, id: Greedy[Object]):
-		return await interaction.response.send_message(id)
+	async def when(self, interaction: discord.Interaction, thing: Union[discord.User, int]):
+		return await interaction.response.send_message(f"{thing}, {type(thing)}")
 		name = ""
 		if len(ctx.message.mentions) != 0:
 			id_ = ctx.message.mentions[0].id
