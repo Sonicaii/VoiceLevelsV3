@@ -59,7 +59,7 @@ async def on_guild_join(guild):  # Can be abused and rate limit the bot
 	await bot.tree.sync(guild=guild)
 
 @app_commands.command(name="ping", description="current latency of bot")
-async def ping(self, interaction: discord.Interaction):
+async def ping(interaction: discord.Interaction):
 	await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
 @bot.command()
