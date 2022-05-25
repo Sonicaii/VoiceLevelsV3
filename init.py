@@ -58,9 +58,14 @@ async def on_ready():
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
 	await bot.tree.sync(guild=guild)
 
-@app_commands.command(name="ping", description="current latency of bot")
-async def ping(interaction: discord.Interaction):
-	await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
+class Ping(commands.Cog):
+
+	# def __init__(self, bot: commands.Bot) -> None: self.bot = bot  # Doesn't even need it
+
+	@app_commands.command(name="ping", description="current latency of bot")
+	async def ping(self, interaction: discord.Interaction):
+		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
+
 
 @bot.command()
 # @commands.is_owner()
@@ -143,7 +148,7 @@ async def main():
 				]]:
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)
-			
+			await bot.add_cog(Ping())
 			await bot.start(get_token(bot.conn))
 
 
