@@ -79,21 +79,21 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 			`!sync ~` -> sync to current guild only.
 			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
 	"""
-	if guilds: print(discord.Object(id=ctx.guild.id) == guilds[0])
-	try:
-		print(f"Syncing from {ctx.guild.id}", dir(guilds[0]))
-		for d in dir(guilds[0]):
-			try:
-				exec(f"print(str({d}), guilds[0].{d})")
-			except Exception:
-				print(d)
-	except IndexError:
-		print("IndexError")
-		for d in dir(discord.Object(id=ctx.guild.id)):
-			try:
-				exec(f"print(str({d}), discord.Object(id=ctx.guild.id).{d})")
-			except Exception:
-				print(d)
+	# if guilds: print(discord.Object(id=ctx.guild.id) == guilds[0])
+	# try:
+	# 	print(f"Syncing from {ctx.guild.id}", dir(guilds[0]))
+	# 	for d in dir(guilds[0]):
+	# 		try:
+	# 			exec(f"print(str({d}), guilds[0].{d})")
+	# 		except Exception:
+	# 			print(d)
+	# except IndexError:
+	# 	print("IndexError")
+	# 	for d in dir(discord.Object(id=ctx.guild.id)):
+	# 		try:
+	# 			exec(f"print(str({d}), discord.Object(id=ctx.guild.id).{d})")
+	# 		except Exception:
+	# 			print(d)
 
 	if not guilds:
 		if spec == "~":
