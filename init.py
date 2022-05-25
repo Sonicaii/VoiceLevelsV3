@@ -137,7 +137,7 @@ async def main():
 					# "levels",
 					"misc",
 					# "help",
-					"snipe",
+					# "snipe",
 				]]:
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)
