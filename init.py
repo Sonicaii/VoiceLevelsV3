@@ -102,9 +102,9 @@ async def sync(ctx: Context, guilds: Greedy[int], *, spec: Optional[Literal["~"]
 	"""
 	if not guilds and spec is not None:
 		if spec == "~":
-			fmt = await ctx.bot.tree.sync(guild=ctx.guild)
+			fmt = await bot.tree.sync(guild=ctx.guild)
 		else:
-			fmt = await ctx.bot.tree.sync()
+			fmt = await bot.tree.sync()
 
 		await ctx.send(
 			f"Synced {len(fmt)} {'globally' if spec is None else 'to the current guild.'}"

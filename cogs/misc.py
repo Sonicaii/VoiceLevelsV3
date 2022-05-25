@@ -51,7 +51,12 @@ class Misc(commands.Cog):
 	@commands.command(pass_context=True, name="stop")
 	@commands.is_owner()
 	async def stop(self, ctx):
-		ctx.channel.send("Killed process")
+		await ctx.channel.send("Killed process (might auto-reload, run another stop after)")
+		exit()
+
+	@app_commands.command(name="stop", description="")
+	async def stop(self, interaction: discord.Interaction):
+		await interaction.response.send_message("Killed process (might auto-reload, run another stop after)", ephemeral=True)
 		exit()
 
 async def setup(bot):
