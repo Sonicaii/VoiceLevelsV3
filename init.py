@@ -79,7 +79,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 			`!sync ~` -> sync to current guild only.
 			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
 	"""
-	print(discord.Object(id=ctx.guild.id) == guilds[0])
+	if guilds: print(discord.Object(id=ctx.guild.id) == guilds[0])
 	try:
 		print(f"Syncing from {ctx.guild.id}", dir(guilds[0]))
 		for d in dir(guilds[0]):
