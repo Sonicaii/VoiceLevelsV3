@@ -93,7 +93,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 '''
 
 @bot.command()
-async def sync(self, ctx: Context, guilds: Greedy[int], *, spec: Optional[Literal["~"]] = None) -> None:
+async def sync(ctx: Context, guilds: Greedy[int], *, spec: Optional[Literal["~"]] = None) -> None:
 	"""
 		Usage:
 			`!sync` -> globally sync all commands (WARNING)
