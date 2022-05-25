@@ -43,7 +43,7 @@ class Misc(commands.Cog):
 		await _process_id(interaction, discord_id, f"`{discord_id}` is equivalent to `{{snowflake_time}}` UTC")
 
 	@app_commands.command(name="user", description="Get when user account was made")
-	async def user(self, interaction: discord.Interaction, User: discord.user):
+	async def user(self, interaction: discord.Interaction, user: discord.User):
 		await _process_id(interaction, user, f"Account creation of {user.name} with the ID of `{user.id}`\ntranslates to `{{snowflake_time}}` UTC")
 
 	# @app_commands.command(name="channel", description="Get when channel was made")
