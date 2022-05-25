@@ -58,7 +58,7 @@ async def on_ready():
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
 	await bot.tree.sync(guild=guild)
 
-'''
+
 @bot.command()
 # @commands.is_owner()
 async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
@@ -122,7 +122,7 @@ async def sync(ctx: Context, guilds: Greedy[int], *, spec: Optional[Literal["~"]
 			fmt += 1
 
 	await ctx.send(f"Synced the tree to {fmt}.")
-		
+		'''
 async def main():
 	print("Connecting to database...")
 
@@ -137,7 +137,7 @@ async def main():
 					# "levels",
 					"misc",
 					# "help",
-					# "snipe",
+					"snipe",
 				]]:
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)

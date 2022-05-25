@@ -209,18 +209,17 @@ class Snipe(commands.Cog):
 					l_temp = [message.id]
 				self.del_id[message.id] = l_temp
 
-	# @commands.guild_only()
-	@commands.command(
-		pass_context=True, name='snipe', aliases=['no'+'scope', 'quick' + 'scope']) # '360 no'+'scope']) Does not work
-	async def snipe(self, ctx):
+
+	@app_commands.command(name="snipe")
+	async def snipe(self, interaction: discord.Interaction, distance: Optional[int]):
 		pre = ".."
 		# if not ctx.message.content.lower()[:len('..snipe')] == '..snipe':
 		#     return
 
-		m_c_id = ctx.channel.id
+		m_c_id = interaction.channel.id
 
-		if len(ctx.message.content.split()[1:]) == 1 and ctx.message.content.split()[1].isnumeric():
-			dist = int(ctx.message.content.split()[1])
+		if distance is not None:
+			dist = distance
 		else:
 			dist = ""
 
@@ -235,15 +234,15 @@ class Snipe(commands.Cog):
 			snipe_range = -1
 
 		if snipe_target.get(m_c_id) is None:
-			return await ctx.send("Couldn't find target to snipe in this channel.")
+			return await interaction.response.send_message("Couldn't find target to snipe in this channel.", ephemeral=True)
 			# Nothing in list currently
 		else:
 			if snipe_target[m_c_id][snipe_range].is_denied(ctx.author.id):
-				return await ctx.send("You are unable to snipe this message")
+				return await interaction.response.send_message("You are unable to snipe this message", ephemeral=True)
 
 			if dist:
 				if dist > len(snipe_target[m_c_id]):
-					return await ctx.send("Couldn't find target to snipe. No targets that far out.")
+					return await interaction.response.send_message("Couldn't find target to snipe. No targets that far out.", ephemeral=True)
 				else:
 					msg = snipe_target[m_c_id][-dist]
 					range_msg = f"from {dist}00m"
@@ -259,14 +258,14 @@ class Snipe(commands.Cog):
 					async with session.get(msg.attachments[0]) as resp:
 						if resp.status != 200:
 							send += msg.attachments[0]
-							await ctx.send('Could not download attachment file', delete_after=5)
+							await interaction.response.send_message('Could not download attachment file', ephemeral=True)
 						file = BytesIO(await resp.read())
 			else:
 				for url in msg.attachments:
 					send += url + "\n"
 
 			global org_msg
-			new_msg = await ctx.send(
+			new_msg = await interaction.response.send_message(
 				send,
 				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
 				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else None
