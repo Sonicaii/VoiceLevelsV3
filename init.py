@@ -80,7 +80,9 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
 	"""
 	try:
-		print(f"Syncing from {ctx.guild.id}", guilds[0].id)
+		print(f"Syncing from {ctx.guild.id}", dir(guilds[0]))
+		for d in dir(guilds[0]):
+			exec(f"print(guilds[0].{d})")
 	except IndexError:
 		pass
 	if not guilds:
