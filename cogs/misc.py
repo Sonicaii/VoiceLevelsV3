@@ -27,11 +27,12 @@ class Misc(commands.Cog):
 
 	# alias: latency
 	@app_commands.command(name="ping", description="current latency of bot")
-	async def ping(self, ctx):
+	async def ping(self, interaction: discord.Interaction):
 		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
-	@commands.command(pass_context=True, name="lookup", aliases=["lk", "snowflake", "when"])
-	async def lookup(self, ctx):
+	@app_commands.command(name="when", description="Translates any Discord element's ID to the time when it was created")
+	async def when(self, interaction: discord.Interaction, id: Greedy[Object]):
+		return await interaction.response.send_message(id)
 		name = ""
 		if len(ctx.message.mentions) != 0:
 			id_ = ctx.message.mentions[0].id

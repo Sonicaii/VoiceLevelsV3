@@ -37,6 +37,12 @@ bot = commands.Bot(
 	description="""User levels based on time spent in voice channels."""
 )
 
+# @bot.event
+# async def on_message(message):
+# 	# do some extra stuff here
+
+# 	await bot.process_commands(message)
+
 @bot.event
 async def on_ready():
 	print("READY!")
