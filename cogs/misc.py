@@ -27,15 +27,23 @@ class Misc(commands.Cog):
 	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int], fmt) -> None:
 		try:
 			return await interaction.response.send_message(fmt.format(snowflake_time=\
-				snowflake_time(
-					int(thing.lstrip("<@").lstrip("!").rstrip(">") if type(thing) == str else thing) \
-					if type(thing) == int else \
-					thing.id
+				discord.utils.format_dt(
+						snowflake_time(
+						int(thing.lstrip("<@").lstrip("!").rstrip(">") if type(thing) == str else thing) \
+						if type(thing) == int else \
+						thing.id
+					)
 				)))
 		except ValueError:
 			return await interaction.response.send_message(f"Invalid input {thing}")
 
 	@app_commands.command(name="id", description="Discord ID to time")
+	@app_commands.describe(
+		discord_id="The number from \"Copy ID\" in the discord context menu (right click) after enabling Settings>App Settings>Developer Mode"
+	)
+	@app_commands.rename(
+		discord_id="Discord ID"
+	)
 	async def id(self, interaction: discord.Interaction, discord_id: int):
 		await self._process_id(interaction, discord_id, f"`{discord_id}` is equivalent to `{{snowflake_time}}` UTC")
 

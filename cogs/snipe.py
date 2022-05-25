@@ -225,6 +225,7 @@ class Snipe(commands.Cog):
 
 			send = f"""<@{interaction.user.id}> hit {msg.author.name}, {range_msg}, who said\n{msg.content}\n"""
 			file = None
+			print(msg.attachments)
 			if len(msg.attachments) == 1:
 				async with ClientSession() as session:
 					async with session.get(msg.attachments[0]) as resp:
@@ -240,7 +241,7 @@ class Snipe(commands.Cog):
 			new_msg = await interaction.response.send_message(
 				send,
 				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
-				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else None
+				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING
 			)
 			# nmc_id = new_msg.channel.id
 			org_msg.id_set(new_msg.channel.id, new_msg.id, msg.id)
