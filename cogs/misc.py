@@ -1,12 +1,9 @@
-# recycled
-
 # import asyncio
 # bad practice but ... fix later
 from __main__ import *
 from discord.utils import snowflake_time
 
 class Misc(commands.Cog):
-	global stop
 
 	def __init__(self, bot):
 		self.bot = bot
@@ -46,16 +43,18 @@ class Misc(commands.Cog):
 	async def user(self, interaction: discord.Interaction, user: discord.User):
 		await self._process_id(interaction, user, f"Account creation of {user.name} with the ID of `{user.id}`\ntranslates to `{{snowflake_time}}` UTC")
 
-	# @app_commands.command(name="channel", description="Get when channel was made")
-	# async def channel(self, interaction: discord.Interaction, Channel: Choice[discord.TextChannel]):
-	# 	await _process_id(interaction, user, f"{Channel.name} with the ID of `{Channel.id}`\nwas created at `{{snowflake_time}}` UTC")
+	@app_commands.command(name="channel", description="Get when channel was made")
+	async def channel(self, interaction: discord.Interaction, Channel: Choice[discord.TextChannel]):
+		await _process_id(interaction, user, f"{Channel.name} with the ID of `{Channel.id}`\nwas created at `{{snowflake_time}}` UTC")
 
+	# ???
 	@commands.command(pass_context=True, name="stop")
 	@commands.is_owner()
 	async def stop(self, ctx):
 		ctx.channel.send("Killed process")
 		exit()
 
+	# REFERENCE
 	@app_commands.command(name="command-1")
 	async def my_command(self, interaction: discord.Interaction) -> None:
 		""" /command-1 """
