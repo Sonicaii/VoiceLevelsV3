@@ -45,7 +45,7 @@ class Misc(commands.Cog):
 
 	@app_commands.command(name="channel", description="Get when channel was made")
 	async def channel(self, interaction: discord.Interaction, channel: discord.TextChannel):
-		await self._process_id(interaction, user, f"{channel.name} with the ID of `{channel.id}`\nwas created at `{{snowflake_time}}` UTC")
+		await self._process_id(interaction, channel, f"{channel.name} with the ID of `{channel.id}`\nwas created at `{{snowflake_time}}` UTC")
 
 	# ???
 	@commands.command(pass_context=True, name="stop")
