@@ -84,7 +84,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 			fmt = await ctx.bot.tree.sync()
 
 		await ctx.send(
-			f"Synced {len(fmt)} commands {'globally' if spec is not None else 'to the current guild.'}" +
+			f"Synced {len(fmt)} commands {'globally' if spec is not None else 'to the current guild.'}\n" +
 			"\n".join([i.name for i in fmt])
 		)
 		return
