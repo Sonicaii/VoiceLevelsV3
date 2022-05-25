@@ -209,7 +209,7 @@ class Snipe(commands.Cog):
 			return await interaction.response.send_message("Couldn't find target to snipe in this channel.", ephemeral=True)
 			# Nothing in list currently
 		else:
-			if snipe_target[m_c_id][snipe_range].is_denied(ctx.author.id):
+			if snipe_target[m_c_id][snipe_range].is_denied(interaction.user.id):
 				return await interaction.response.send_message("You are unable to snipe this message", ephemeral=True)
 
 			if dist:
@@ -223,7 +223,7 @@ class Snipe(commands.Cog):
 				msg = snipe_target[m_c_id][-1]
 				range_msg = "the closest target"
 
-			send = f"""<@{ctx.author.id}> hit {msg.author.name}, {range_msg}, who said\n{msg.content}\n"""
+			send = f"""<@{interaction.user.id}> hit {msg.author.name}, {range_msg}, who said\n{msg.content}\n"""
 			file = None
 			if len(msg.attachments) == 1:
 				async with ClientSession() as session:
