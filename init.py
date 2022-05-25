@@ -46,7 +46,6 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
-	print("READY!")
 	cogpr("Main", bot)
 	await bot.change_presence(activity=discord.Activity(
 		name="Testing",
@@ -66,6 +65,10 @@ class Ping(commands.Cog):
 	async def ping(self, interaction: discord.Interaction):
 		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
+	@app_commands.command(name="hi", description="respond")
+	async def hi(self, interaction: discord. Interaction):
+		await interaction.response.send_message(f"Hello")
+
 
 @bot.command()
 # @commands.is_owner()
@@ -79,12 +82,12 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 	print(f"Syncing for {ctx.guild.id}")
 	if not guilds:
 		if spec == "~":
-			fmt = await ctx.bot.tree.sync(guild=ctx.guild)
+			fmt = await ctx.bot.tree.sync(guild=ctx.guild.id)
 		else:
 			fmt = await ctx.bot.tree.sync()
 
 		await ctx.send(
-			f"Synced {len(fmt)} commands {'globally' if spec is not None else 'to the current guild.'}\n" +
+			f"Synced {len(fmt)} commands {'to the current guild.' if spec == "~" else 'globally'}\n" +
 			"\n".join([i.name for i in fmt])
 		)
 		return
@@ -92,7 +95,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 	fmt = 0
 	for guild in guilds:
 		try:
-			await bot.tree.sync(guild=guild)
+			await ctx.bot.tree.sync(guild=guild)
 		except discord.HTTPException:
 			pass
 		else:
