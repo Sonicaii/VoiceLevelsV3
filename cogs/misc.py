@@ -54,7 +54,7 @@ class Misc(commands.Cog):
 		await ctx.channel.send("Killed process (might auto-reload, run another stop after)")
 		exit()
 
-	@app_commands.command(name="stop", description="")
+	@app_commands.command(name="stop", description="STOP")
 	async def stop(self, interaction: discord.Interaction):
 		await interaction.response.send_message("Killed process (might auto-reload, run another stop after)", ephemeral=True)
 		exit()
