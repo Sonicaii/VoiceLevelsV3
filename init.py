@@ -62,8 +62,8 @@ class Ping(commands.Cog):
 
 	# def __init__(self, bot: commands.Bot) -> None: self.bot = bot  # Doesn't even need it
 
-	@app_commands.command(name="ping", description="current latency of bot")
-	async def ping(self, interaction: discord.Interaction):
+	@app_commands.command(name="pong", description="current latency of bot")
+	async def pong(self, interaction: discord.Interaction):
 		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
 
@@ -79,9 +79,9 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 	print(f"Syncing for {ctx.guild.id}")
 	if not guilds:
 		if spec == "~":
-			fmt = await bot.tree.sync(guild=ctx.guild)
+			fmt = await ctx.bot.tree.sync(guild=ctx.guild)
 		else:
-			fmt = await bot.tree.sync()
+			fmt = await ctx.bot.tree.sync()
 
 		await ctx.send(
 			f"Synced {len(fmt)} commands {'globally' if spec is not None else 'to the current guild.'}"
