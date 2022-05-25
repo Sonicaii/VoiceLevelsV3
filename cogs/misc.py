@@ -54,12 +54,5 @@ class Misc(commands.Cog):
 		ctx.channel.send("Killed process")
 		exit()
 
-	# REFERENCE
-	@app_commands.command(name="command-1")
-	async def my_command(self, interaction: discord.Interaction) -> None:
-		""" /command-1 """
-		await interaction.response.send_message("Hello from command 1!", ephemeral=True)
-
-
 async def setup(bot):
 	await bot.add_cog(Misc(bot))

@@ -58,7 +58,7 @@ async def on_ready():
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
 	await bot.tree.sync(guild=guild)
 
-
+'''
 @bot.command()
 # @commands.is_owner()
 async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
@@ -90,8 +90,39 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 			fmt += 1
 
 	await ctx.send(f"Synced the tree to {fmt}/{len(guilds)} guilds.")
+'''
 
+@bot.command()
+async def sync(self, ctx: Context, guilds: Greedy[int], *, spec: Optional[Literal["~"]] = None) -> None:
+	"""
+		Usage:
+			`!sync` -> globally sync all commands (WARNING)
+			`!sync ~` -> sync to current guild only.
+			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
+	"""
+	if not guilds and spec is not None:
+		if spec == "~":
+			fmt = await ctx.bot.tree.sync(guild=ctx.guild)
+		else:
+			fmt = await ctx.bot.tree.sync()
 
+		await ctx.send(
+			f"Synced {len(fmt)} {'globally' if spec is None else 'to the current guild.'}"
+		)
+		return
+
+	assert guilds is not None
+	fmt = 0
+	for guild in guilds:
+		try:
+			await ctx.bot.tree.sync(guild=discord.Object(id=guild))
+		except discord.HTTPException:
+			pass
+		else:
+			fmt += 1
+
+	await ctx.send(f"Synced the tree to {fmt}.")
+		
 async def main():
 	print("Connecting to database...")
 
