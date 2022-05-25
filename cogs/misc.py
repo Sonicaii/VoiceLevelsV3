@@ -30,26 +30,28 @@ class Misc(commands.Cog):
 	async def ping(self, interaction: discord.Interaction):
 		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
-	@app_commands.command(name="when", description="Translates any Discord element's ID to the time when it was created")
-	async def when(self, interaction: discord.Interaction, thing: discord.User):
-		return await interaction.response.send_message(f"{thing}, {type(thing)}")
-		name = ""
-		if len(ctx.message.mentions) != 0:
-			id_ = ctx.message.mentions[0].id
-			msg = f"{ctx.message.mentions[0].name}'s ID,"
-		else:
-			id_ = ctx.message.content.split()[1] \
-			.lstrip("<@") \
-			.lstrip("!") \
-			.rstrip(">")
-			msg = ""
-
+	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int], fmt) -> None:
 		try:
-			utc = snowflake_time(int(id_))
+			return await interaction.response.send_message(fmt.format(snowflake_time=\
+				snowflake_time(
+					int(thing.lstrip("<@").lstrip("!").rstrip(">") if type(thing) == str else thing) \
+					if type(thing) == int else \
+					thing.id
+				)))
 		except ValueError:
-			return await ctx.send(f"Invalid input")
-		else:
-			return await ctx.send(f"{msg} ``{id_}`` translates to ``{utc}`` UTC")
+			return await interaction.response.send_message(f"Invalid input {thing}")
+
+	@app_commands.command(name="id", description="Discord ID to time")
+	async def id(self, interaction: discord.Interaction, Discord_id: int):
+		await _process_id(interaction, Discord_id, f"`{Discord_id}` is equivalent to `{{snowflake_time}}` UTC")
+
+	@app_commands.command(name="user", description="Get when user account was made")
+	async def user(self, interaction: discord.Interaction, User: discord.User):
+		await _process_id(interaction, user, f"Account creation of {User.name} with the ID of `{User.id}`\ntranslates to `{{snowflake_time}}` UTC")
+
+	@app_commands.command(name="channel", description="Get when user account was made")
+	async def channel(self, interaction: discord.Interaction, Channel: discord.Guild.Channel):
+		await _process_id(interaction, user, f"{Channel.name} with the ID of `{Channel.id}`\nwas created at `{{snowflake_time}}` UTC")
 
 	@commands.command(pass_context=True, name="stop")
 	@commands.is_owner()

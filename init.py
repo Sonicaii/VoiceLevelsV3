@@ -7,7 +7,7 @@ import discord
 from discord import app_commands, Object
 from discord.ext import tasks, commands
 from discord.ext.commands import Context, Greedy
-from typing import Optional, Literal, Union
+from typing import List, Literal, Optional, Union
 
 from header import (
 	ferror,
@@ -64,7 +64,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 	"""
 		Usage:
 			`!sync` -> globally sync all commands (WARNING)
-			`!sync ~! -> sync to current guild only.
+			`!sync ~` -> sync to current guild only.
 			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
 	"""
 	print(f"Syncing for {ctx.guild.id}")
