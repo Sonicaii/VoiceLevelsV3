@@ -183,36 +183,8 @@ class Snipe(commands.Cog):
 			snipe_target[m_c_id] = [msg]
 
 
-	@commands.Cog.listener()
-	async def on_message(self, message):
-		global org_msg
-
-		pre = get.prefix_filter(message)
-		pre = ".."
-
-		if message.author != bot.user:  # self check
-			return
-
-		if len(message.content) > 10 and len(message.mentions) != 0:
-			if message.content[len(str(message.mentions[0].id)) + 4:len(str(message.mentions[0].id)) + 7] == 'hit':
-				try:
-					await message.add_reaction('\U0001f5d1️')
-				except Exception as e:
-					await message.channel.send("Unable to set up the snipe bin.", delete_after=5)
-					print(ferror(e))
-					await message.delete()
-
-				if message.mentions[0].id in self.del_id:
-					l_temp = self.del_id[message.mentions[0].id]
-					l_temp.append(message.id)
-				else:
-					l_temp = [message.id]
-				self.del_id[message.id] = l_temp
-
-
 	@app_commands.command(name="snipe")
 	async def snipe(self, interaction: discord.Interaction, distance: Optional[int]):
-		pre = ".."
 		# if not ctx.message.content.lower()[:len('..snipe')] == '..snipe':
 		#     return
 
@@ -272,6 +244,20 @@ class Snipe(commands.Cog):
 			)
 			# nmc_id = new_msg.channel.id
 			org_msg.id_set(new_msg.channel.id, new_msg.id, msg.id)
+			
+			try:
+				await new_msg.add_reaction('\U0001f5d1️')
+			except Exception as e:
+				await new_msg.channel.send("Unable to set up the snipe bin.", delete_after=5)
+				print(ferror(e))
+				await new_msg.delete()
+
+			if new_msg.mentions[0].id in self.del_id:
+				l_temp = self.del_id[new_msg.mentions[0].id]
+				l_temp.append(new_msg.id)
+			else:
+				l_temp = [new_msg.id]
+			self.del_id[new_msg.id] = l_temp
 			
 			return new_msg
 
