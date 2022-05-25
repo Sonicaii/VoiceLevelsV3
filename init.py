@@ -35,7 +35,7 @@ bot = commands.Bot(
 		"guilds",
 		"messages",
 	]}),
-	description="""User levels based on time spent in voice channels."""
+	description="""Yeah"""
 )
 
 # @bot.event
@@ -85,6 +85,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 
 		await ctx.send(
 			f"Synced {len(fmt)} commands {'globally' if spec is not None else 'to the current guild.'}"
+			"\n".join([i.name for i in fmt])
 		)
 		return
 
