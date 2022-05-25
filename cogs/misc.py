@@ -42,7 +42,7 @@ class Misc(commands.Cog):
 		discord_id="The number from \"Copy ID\" in the discord context menu (right click) after enabling Settings>App Settings>Developer Mode"
 	)
 	@app_commands.rename(
-		discord_id="Discord ID"
+		discord_id="discord-id"
 	)
 	async def id(self, interaction: discord.Interaction, discord_id: int):
 		await self._process_id(interaction, discord_id, f"`{discord_id}` is equivalent to `{{snowflake_time}}` UTC")
