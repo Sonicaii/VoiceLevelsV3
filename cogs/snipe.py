@@ -255,7 +255,7 @@ class Snipe(commands.Cog):
 			new_msg = await interaction.response.send_message(
 				send,
 				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
-				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING
+				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING,
 				view=View()
 			)
 			# nmc_id = new_msg.channel.id
