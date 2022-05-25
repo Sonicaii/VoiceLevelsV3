@@ -22,7 +22,8 @@ class Misc(commands.Cog):
 	# alias: latency
 	@app_commands.command(name="ping", description="current latency of bot")
 	async def ping(self, interaction: discord.Interaction):
-		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
+		await interaction.pong()
+		# await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
 	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int], fmt) -> None:
 		try:
@@ -45,15 +46,15 @@ class Misc(commands.Cog):
 		discord_id="discord-id"
 	)
 	async def id(self, interaction: discord.Interaction, discord_id: str):
-		await self._process_id(interaction, discord_id, f"`{discord_id}` is equivalent to `{{snowflake_time}}` UTC")
+		await self._process_id(interaction, discord_id, f"`{discord_id}` is equivalent to {{snowflake_time}}")
 
 	@app_commands.command(name="user", description="Get when user account was made")
 	async def user(self, interaction: discord.Interaction, user: discord.User):
-		await self._process_id(interaction, user, f"Account creation of {user.name} with the ID of `{user.id}`\ntranslates to `{{snowflake_time}}` UTC")
+		await self._process_id(interaction, user, f"Account creation of {user.name} with the ID of `{user.id}`\ntranslates to {{snowflake_time}}")
 
 	@app_commands.command(name="channel", description="Get when channel was made")
 	async def channel(self, interaction: discord.Interaction, channel: Union[app_commands.AppCommandChannel, discord.Thread]):
-		await self._process_id(interaction, channel, f"{channel.name} with the ID of `{channel.id}`\nwas created at `{{snowflake_time}}` UTC")
+		await self._process_id(interaction, channel, f"{channel.name} with the ID of `{channel.id}`\nwas created at {{snowflake_time}}")
 
 	# ???
 	@commands.command(pass_context=True, name="stop")
