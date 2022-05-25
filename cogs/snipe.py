@@ -183,7 +183,7 @@ class Snipe(commands.Cog):
 			snipe_target[m_c_id] = [msg]
 
 
-	@app_commands.command(name="snipe")
+	@app_commands.command(name="snipe", description="Snipes messages")
 	async def snipe(self, interaction: discord.Interaction, distance: Optional[int]):
 		# if not ctx.message.content.lower()[:len('..snipe')] == '..snipe':
 		#     return
