@@ -20,11 +20,10 @@ class View(discord.ui.View):
 		super().__init__(*args, **kwargs)
 
 	@discord.ui.button(
-		placeholder="Placeholder",
 		emoji="\U0001f5d1️",
 		# style=discord.ButtonStyle.secondary
 	)
-	async def callback(self, select: discord.ui.select, interaction: discord.Interaction):
+	async def callback(self, select: discord.ui.button, interaction: discord.Interaction):
 		await interaction.response.send_message('Hello', ephemeral=True)
 
 
