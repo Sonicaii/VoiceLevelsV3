@@ -62,8 +62,8 @@ class Ping(commands.Cog):
 
 	# def __init__(self, bot: commands.Bot) -> None: self.bot = bot  # Doesn't even need it
 
-	@app_commands.command(name="pong", description="current latency of bot")
-	async def pong(self, interaction: discord.Interaction):
+	@app_commands.command(name="ping", description="current latency of bot")
+	async def ping(self, interaction: discord.Interaction):
 		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
 
 
