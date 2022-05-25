@@ -79,7 +79,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 			`!sync ~` -> sync to current guild only.
 			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
 	"""
-	print(f"Syncing for {ctx.guild.id}")
+	print(f"Syncing from {ctx.guild.id}", guilds)
 	if not guilds:
 		if spec == "~":
 			fmt = await ctx.bot.tree.sync(guild=ctx.guild.id)
