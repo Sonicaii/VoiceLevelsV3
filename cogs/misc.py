@@ -49,8 +49,8 @@ class Misc(commands.Cog):
 	async def user(self, interaction: discord.Interaction, User: discord.User):
 		await _process_id(interaction, user, f"Account creation of {User.name} with the ID of `{User.id}`\ntranslates to `{{snowflake_time}}` UTC")
 
-	@app_commands.command(name="channel", description="Get when user account was made")
-	async def channel(self, interaction: discord.Interaction, Channel: discord.Guild.Channel):
+	@app_commands.command(name="channel", description="Get when channel was made")
+	async def channel(self, interaction: discord.Interaction, Channel: discord.AppCommandOptionType.channel):
 		await _process_id(interaction, user, f"{Channel.name} with the ID of `{Channel.id}`\nwas created at `{{snowflake_time}}` UTC")
 
 	@commands.command(pass_context=True, name="stop")
