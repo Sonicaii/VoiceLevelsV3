@@ -89,7 +89,7 @@ class Snipe(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		printv(cogpr("Snipe", bot))
+		cogpr("Snipe", bot)
 
 
 	@commands.Cog.listener()

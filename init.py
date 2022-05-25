@@ -35,7 +35,7 @@ bot = commands.Bot(
 		"guilds",
 		"messages",
 	]}),
-	description="""Yeah"""
+	description="""User levels based on time spent in voice channels."""
 )
 
 # @bot.event
@@ -48,7 +48,7 @@ bot = commands.Bot(
 async def on_ready():
 	cogpr("Main", bot)
 	await bot.change_presence(activity=discord.Activity(
-		name="Testing",
+		name="Testing Voice Levels V3",
 		type=discord.ActivityType.playing
 	))
 
@@ -57,98 +57,20 @@ async def on_ready():
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
 	await bot.tree.sync(guild=guild)
 
-class Ping(commands.Cog):
-
-	# def __init__(self, bot: commands.Bot) -> None: self.bot = bot  # Doesn't even need it
-
-	@app_commands.command(name="ping", description="current latency of bot")
-	async def ping(self, interaction: discord.Interaction):
-		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
-
-	@app_commands.command(name="hi", description="respond")
-	async def hi(self, interaction: discord. Interaction):
-		await interaction.response.send_message(f"Hello")
-
 
 @bot.command()
 # @commands.is_owner()
 async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
 	"""
+	https://gist.github.com/AbstractUmbra/a9c188797ae194e592efe05fa129c57f
 		Usage:
 			`!sync` -> globally sync all commands (WARNING)
 			`!sync ~` -> sync to current guild only.
 			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
 	"""
-	# if guilds: print(discord.Object(id=ctx.guild.id) == guilds[0])
-	# try:
-	# 	print(f"Syncing from {ctx.guild.id}", dir(guilds[0]))
-	# 	for d in dir(guilds[0]):
-	# 		try:
-	# 			exec(f"print(str({d}), guilds[0].{d})")
-	# 		except Exception:
-	# 			print(d)
-	# except IndexError:
-	# 	print("IndexError")
-	# 	for d in dir(discord.Object(id=ctx.guild.id)):
-	# 		try:
-	# 			exec(f"print(str({d}), discord.Object(id=ctx.guild.id).{d})")
-	# 		except Exception:
-	# 			print(d)
+	await ctx.bot.tree.sync()  # this bot only has global commands so this must be run
 
-	if not guilds:
-		if spec == "~":
-			fmt = await ctx.bot.tree.sync(guild=discord.Object(id=ctx.guild.id))
-		else:
-			fmt = await ctx.bot.tree.sync()
 
-		await ctx.send(
-			f"Synced {len(fmt)} commands {'to the current guild.' if spec == '~' else 'globally'}\n" +
-			"\n".join([i.name for i in fmt])
-		)
-		return
-
-	fmt = 0
-	for guild in guilds:
-		try:
-			await ctx.bot.tree.sync(guild=guild)
-		except discord.HTTPException:
-			print("Encountered discord.HTTPException")
-		else:
-			fmt += 1
-
-	await ctx.send(f"Synced the tree to {fmt}/{len(guilds)} guilds.")
-'''
-@bot.command()
-async def sync(ctx: Context, guilds: Greedy[int], *, spec: Optional[Literal["~"]] = None) -> None:
-	"""
-		Usage:
-			`!sync` -> globally sync all commands (WARNING)
-			`!sync ~` -> sync to current guild only.
-			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
-	"""
-	if not guilds and spec is not None:
-		if spec == "~":
-			fmt = await bot.tree.sync(guild=ctx.guild)
-		else:
-			fmt = await bot.tree.sync()
-
-		await ctx.send(
-			f"Synced {len(fmt)} {'globally' if spec is None else 'to the current guild.'}"
-		)
-		return
-
-	assert guilds is not None
-	fmt = 0
-	for guild in guilds:
-		try:
-			await ctx.bot.tree.sync(guild=discord.Object(id=guild))
-		except discord.HTTPException:
-			pass
-		else:
-			fmt += 1
-
-	await ctx.send(f"Synced the tree to {fmt}.")
-		'''
 async def main():
 	print("Connecting to database...")
 
@@ -161,13 +83,13 @@ async def main():
 		async with bot:
 			for ext in ["cogs."+i for i in [
 					# "levels",
-					# "misc",
+					"misc",
 					# "help",
-					# "snipe",
+					"snipe",
 				]]:
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)
-			await bot.add_cog(Ping())
+
 			await bot.start(get_token(bot.conn))
 
 
