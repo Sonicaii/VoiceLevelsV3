@@ -181,7 +181,7 @@ class Levels(commands.Cog):
 		# gets live info and the user times
 		current_user_time = \
 			user_times[str(lookup.id)] + int(time.time()) - self.user_joins[lookup.id] \
-		if ctx.message.author.id in self.user_joins else \
+		if lookup.id in self.user_joins else \
 			ser_times[str(lookup.id)]
 
 		return await interaction.response.send_message(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
@@ -217,7 +217,7 @@ class Levels(commands.Cog):
 		)
 		hours, minutes, seconds = str(cut).split()[-1].split(":")
 
-		return await interaction.response.send_message("{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
+		return await interaction.response.send_message(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
 
 
 	@commands.command(pass_context=True, name='top', aliases=['leaderboard', 'ranks'])
