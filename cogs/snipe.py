@@ -37,6 +37,7 @@ class View(discord.ui.View):
 					await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.")
 				else:
 					msg.add(interaction.user.id)
+					print(msg.denied)
 					await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed the sniper's ammunition.")
 				await interaction.message.delete()
 				await asyncio.sleep(5)
@@ -233,6 +234,7 @@ class Snipe(commands.Cog):
 			return await interaction.response.send_message("Couldn't find target to snipe in this channel.", ephemeral=True)
 			# Nothing in list currently
 		else:
+			print(snipe_target[m_c_id][snipe_range].denied)
 			if snipe_target[m_c_id][snipe_range].is_denied(interaction.user.id):
 				return await interaction.response.send_message("You are unable to snipe this message", ephemeral=True)
 
