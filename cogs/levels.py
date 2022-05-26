@@ -4,6 +4,7 @@ if __name__ == "__main__":
 
 from __main__ import *
 from psycopg2.extras import Json
+import json
 
 
 def get_level_f(seconds: int) -> tuple:
@@ -50,7 +51,7 @@ class Levels(commands.Cog):
 		with self.bot.conn.cursor() as cur:
 			occupied = tuple(k for k, v in self.user_updates.items() if v)
 			if not occupied: return
-			
+
 			cur.execute("SELECT right_two, json_contents FROM levels WHERE right_two IN %s", (occupied,))
 			results = cur.fetchall()
 			for right_two, json_contents in results:
@@ -196,7 +197,7 @@ class Levels(commands.Cog):
 
 		lookup = interaction.user if user is None else user
 
-		if lookup_id in self.user_actions:
+		if lookup.id in self.user_actions:
 			async with self.lock:
 				await self.writeInData()
 
