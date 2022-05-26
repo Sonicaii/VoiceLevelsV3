@@ -32,16 +32,28 @@ class View(discord.ui.View):
 		# 	f"`Data?: {interaction.data}`"
 		# 	, ephemeral=True)
 		for msg in snipe_target[interaction.channel.id]:
+			# locating the message
 			if msg.id == self.msg.id:
-				if interaction.user.id == self.msg.author.id:
+				print(f"Sniped: {msg.author.id}\nSniper: {self.sniper_id}\nBinner: {interaction.user.id}")
+				# the person who clicked the bin button was the original sniper
+				if interaction.user.id == self.sniper_id:
 					await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.")
 				else:
 					msg.add(self.msg.author.id)
 					print(msg.denied)
-					await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed the sniper's ammunition.")
+					await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed <@{self.sniper_id}>'s ammunition.")
 				await interaction.message.delete()
 				await asyncio.sleep(5)
-				await interaction.delete_original_message()
+
+				return await interaction.delete_original_message()
+
+		# This should never send
+		await interaction.response.send_message(
+			"Something went wrong.\n"
+			"Could obtain information on where the bin was attached to\n"
+			"This should not have happened, please contact the bot's developer and tell them what you did to get this message",
+			ephemeral=True
+			)
 
 
 class msg():
@@ -266,6 +278,7 @@ class Snipe(commands.Cog):
 
 			view=View()
 			view.msg = msg
+			view.sniper_id = interaction.user.id
 			new_msg = await interaction.response.send_message(
 				send,
 				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
