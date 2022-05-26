@@ -24,24 +24,23 @@ class View(discord.ui.View):
 		# style=discord.ButtonStyle.secondary
 	)
 	async def callback(self, interaction: discord.Interaction, select: discord.ui.button):
-		async with interaction.channel.typing():
-			# await interaction.response.send_message(
-			# 	# f"`Original msg ID:     {og_msg.id}\n" +
-			# 	f"`User:                {interaction.user.name} {interaction.user.id}`\n" +
-			# 	f"`this msg ID:  {interaction.message.id}`\n" +
-			# 	f"`this channel: {interaction.channel}`\n"+
-			# 	f"`Data?: {interaction.data}`"
-			# 	, ephemeral=True)
-			for msg in snipe_target[interaction.channel.id]:
-				if msg.id == self.msg_id:
-					if interaction.user.id == msg.author.id:
-						await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.")
-					else:
-						msg.add(interaction.user.id)
-						await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed the sniper's ammunition.")
-					await asyncio.sleep(5)
-					await interaction.delete_original_message()
-			await interaction.message.delete()
+		# await interaction.response.send_message(
+		# 	# f"`Original msg ID:     {og_msg.id}\n" +
+		# 	f"`User:                {interaction.user.name} {interaction.user.id}`\n" +
+		# 	f"`this msg ID:  {interaction.message.id}`\n" +
+		# 	f"`this channel: {interaction.channel}`\n"+
+		# 	f"`Data?: {interaction.data}`"
+		# 	, ephemeral=True)
+		for msg in snipe_target[interaction.channel.id]:
+			if msg.id == self.msg.id:
+				if interaction.user.id == self.msg.author.id:
+					await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.")
+				else:
+					msg.add(interaction.user.id)
+					await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed the sniper's ammunition.")
+				await interaction.message.delete()
+				await asyncio.sleep(5)
+				await interaction.delete_original_message()
 
 
 class msg():
@@ -264,7 +263,7 @@ class Snipe(commands.Cog):
 			global org_msg
 
 			view=View()
-			view.msg_id = msg.id
+			view.msg = msg
 			new_msg = await interaction.response.send_message(
 				send,
 				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
