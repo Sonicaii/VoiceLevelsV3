@@ -12,7 +12,7 @@ create_vl = """
 
 CREATE TABLE levels (
   right_two char(2) NOT NULL,
-  json_contents jsonb NOT NULL DEFAULT '{{}}'
+  json_contents json NOT NULL DEFAULT '{{}}'
 );
 
 --

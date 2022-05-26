@@ -83,7 +83,7 @@ async def main():
 		print("Connected to database")
 		async with bot:
 			for ext in ["cogs."+i for i in [
-					# "levels",
+					"levels",
 					"misc",
 					# "help",
 					"snipe",
