@@ -33,8 +33,14 @@ class View(discord.ui.View):
 				f"`this channel: {interaction.channel}`\n"+
 				f"`Data?: {interaction.data}`"
 				, ephemeral=True)
-
-			await interaction.message.delete(delay=10)
+			for msg in snipe_target[interaction.channel.id]:
+				if msg.id == self.msg_id:
+					if interaction.user.id == msg.author.id:
+						print(f"<@{user.id}> denied their own hit.")
+					else:
+						print(f"<@{user.id}> denied hit and destroyed the sniper's ammunition.")
+						msg.add(interaction.user.id)
+			await interaction.message.delete()
 
 
 class msg():
@@ -194,14 +200,10 @@ class Snipe(commands.Cog):
 				org_msg.clean(m_c_id) #[temp_append[0][3]]
 				del temp_append[0]
 
-			# temp_append.append([message.author.name, message.content, {}, temp_key])
 			temp_append.append(msg)
-
 			snipe_target[m_c_id] = temp_append
-			# snipe_target[m_c_id] = [(message.author.name, message.content)] - for only 1 delete range
 		else:
-			# Beginning of list
-			# V1: snipe_target[m_c_id] = [[message.author.name, message.content, {}, temp_key]]
+			# Beginning of list\
 			snipe_target[m_c_id] = [msg]
 
 
@@ -259,15 +261,15 @@ class Snipe(commands.Cog):
 					send += url + "\n"
 
 			global org_msg
+
+			view=View()
+			view.msg_id = msg.id
 			new_msg = await interaction.response.send_message(
 				send,
 				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
 				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING,
-				view=View()
+				view=view
 			)
-			print(new_msg)
-			print(dir(new_msg))
-			print(new_msg.id)
 			return
 			# nmc_id = new_msg.channel.id
 			org_msg.id_set(new_msg.channel.id, new_msg.id, msg.id)
