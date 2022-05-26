@@ -249,7 +249,9 @@ class Levels(commands.Cog):
 				guild_mem_valid.append((bot.user.id, n_def(namestr, bot.user.id)))
 				guild_members_id.append(bot.user.id)
 
-		total_pages = (total_members if all_check else len(interaction.guild.members))// 20
+		total_pages = len(interaction.guild.members)// 20
+		# (total_members if all_check else len(interaction.guild.members))// 20
+
 		if page > total_pages:
 			return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
 
