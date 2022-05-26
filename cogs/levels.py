@@ -260,7 +260,7 @@ class Levels(commands.Cog):
 
 			with bot.conn.cursor() as cur:
 				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
-				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}
+				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 
 				for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True):
 
