@@ -25,21 +25,20 @@ class View(discord.ui.View):
 	)
 	async def callback(self, interaction: discord.Interaction, select: discord.ui.button):
 		async with interaction.channel.typing():
-			# og_msg = await interaction.original_message()
-			await interaction.response.send_message(
-				# f"`Original msg ID:     {og_msg.id}\n" +
-				f"`User:                {interaction.user.name} {interaction.user.id}\n" +
-				f"`this msg ID:  {interaction.message.id}`\n" +
-				f"`this channel: {interaction.channel}`\n"+
-				f"`Data?: {interaction.data}`"
-				, ephemeral=True)
+			# await interaction.response.send_message(
+			# 	# f"`Original msg ID:     {og_msg.id}\n" +
+			# 	f"`User:                {interaction.user.name} {interaction.user.id}`\n" +
+			# 	f"`this msg ID:  {interaction.message.id}`\n" +
+			# 	f"`this channel: {interaction.channel}`\n"+
+			# 	f"`Data?: {interaction.data}`"
+			# 	, ephemeral=True)
 			for msg in snipe_target[interaction.channel.id]:
 				if msg.id == self.msg_id:
 					if interaction.user.id == msg.author.id:
-						print(f"<@{user.id}> denied their own hit.")
+						await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.", delete_after=5)
 					else:
-						print(f"<@{user.id}> denied hit and destroyed the sniper's ammunition.")
 						msg.add(interaction.user.id)
+						await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed the sniper's ammunition.", delete_after=5)
 			await interaction.message.delete()
 
 
