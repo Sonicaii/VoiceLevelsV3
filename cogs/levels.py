@@ -261,29 +261,31 @@ class Levels(commands.Cog):
 			with bot.conn.cursor() as cur:
 				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
 				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
+			
+			dict_nicknames = {i.id: i.display_name for i in interaction.guild.members}
 
-				for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True):
+			for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True):
 
-					if int(k) in [i.id for i in interaction.guild.members]:
-						sorted_d[int(k)] = v
+				if int(k) in [i.id for i in interaction.guild.members]:
+					sorted_d[int(k)] = v
 
-				'''
-				if all_check:
-					sorted_d = {i: j for i, j in sorted(large_dict, key=lambda item: item[1], reverse=True)}
-					dict_nicknames = {}
-					for server in bot.guilds:
-						dict_nicknames.update({str(member.id): member.name for member in server.members})
-				'''
+			'''
+			if all_check:
+				sorted_d = {i: j for i, j in sorted(large_dict, key=lambda item: item[1], reverse=True)}
+				dict_nicknames = {}
+				for server in bot.guilds:
+					dict_nicknames.update({str(member.id): member.name for member in server.members})
+			'''
 
-				# formatted = """Leaderboard of global scores from users of {}\n>>> ```md\n#Rank  Hours   Level    Name\n""".format("all servers" if all_check else "this server")
-				formatted = """Leaderboard of global scores from users of this server\n>>> ```md\n#Rank  Hours   Level    Name\n"""
-				# print(list(sorted_d.items())[(page-1)*20:page*20])
-				for member_id, member_seconds in list(sorted_d.items())[(page-1)*20:page*20]: # {((4 - len(str(cnt)))) * " "} # {(7 - len(str(round(member_seconds/60/60, 2))))*" "} # {" "*(4 -len(str(get_level(member_seconds))))}
-					try:
-						nickname = dict_nicknames[member_id]
-					except KeyError:
-						nickname = member_id
-					formatted += f""" {str(cnt := list(sorted_d).index(member_id) + 1)+".":<5}{round(member_seconds/60/60,2):<7} [ {get_level(member_seconds):<4} ]( {nickname} )\n"""
+			# formatted = """Leaderboard of global scores from users of {}\n>>> ```md\n#Rank  Hours   Level    Name\n""".format("all servers" if all_check else "this server")
+			formatted = """Leaderboard of global scores from users of this server\n>>> ```md\n#Rank  Hours   Level    Name\n"""
+			# print(list(sorted_d.items())[(page-1)*20:page*20])
+			for member_id, member_seconds in list(sorted_d.items())[(page-1)*20:page*20]: # {((4 - len(str(cnt)))) * " "} # {(7 - len(str(round(member_seconds/60/60, 2))))*" "} # {" "*(4 -len(str(get_level(member_seconds))))}
+				try:
+					nickname = dict_nicknames[member_id]
+				except KeyError:
+					nickname = member_id
+				formatted += f""" {str(cnt := list(sorted_d).index(member_id) + 1)+".":<5}{round(member_seconds/60/60,2):<7} [ {get_level(member_seconds):<4} ]( {nickname} )\n"""
 
 		await interaction.response.send_message(formatted+"```")
 
