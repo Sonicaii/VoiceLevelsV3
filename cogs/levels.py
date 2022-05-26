@@ -92,9 +92,9 @@ class Levels(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 
-		printv(fg.g(f"\n{bot.user.name} Main Activated")+f"\n{time.ctime()}")
+		printv(f"\n{bot.user.name} Main Activated"+f"\n{time.ctime()}")
 		printv(2, "user ID:", bot.user.id)
-		printv(2, f"Discord.py Version: {fg.c(discord.__version__)}\n")
+		printv(2, f"Discord.py Version: {discord.__version__}\n")
 
 		# reset when activated, prevents faulty overnight join times
 		class ctx:
