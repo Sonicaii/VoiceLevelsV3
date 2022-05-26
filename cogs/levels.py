@@ -101,7 +101,7 @@ class Levels(commands.Cog):
 			async def send(*args, **kwargs): pass
 			class message:
 				class author:
-					id = get.top_level_users[0]
+					id = bot.owner_id
 
 		await self.update(ctx)
 
@@ -227,7 +227,7 @@ class Levels(commands.Cog):
 
 		sorted_d = {}
 
-		all_check = ctx.author.id in get.top_level_users and "all" in ctx.message.content
+		all_check = bot.owner_id == ctx.author and "all" in ctx.message.content
 		if all_check:
 			total_members = len([member for server in bot.guilds for member in server.members])
 
@@ -290,7 +290,7 @@ class Levels(commands.Cog):
 	async def update(self, ctx, token=False):
 		""" manually run through all channels and update into data.json """
 
-		if ctx.message.author.id not in get.top_level_users:
+		if not bot.owner_id == ctx.message.author.id:
 			return
 
 		copy = self.user_updates.copy()
