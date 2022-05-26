@@ -164,7 +164,7 @@ class Levels(commands.Cog):
 		""" Return's the user's time in seconds """
 
 		lookup = interaction.user if user is None else user
-		print(lookup.id)
+
 		if lookup.id in self.user_actions:
 			async with self.lock:
 				await self.writeInData()
@@ -182,12 +182,12 @@ class Levels(commands.Cog):
 		current_user_time = \
 			user_times[str(lookup.id)] + int(time.time()) - self.user_joins[lookup.id] \
 		if lookup.id in self.user_joins else \
-			ser_times[str(lookup.id)]
+			user_times[str(lookup.id)]
 
 		return await interaction.response.send_message(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
 
-	@app_commands.command(name="time", description="Gets the time spent in voice channel of a specified user")
-	async def time(self, interaction: discord.Interaction, user: Optional[discord.User]):
+	@app_commands.command(name="level", description="Gets the time spent in voice channel of a specified user")
+	async def level(self, interaction: discord.Interaction, user: Optional[discord.User]):
 		""" returns human readable text """
 
 		lookup = interaction.user if user is None else user
@@ -195,8 +195,6 @@ class Levels(commands.Cog):
 		if lookup.id in self.user_actions:
 			async with self.lock:
 				await self.writeInData()
-
-		print(lookup.id)
 
 		# opens the corresponding file
 		with bot.conn.cursor() as cur:
@@ -220,15 +218,17 @@ class Levels(commands.Cog):
 		return await interaction.response.send_message(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
 
 
-	@commands.command(pass_context=True, name='top', aliases=['leaderboard', 'ranks'])
-	async def top(self, ctx):
+	@app_commands.command(name="top", description="Leaderboard for this server")
+	async def top(self, interaction: discord.Interaction, page: Optional[int] = 1):
 		""" leaderboard of the server's times """
 
 		sorted_d = {}
 
-		all_check = bot.owner_id == ctx.author and "all" in ctx.message.content
+		'''
+		all_check = bot.owner_id == interaction.user.id and "all" in ctx.message.content
 		if all_check:
 			total_members = len([member for server in bot.guilds for member in server.members])
+		'''
 
 		# leaderboard in DMs ( joke )
 		# if not ctx.guild:
@@ -249,28 +249,29 @@ class Levels(commands.Cog):
 				guild_mem_valid.append((bot.user.id, n_def(namestr, bot.user.id)))
 				guild_members_id.append(bot.user.id)
 
-
-		page = (int(ctx.message.content.split()[1]) if ctx.message.content.split()[1].isdigit() else 1) if len(ctx.message.content.split()) != 1 else 1
-		total_pages = (total_members if all_check else len(ctx.guild.members))// 20
+		total_pages = (total_members if all_check else len(interaction.guild.members))// 20
 		if page > total_pages:
-			return await ctx.send(f"Nothing on page {page}. Total {total_pages} pages")
+			return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
 
 		# Typing in the channel
-		async with ctx.typing():
-			with open("data - All.json", "r") as file_obj:
-				large_dict = json.load(file_obj).items()
-				dict_nicknames = {i.id: i.display_name for i in ctx.guild.members}
+		async with interaction.channel.typing():
+
+			with bot.conn.cursor() as cur:
+				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
+				user_times = {k: v for d in [i[0] for i in res] for k, v in d.items()}
 
 				for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True):
 
 					if int(k) in [i.id for i in ctx.guild.members]:
 						sorted_d[int(k)] = v
 
+				'''
 				if all_check:
 					sorted_d = {i: j for i, j in sorted(large_dict, key=lambda item: item[1], reverse=True)}
 					dict_nicknames = {}
 					for server in bot.guilds:
 						dict_nicknames.update({str(member.id): member.name for member in server.members})
+				'''
 
 				formatted = """Leaderboard of global scores from users of {}\n>>> ```md\n#Rank  Hours   Level    Name\n""".format("all servers" if all_check else "this server")
 				
@@ -282,7 +283,7 @@ class Levels(commands.Cog):
 						nickname = member_id
 					formatted += f""" {str(cnt := list(sorted_d).index(member_id) + 1)+".":<5}{round(member_seconds/60/60,2):<7} [ {get_level(member_seconds):<4} ]( {nickname} )\n"""
 
-		await ctx.send(formatted+"```")
+		await interaction.response.send_message(formatted+"```")
 
 
 	@commands.command(pass_context=True)
