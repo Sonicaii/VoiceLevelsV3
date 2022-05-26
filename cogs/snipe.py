@@ -28,6 +28,7 @@ class View(discord.ui.View):
 			# og_msg = await interaction.original_message()
 			await interaction.response.send_message(
 				# f"`Original msg ID:     {og_msg.id}\n" +
+				f"`User:                {interaction.user.name} {interaction.user.id}\n" +
 				f"`Interaction msg ID:  {interaction.message.id}`\n" +
 				f"`Interaction channel: {interaction.channel}`\n"+
 				f"`Data?: {interaction.data}`"
