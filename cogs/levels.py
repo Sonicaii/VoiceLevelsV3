@@ -264,7 +264,7 @@ class Levels(commands.Cog):
 
 				for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True):
 
-					if int(k) in [i.id for i in ctx.guild.members]:
+					if int(k) in [i.id for i in interaction.guild.members]:
 						sorted_d[int(k)] = v
 
 				'''
