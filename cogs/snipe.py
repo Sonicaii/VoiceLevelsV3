@@ -24,7 +24,15 @@ class View(discord.ui.View):
 		# style=discord.ButtonStyle.secondary
 	)
 	async def callback(self, interaction: discord.Interaction, select: discord.ui.button):
-		await interaction.response.send_message('Hello', ephemeral=True)
+		async with reaction.message.channel.typing():
+			og_msg = await interaction.original_message
+			await interaction.response.send_message(
+				f"`Original msg ID:     {og_msg.id}\n" +
+				f"`Interaction msg ID:  {interaction.message.id}`\n" +
+				f"`Interaction channel: {interaction.channel}`\n"+
+				f"`Data?: {interaction.data}`"
+				, ephemeral=True)
+			await og_msg.delete(delay=10)
 
 
 class msg():
@@ -250,7 +258,8 @@ class Snipe(commands.Cog):
 					send += url + "\n"
 
 			global org_msg
-			new_msg = await interaction.response.send_message(
+			# new_msg = 
+			return await interaction.response.send_message(
 				send,
 				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
 				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING,
