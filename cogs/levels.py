@@ -109,11 +109,6 @@ class Levels(commands.Cog):
 		await self.update(ctx)
 
 
-	@commands.command(pass_context=True)
-	async def a(self, ctx):
-		await ctx.send("a")
-
-
 	@commands.Cog.listener()
 	async def on_voice_state_update(self, member, before, after):
 		""" Voice Updates """
@@ -181,7 +176,7 @@ class Levels(commands.Cog):
 			
 		if str(lookup.id) not in user_times:
 			# record does not exist
-			return await ctx.send(f"<@!{lookup.id}> has no time saved yet.")
+			return await interaction.response.send_message(f"<@!{lookup.id}> has no time saved yet.")
 
 		# gets live info and the user times
 		current_user_time = \
@@ -189,7 +184,7 @@ class Levels(commands.Cog):
 		if ctx.message.author.id in self.user_joins else \
 			ser_times[str(lookup.id)]
 
-		return await ctx.send(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
+		return await interaction.response.send_message(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
 
 	@app_commands.command(name="time", description="Gets the time spent in voice channel of a specified user")
 	async def time(self, interaction: discord.Interaction, user: Optional[discord.User]):
@@ -209,7 +204,7 @@ class Levels(commands.Cog):
 
 		if str(lookup.id) not in user_times:
 			# record does not exist
-			return await ctx.send(f"<@!{lookup.id}> has no time saved yet.")
+			return await interaction.response.send_message(f"<@!{lookup.id}> has no time saved yet.")
 
 		# gets live info and the user times
 		# current_user_times
@@ -221,7 +216,7 @@ class Levels(commands.Cog):
 		)
 		hours, minutes, seconds = str(cut).split()[-1].split(":")
 
-		return await ctx.send(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
+		return await interaction.response.send_message("{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
 
 
 	@commands.command(pass_context=True, name='top', aliases=['leaderboard', 'ranks'])
