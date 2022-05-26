@@ -25,7 +25,7 @@ class View(discord.ui.View):
 	)
 	async def callback(self, interaction: discord.Interaction, select: discord.ui.button):
 		async with interaction.channel.typing():
-			og_msg = await interaction.original_message
+			og_msg = await interaction.original_message()
 			await interaction.response.send_message(
 				f"`Original msg ID:     {og_msg.id}\n" +
 				f"`Interaction msg ID:  {interaction.message.id}`\n" +
@@ -245,7 +245,6 @@ class Snipe(commands.Cog):
 
 			send = f"""<@{interaction.user.id}> hit {msg.author.name}, {range_msg}, who said\n{msg.content}\n"""
 			file = None
-			print(msg.attachments)
 			if len(msg.attachments) == 1:
 				async with ClientSession() as session:
 					async with session.get(msg.attachments[0]) as resp:
