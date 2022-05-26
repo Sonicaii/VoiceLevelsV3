@@ -176,7 +176,7 @@ class Levels(commands.Cog):
 
 		# opens the corresponding file\
 		with bot.conn.cursor() as cur:
-			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", str(lookup.id)[-2:])
+			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", (str(lookup.id)[-2:],))
 			user_times = cur.fetchone()[0]  # wow it already converted from json to py objects!
 			
 		if str(lookup.id) not in user_times:
@@ -204,7 +204,7 @@ class Levels(commands.Cog):
 
 		# opens the corresponding file
 		with bot.conn.cursor() as cur:
-			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", str(lookup.id)[-2:])
+			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", (str(lookup.id)[-2:],))
 			user_times = cur.fetchone()[0]  # wow it already converted from json to py objects!
 
 		if str(lookup.id) not in user_times:
