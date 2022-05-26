@@ -29,10 +29,11 @@ class View(discord.ui.View):
 			await interaction.response.send_message(
 				# f"`Original msg ID:     {og_msg.id}\n" +
 				f"`User:                {interaction.user.name} {interaction.user.id}\n" +
-				f"`Interaction msg ID:  {interaction.message.id}`\n" +
-				f"`Interaction channel: {interaction.channel}`\n"+
+				f"`this msg ID:  {interaction.message.id}`\n" +
+				f"`this channel: {interaction.channel}`\n"+
 				f"`Data?: {interaction.data}`"
 				, ephemeral=True)
+
 			await interaction.message.delete(delay=10)
 
 
@@ -258,13 +259,16 @@ class Snipe(commands.Cog):
 					send += url + "\n"
 
 			global org_msg
-			# new_msg = 
-			return await interaction.response.send_message(
+			new_msg = await interaction.response.send_message(
 				send,
 				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
 				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING,
 				view=View()
 			)
+			print(new_msg)
+			print(dir(new_msg))
+			print(new_msg.id)
+			return
 			# nmc_id = new_msg.channel.id
 			org_msg.id_set(new_msg.channel.id, new_msg.id, msg.id)
 			
