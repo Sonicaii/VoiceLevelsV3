@@ -36,7 +36,7 @@ class View(discord.ui.View):
 				if interaction.user.id == self.msg.author.id:
 					await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.")
 				else:
-					msg.add(self.msg.user.id)
+					msg.add(self.msg.author.id)
 					print(msg.denied)
 					await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed the sniper's ammunition.")
 				await interaction.message.delete()
