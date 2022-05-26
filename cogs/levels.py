@@ -86,9 +86,9 @@ class Levels(commands.Cog):
 			# { ", ".join(["('"+r_t+"'::bpchar, '"+json.dumps(v)+"'::json)" for r_t, v in results]) }
 
 		self.user_updates = {
-			i: {} for i in range(10)
+			str(i).zfill(2): {} for i in range(100)
 		}
-		# 0: {}, 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {}, 9: {}
+		# '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
 
 		self.user_actions = []
 
@@ -164,7 +164,7 @@ class Levels(commands.Cog):
 		""" Return's the user's time in seconds """
 
 		lookup = interaction.user if user is None else user
-
+		print(lookup.id)
 		if lookup.id in self.user_actions:
 			async with self.lock:
 				await self.writeInData()
@@ -196,6 +196,7 @@ class Levels(commands.Cog):
 			async with self.lock:
 				await self.writeInData()
 
+		print(lookup.id)
 
 		# opens the corresponding file
 		with bot.conn.cursor() as cur:
