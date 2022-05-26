@@ -35,10 +35,12 @@ class View(discord.ui.View):
 			for msg in snipe_target[interaction.channel.id]:
 				if msg.id == self.msg_id:
 					if interaction.user.id == msg.author.id:
-						await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.", delete_after=5)
+						await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.")
 					else:
 						msg.add(interaction.user.id)
-						await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed the sniper's ammunition.", delete_after=5)
+						await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed the sniper's ammunition.")
+					await asyncio.sleep(5)
+					await interaction.delete_original_message()
 			await interaction.message.delete()
 
 
