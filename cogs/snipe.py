@@ -12,7 +12,6 @@ from urllib.parse import urlparse
 global debug
 debug = False
 
-del_ammo_out, used_comb = [], []
 snipe_target = {}
 
 class View(discord.ui.View):
@@ -21,7 +20,6 @@ class View(discord.ui.View):
 
 	@discord.ui.button(
 		emoji="\U0001f5d1️",
-		# style=discord.ButtonStyle.secondary
 	)
 	async def callback(self, interaction: discord.Interaction, select: discord.ui.button):
 		# await interaction.response.send_message(
@@ -32,7 +30,7 @@ class View(discord.ui.View):
 		# 	f"`Data?: {interaction.data}`"
 		# 	, ephemeral=True)
 		for msg in snipe_target[interaction.channel.id]:
-			# locating the message
+			# locating the message, could rewrite using ordered dict instead
 			if msg.id == self.msg.id:
 				# the person who clicked the bin button was the original sniper
 				if interaction.user.id == self.sniper_id:
@@ -69,55 +67,6 @@ class msg():
 	def is_denied(self, id: int) -> bool:
 		return id in self.denied
 
-class org_msg:
-	"""
-		message organiser
-
-	how to snipe:
-	1. target sends message
-	2. on_msg_del:
-		- create entry in channel_dict if it doesn't exist yet
-		- collect msg 
-			.id: int.
-			.content: str
-			.author.id: int
-			.embeds: list[]: object # doesn't work
-			.attachments[list].url: str
-		- add to stack
-	3.
-
-	"""
-
-	def __init__(self):
-		self.channel_dict = {}
-
-	def new_channel_history(self, channel_id: int):
-		self.channel_dict[channel_id] = {}
-
-	def id_set(self, channel_id: int, bot_msg_id: int, reference_to: int):
-		if channel_id not in self.channel_dict:
-			self.new_channel_history(channel_id)
-
-		self.channel_dict[channel_id][bot_msg_id] = reference_to
-
-	def get(self, channel_id: int, bot_msg_id: int):
-		""" Returns reference """
-
-		self.clean(channel_id)
-		return self.channel_dict[channel_id][bot_msg_id]
-
-	def clean(self, channel_id: int):
-		""" deletes first item """
-
-		try: # Nothing in channel_dict[channel_id]
-			if len(self.channel_dict[channel_id]) > 40:
-				first_item_index = next(iter(self.channel_dict[channel_id]))
-				del self.channel_dict[channel_id][first_item_index]
-		except KeyError:
-			pass
-
-org_msg = org_msg()
-
 
 class Snipe(commands.Cog):
 
@@ -129,47 +78,6 @@ class Snipe(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 		cogpr("Snipe", bot)
-
-
-	@commands.Cog.listener()
-	async def on_reaction_add(self, reaction, user):
-		# user is who sniped, i_temp is the key to link to original message's target
-		if user == bot.user or user.bot:  # self check, bot check
-			return
-
-		r_id = reaction.message.id
-		r_m_ch = reaction.message.channel
-
-		if self.del_id.get(r_id) is not None:
-			async with reaction.message.channel.typing():
-				for i1 in range(len(self.del_id)):
-					if self.del_id[r_id][i1] == r_id:
-						who_sniped = reaction.message.mentions[0].id
-						del self.del_id[r_id][i1]
-						break
-				cnt = 0
-
-				org_message_id = org_msg.get(reaction.message.channel.id, r_id)
-
-
-				for msg in snipe_target[r_m_ch.id]:
-					if int(msg.id) == int(org_message_id):
-						if who_sniped != user.id:
-							snipe_target[r_m_ch.id][cnt].denied.add(who_sniped)
-						break
-					cnt += 1
-
-				if who_sniped != user.id:
-					await r_m_ch.send(
-						f"<@{user.id}> denied hit and destroyed the sniper's ammunition.",
-						delete_after=5
-					)
-				else:
-					await r_m_ch.send(
-						f"<@{user.id}> denied their own hit.",
-						delete_after=5
-					)
-				return await reaction.message.delete()
 
 	@commands.Cog.listener()
 	async def on_message_delete(self, message):
@@ -201,14 +109,11 @@ class Snipe(commands.Cog):
 			# embed=message.embeds[0] if message.embeds else False,
 			attachments=[i.url for i in message.attachments]
 		)
-		# if debug:
-		# 	print(snipe_target)
 
 		if m_c_id in snipe_target:
 			temp_append = snipe_target[m_c_id]
 
-			if len(temp_append) > 40:
-				org_msg.clean(m_c_id) #[temp_append[0][3]]
+			if len(temp_append) > 35:  # arbitrary value of 35: 3500m furthest sniper kill distance
 				del temp_append[0]
 
 			temp_append.append(msg)
@@ -220,8 +125,6 @@ class Snipe(commands.Cog):
 
 	@app_commands.command(name="snipe", description="Snipes messages")
 	async def snipe(self, interaction: discord.Interaction, distance: Optional[int]):
-		# if not ctx.message.content.lower()[:len('..snipe')] == '..snipe':
-		#     return
 
 		m_c_id = interaction.channel.id
 
@@ -231,8 +134,6 @@ class Snipe(commands.Cog):
 			dist = ""
 
 		if dist and snipe_target.get(m_c_id) is not None:
-			if debug:
-				print('if correct range:', dist <= len(snipe_target[m_c_id]))
 			if dist <= len(snipe_target[m_c_id]):
 				snipe_range = -dist
 			else:
@@ -244,7 +145,6 @@ class Snipe(commands.Cog):
 			return await interaction.response.send_message("Couldn't find target to snipe in this channel.", ephemeral=True)
 			# Nothing in list currently
 		else:
-			print(snipe_target[m_c_id][snipe_range].denied)
 			if snipe_target[m_c_id][snipe_range].is_denied(interaction.user.id):
 				return await interaction.response.send_message("You are unable to snipe this message", ephemeral=True)
 
@@ -254,6 +154,8 @@ class Snipe(commands.Cog):
 				else:
 					msg = snipe_target[m_c_id][-dist]
 					range_msg = f"from {dist}00m"
+					if dist > 35:
+						range_msg += " which is further than the world's longest confirmed sniper kill"
 
 			else:
 				msg = snipe_target[m_c_id][-1]
@@ -272,8 +174,6 @@ class Snipe(commands.Cog):
 				for url in msg.attachments:
 					send += url + "\n"
 
-			global org_msg
-
 			view=View()
 			view.msg = msg
 			view.sniper_id = interaction.user.id
@@ -283,26 +183,7 @@ class Snipe(commands.Cog):
 				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING,
 				view=view
 			)
-			return
-			# nmc_id = new_msg.channel.id
-			org_msg.id_set(new_msg.channel.id, new_msg.id, msg.id)
-			
-			# TODO: BUTTONS!
-			try:
-				await new_msg.add_reaction('\U0001f5d1️')
-			except Exception as e:
-				await new_msg.channel.send("Unable to set up the snipe bin.", delete_after=5)
-				print(ferror(e))
-				await new_msg.delete()
 
-			if new_msg.mentions[0].id in self.del_id:
-				l_temp = self.del_id[new_msg.mentions[0].id]
-				l_temp.append(new_msg.id)
-			else:
-				l_temp = [new_msg.id]
-			self.del_id[new_msg.id] = l_temp
-			
-			return new_msg
 
 async def setup(bot):
 	await bot.add_cog(Snipe(bot, msg))

@@ -188,42 +188,41 @@ class Levels(commands.Cog):
 		return
 
 
-	@commands.command(pass_context=True, name="total", aliases=["to", "seconds"])
-	async def total(self, ctx):
+	@app_commands.command(name="total", description="Shows total time in seconds")
+	async def total(self, interaction: discord.Interaction, user: Optional[discord.User] = None)
 		""" Return's the user's time in seconds """
 
-		try:
-			lookup_id = int(ctx.message.split()[-1])
-		except ValueError:
-			lookup_id = ctx.message.author.id if len(ctx.message.mentions) == 0 else ctx.message.mentions[0].id
+		lookup = interaction.user if user is None else user
 
-		if lookup_id in self.user_actions:
+		if lookup.id in self.user_actions:
 			async with self.lock:
 				await self.writeInData()
 
 		# opens the corresponding file
-		with open(f"data - Copy ({str(lookup_id)[-1]}).json", "r") as file_obj:
+		# with open(f"data - Copy ({str(lookup_id)[-2:]}).json", "r") as file_obj:
+		with bot.conn.cursor() as cur:
+			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", str(lookup.id)[-2:])
+			user_times = cur.fetchone()[0]  # wow it already converted from json to py objects!
 			
-			all_user_times = json.load(file_obj)
-			if str(lookup_id) not in all_user_times:
-				# record does not exist
-				return await ctx.send(f"<@!{lookup_id}> has no time saved yet.")
+		if str(lookup.id) not in user_times:
+			# record does not exist
+			return await ctx.send(f"<@!{lookup.id}> has no time saved yet.")
 
-			# gets live info and the user times
-			current_user_time = \
-				all_user_times[str(lookup_id)] + int(time.time()) - self.user_joins[lookup_id] \
-			if ctx.message.author.id in self.user_joins else \
-				all_user_times[str(lookup_id)]
+		# gets live info and the user times
+		current_user_time = \
+			user_times[str(lookup.id)] + int(time.time()) - self.user_joins[lookup.id] \
+		if ctx.message.author.id in self.user_joins else \
+			ser_times[str(lookup.id)]
 
-			await ctx.send(f"{ctx.message.author.name if len(ctx.message.mentions) == 0 else ctx.message.mentions[0].name} has spent {current_user_time} seconds in voice channels")
-
-		return
+		return await ctx.send(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
 
 	@commands.command(pass_context=True, aliases=['t', 'level', 'lvl', 'l', 'info', 'i'])
 	async def time(self, ctx):
+	@app_commands.command(name="time", description="Gets the time spent in voice channel of a specified user")
+	async def time(self, interaction: discord.Interaction, user: Optional[discord.User])
 		""" returns human readable text """
 
-		lookup_id = ctx.message.author.id if len(ctx.message.mentions) == 0 else ctx.message.mentions[0].id
+		lookup = interaction.user if user is None else user
 
 		if lookup_id in self.user_actions:
 			async with self.lock:
@@ -249,7 +248,7 @@ class Levels(commands.Cog):
 			)
 			hours, minutes, seconds = str(cut).split()[-1].split(":")
 
-			await ctx.send(f"{ctx.message.author.name if len(ctx.message.mentions) == 0 else ctx.message.mentions[0].name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
+			await ctx.send(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
 
 
 	@commands.command(pass_context=True, name='top', aliases=['leaderboard', 'ranks'])
