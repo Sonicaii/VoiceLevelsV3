@@ -275,8 +275,8 @@ class Levels(commands.Cog):
 						dict_nicknames.update({str(member.id): member.name for member in server.members})
 				'''
 
-				formatted = """Leaderboard of global scores from users of {}\n>>> ```md\n#Rank  Hours   Level    Name\n""".format("all servers" if all_check else "this server")
-				
+				# formatted = """Leaderboard of global scores from users of {}\n>>> ```md\n#Rank  Hours   Level    Name\n""".format("all servers" if all_check else "this server")
+				formatted = """Leaderboard of global scores from users of this server\n>>> ```md\n#Rank  Hours   Level    Name\n"""
 				# print(list(sorted_d.items())[(page-1)*20:page*20])
 				for member_id, member_seconds in list(sorted_d.items())[(page-1)*20:page*20]: # {((4 - len(str(cnt)))) * " "} # {(7 - len(str(round(member_seconds/60/60, 2))))*" "} # {" "*(4 -len(str(get_level(member_seconds))))}
 					try:
