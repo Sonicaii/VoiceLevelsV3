@@ -24,7 +24,7 @@ class View(discord.ui.View):
 		# style=discord.ButtonStyle.secondary
 	)
 	async def callback(self, interaction: discord.Interaction, select: discord.ui.button):
-		async with reaction.message.channel.typing():
+		async with interaction.channel.typing():
 			og_msg = await interaction.original_message
 			await interaction.response.send_message(
 				f"`Original msg ID:     {og_msg.id}\n" +
