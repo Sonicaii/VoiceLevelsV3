@@ -48,7 +48,7 @@ class Levels(commands.Cog):
 
 		# Get data
 		with self.bot.conn.cursor() as cur:
-			occupied = (k for k, v in self.user_updates.items() if v)
+			occupied = tuple(k for k, v in self.user_updates.items() if v)
 			cur.execute("SELECT right_two, json_contents FROM levels WHERE right_two IN %s", (occupied,))
 			results = cur.fetchall()
 			for right_two, json_contents in results:
