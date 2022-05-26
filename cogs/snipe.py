@@ -25,14 +25,14 @@ class View(discord.ui.View):
 	)
 	async def callback(self, interaction: discord.Interaction, select: discord.ui.button):
 		async with interaction.channel.typing():
-			og_msg = await interaction.original_message()
+			# og_msg = await interaction.original_message()
 			await interaction.response.send_message(
-				f"`Original msg ID:     {og_msg.id}\n" +
+				# f"`Original msg ID:     {og_msg.id}\n" +
 				f"`Interaction msg ID:  {interaction.message.id}`\n" +
 				f"`Interaction channel: {interaction.channel}`\n"+
 				f"`Data?: {interaction.data}`"
 				, ephemeral=True)
-			await og_msg.delete(delay=10)
+			await interaction.message.delete(delay=10)
 
 
 class msg():
@@ -65,7 +65,7 @@ class org_msg:
 			.embeds: list[]: object # doesn't work
 			.attachments[list].url: str
 		- add to stack
-	3. 
+	3.
 
 	"""
 
