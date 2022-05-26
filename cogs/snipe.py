@@ -34,13 +34,11 @@ class View(discord.ui.View):
 		for msg in snipe_target[interaction.channel.id]:
 			# locating the message
 			if msg.id == self.msg.id:
-				print(f"Sniped: {msg.author.id}\nSniper: {self.sniper_id}\nBinner: {interaction.user.id}")
 				# the person who clicked the bin button was the original sniper
 				if interaction.user.id == self.sniper_id:
 					await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.")
 				else:
 					msg.add(self.sniper_id)
-					print(msg.denied)
 					await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed <@{self.sniper_id}>'s ammunition.")
 				await interaction.message.delete()
 				await asyncio.sleep(5)
