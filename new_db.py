@@ -23,9 +23,14 @@ CREATE TABLE levels (
 INSERT INTO levels (right_two, json_contents) VALUES
 {};
 
+CREATE TABLE prefixes (
+  id char(19) NOT NULL,
+  prefix char(32) NOT NULL,
+  PRIMARY KEY (id)
+);
 
 CREATE TABLE sudo (
-  id text NOT NULL,
+  id char(19) NOT NULL,
   PRIMARY KEY (id)
 );
 

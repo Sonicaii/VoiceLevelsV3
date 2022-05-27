@@ -23,7 +23,7 @@ class Misc(commands.Cog):
 	@app_commands.command(name="latency", description="current latency of bot")
 	async def latency(self, interaction: discord.Interaction):
 		await interaction.response.send_message(f"Current latency is {round(self.bot.latency * 1000)}ms")
-		
+
 	@app_commands.command(name="ping", description="current latency of bot")
 	async def ping(self, interaction: discord.Interaction):
 		# await interaction.pong()  # can't use in this context
@@ -62,7 +62,17 @@ class Misc(commands.Cog):
 		if not channel: channel = interaction.channel
 		await self._process_id(interaction, channel, f"{channel.name} with the ID of `{channel.id}`\nwas created at {{snowflake_time}}")
 
-	# ???
+
+	@commands.hybrid_command(name="prefix", with_app_command=True)
+	@has_permissions(manage_guild=True)
+	async def prefix(self, ctx, prefix: Optional[str]):
+		if prefix:
+			if len(prefix) > 16:
+				return await ctx.send("Too long")
+			await ctx.send(f"Changing prefix to: {prefix}")
+		else:
+			await ctx.send("Reset prefix to `,,`")
+
 	@commands.command(pass_context=True, name="stop")
 	@commands.is_owner()
 	async def stop(self, ctx):

@@ -53,7 +53,7 @@ async def on_ready():
 			cur.execute("INSERT INTO sudo VALUES %s", ((str(bot.owner_id),),))
 			bot.sudo = [bot.owner_id]
 		else:
-			cur.execute("SELECT id FROM sudo")
+			cur.execute("SELECT TRIM(id) FROM sudo")
 			bot.sudo = [int(i[0]) for i in cur.fetchall()]
 
 @bot.event

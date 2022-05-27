@@ -1,6 +1,7 @@
 """ Voice Levels header"""
-from psycopg2.extensions import connection
 import time
+from functools import lru_cache
+from psycopg2.extensions import connection
 from discord.ext import commands
 
 # colours.py ------
@@ -130,11 +131,20 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", True]
 
 
+@lru_cache(maxsize=1000)
+def _server_prefix(conn, server_id: int):
+	with conn.cursor() as cur:
+		cur.execute("SELECT prefix FROM prefixes WHERE id = %s", (str(server_id),))
+		prefix = cur.fetchone()
+	return prefix if prefix is None else ',,'
+
+
 async def get_prefix(bot, message):
 	""" sets the bot's prefix """
 
-	prefixes = [',,', '<@708260446242734130>', '<@!708260446242734130>']
+	prefixes = ['<@708260446242734130>', '<@!708260446242734130>']
 	if not message.guild: prefixes.append('')
+	else: prefixes.append(_server_prefix(bot.conn, message.guild.id))
 	# no prefix needed if not in dm
 
 	return commands.when_mentioned_or(*prefixes)(bot, message)
