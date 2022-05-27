@@ -164,7 +164,7 @@ class Levels(commands.Cog):
 		await self._total(interaction, user)
 
 	@app_commands.command(name="seconds", description="Shows total time in seconds")
-	async def seconds(self, interaction: discord.Interaction, user: Optional[discord.user] = None):
+	async def seconds(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
 		await self._total(interaction, user)
 
 	async def _total(self, interaction, user):
