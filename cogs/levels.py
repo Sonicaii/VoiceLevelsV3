@@ -161,18 +161,18 @@ class Levels(commands.Cog):
 	@app_commands.command(name="total", description="Shows total time in seconds")
 	async def total(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
 		""" Return's the user's time in seconds """
-		self._total(interaction, user)
+		await self._total(interaction, user)
 
 	@app_commands.command(name="seconds", description="Shows total time in seconds")
-	async def seconds(self, interaction: discord.Interaction, user: Optional[discord.user] = None)
-		self._total(interaction, user)
+	async def seconds(self, interaction: discord.Interaction, user: Optional[discord.user] = None):
+		await self._total(interaction, user)
 
-	def _total(self, interaction, user)
+	async def _total(self, interaction, user):
 		lookup = interaction.user if user is None else user
 
-		if lookup.id in self.user_actions:
-			async with self.lock:
-				await self.writeInData()
+		# if lookup.id in self.user_actions:
+		# 	async with self.lock:
+		# 		await self.writeInData()
 
 		# opens the corresponding file\
 		with bot.conn.cursor() as cur:
@@ -194,18 +194,18 @@ class Levels(commands.Cog):
 	@app_commands.command(name="level", description="Gets the time spent in voice channel of a specified user")
 	async def level(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
 		""" returns human readable text """
-		self._level(interaction, user)
+		await self._level(interaction, user)
 
 	@app_commands.command(name="info", description="Gets the time spent in voice channel of a specified user")
 	async def info(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
-		self._level(interaction, user)
+		await self._level(interaction, user)
 
-	def _level(self, interaction, user)
+	async def _level(self, interaction, user):
 		lookup = interaction.user if user is None else user
 
-		if lookup.id in self.user_actions:
-			async with self.lock:
-				await self.writeInData()
+		# if lookup.id in self.user_actions:
+		# 	async with self.lock:
+		# 		await self.writeInData()
 
 		# opens the corresponding file
 		with bot.conn.cursor() as cur:
@@ -236,19 +236,19 @@ class Levels(commands.Cog):
 					cur.execute("SELECT json_contents FROM levels")
 					self.all_lock = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 
-		self._top(interaction, page)
+		await self._top(interaction, page)
 		self.all_lock = False
 
 	@app_commands.command(name="top", description="Leaderboard for this server")
 	async def top(self, interaction: discord.Interaction, page: Optional[int] = 1):
 		""" leaderboard of the server's times """
-		self._top(interaction, page)
+		await self._top(interaction, page)
 
 	@app_commands.command(name="leaderboard", description="Leaderboard for this server")
 	async def leaderboard(self, interaction: discord.Interaction, page: Optional[int] = 1):
-		self._top(interaction, page)
+		await self._top(interaction, page)
 
-	def _top(self, interaction, page):
+	async def _top(self, interaction, page):
 		sorted_d = {}
 
 		'''
