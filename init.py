@@ -83,13 +83,16 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 async def main():
 	print("Connecting to database...")
 
-	bot.db_url = os.environ.get("DATABASE_URL")
-	if not bot.db_url:
+	db_url = os.environ.get("DATABASE_URL")
+	if not db_url:
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
-	with psycopg2.connect(bot.db_url, sslmode='require') as bot.conn:
+	with psycopg2.connect(db_url, sslmode='require') as bot.conn:
 		print("Connected to database")
 		async with bot:
+
+			bot.cogpr = cogpr
+
 			for ext in ["cogs."+i for i in [
 					"levels",
 					"misc",
@@ -99,7 +102,6 @@ async def main():
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)
 
-			bot.cogpr = cogpr
 			token, bot.need_setup = get_token(bot.conn)
 			await bot.start(token)
 
