@@ -31,7 +31,6 @@ class Levels(commands.Cog):
 		# bot initialisation
 		self.bot = bot
 		self.lock = asyncio.Lock()
-		self.all_lock = False
 		self.updater.start()
 
 		# list of users who recently disconnected
@@ -231,14 +230,12 @@ class Levels(commands.Cog):
 	@app_commands.command(name="all", description="Leaderboard for this server")
 	async def all(self, interaction: discord.Interaction, page: Optional[int] = 1):
 		if interaction.user.id in bot.sudo:
-			print(f"{interaction.user.id} Requested all, {bot.sudo} {interaction.user.id in bot.sudo}")
 			async with interaction.channel.typing():
 				with bot.conn.cursor() as cur:
 					cur.execute("SELECT json_contents FROM levels")
-					self.all_lock = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
+					all_lock = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 
-		await self._top(interaction, page)
-		self.all_lock = False
+		await self._top(interaction, page, all_lock)
 
 	@app_commands.command(name="top", description="Leaderboard for this server")
 	async def top(self, interaction: discord.Interaction, page: Optional[int] = 1):
@@ -249,7 +246,7 @@ class Levels(commands.Cog):
 	async def leaderboard(self, interaction: discord.Interaction, page: Optional[int] = 1):
 		await self._top(interaction, page)
 
-	async def _top(self, interaction, page):
+	async def _top(self, interaction, page, all_lock=False):
 		sorted_d = {}
 
 		'''
@@ -291,8 +288,8 @@ class Levels(commands.Cog):
 		# Typing in the channel
 		async with interaction.channel.typing():
 
-			if self.all_lock:
-				large_dict = self.all_lock
+			if all_lock:
+				large_dict = all_lock
 			else:
 				with bot.conn.cursor() as cur:
 					cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
