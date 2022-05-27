@@ -237,7 +237,7 @@ class Levels(commands.Cog):
 					all_lock = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 					print(all_lock)
 
-		await self._top(interaction, page, all_lock)
+		await self._top(interaction, page, all_lock=all_lock)
 
 	@app_commands.command(name="top", description="Leaderboard for this server")
 	async def top(self, interaction: discord.Interaction, page: Optional[int] = 1):
@@ -289,7 +289,7 @@ class Levels(commands.Cog):
 
 		# Typing in the channel
 		async with interaction.channel.typing():
-
+			print(all_lock)
 			if all_lock:
 				large_dict = all_lock
 			else:
