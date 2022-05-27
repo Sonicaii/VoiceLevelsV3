@@ -17,46 +17,45 @@ class Help(commands.Cog, name='Help'):
 		subcommand: Optional[Literal["levels", "snipe",]]
 	):
 		msg = ""
-		if not cog:
-			embed = discord.Embed(description="_ _\n_ _", colour=0xf0fff0)
+		embed = discord.Embed(description="_ _\n_ _", colour=0xf0fff0)
 
-			desc: list = ["" for i in range(4)]
+		desc: list = ["" for i in range(4)]
 
-			modules: list = [('``top     ``', '''This command lists the server's members by voice level rank.
+		modules: list = [('``top     ``', '''This command lists the server's members by voice level rank.
 *``Aliases: leaderboard, all``*'''),
-					   ('``total   ``', '''This command gives your total time in seconds, minutes, hours and days.
+				   ('``total   ``', '''This command gives your total time in seconds, minutes, hours and days.
 *``Aliases: seconds``*'''),
-					   ('``level   ``', '''This command gives your or the mentioned person their actual calculated time.
+				   ('``level   ``', '''This command gives your or the mentioned person their actual calculated time.
 *``Aliases: time, info``*'''),
-					   ('``snipe   ``', '''This command gives you the most recent message that was deleted.
+				   ('``snipe   ``', '''This command gives you the most recent message that was deleted.
 Putting a number after "snipe" will get you the message that was deleted at the specified distance away.
 *``e.g. snipe 3 will get the message 3 deleted messages ago.``*''')
-					   ]
+				   ]
 
-			misc: list = [('``echo    ``', 'echo...'),
-					('``members ``', 'This command gives you the amount of members of this server.'),
-					('``ping    ``', 'This command gives you the latency of this bot.\n*``Aliases: latency``*'),
-					('``lookup  ``', '''This command translate Discord snowflake IDs (any Discord ID)
+		misc: list = [('``echo    ``', 'echo...'),
+				('``members ``', 'This command gives you the amount of members of this server.'),
+				('``ping    ``', 'This command gives you the latency of this bot.\n*``Aliases: latency``*'),
+				('``lookup  ``', '''This command translate Discord snowflake IDs (any Discord ID)
 to their date of creation. Discord IDs are linked to their creation time.
 *``Aliases: lk``*'''),
-					('``memes   ``', '''do "help memes" for more details.'
+				('``memes   ``', '''do "help memes" for more details.'
 "memes" toggles meme replies server-wide''')
-					]
+				]
 
-			if interaction.author.id in bot.sudo and not interaction.guild:
-				msg = f'**IMPORTANT**\n**RUN "STOP" TO KILL BOT IN CASE OF EMERGENCY**'
-				embed.add_field(name='**IMPORTANT**', value='**RUN "STOP" TO KILL BOT IN CASE OF EMERGENCY**',inline=False)
+		if interaction.author.id in bot.sudo and not interaction.guild:
+			msg = f'**IMPORTANT**\n**RUN "STOP" TO KILL BOT IN CASE OF EMERGENCY**'
+			embed.add_field(name='**IMPORTANT**', value='**RUN "STOP" TO KILL BOT IN CASE OF EMERGENCY**',inline=False)
 
-			for x, y in modules:
-				desc[0] += f'**{x}** - {y}\n\n'
-			for x, y in misc:
-				desc[1] += f'**{x}** - {y}\n\n'
+		for x, y in modules:
+			desc[0] += f'**{x}** - {y}\n\n'
+		for x, y in misc:
+			desc[1] += f'**{x}** - {y}\n\n'
 
-			embed.add_field(name='Commands', value=desc[0])
-			embed.add_field(name='_ _\nMiscellaneous', value=desc[1], inline=False)
-			embed.set_author(name="Help Panel")
+		embed.add_field(name='Commands', value=desc[0])
+		embed.add_field(name='_ _\nMiscellaneous', value=desc[1], inline=False)
+		embed.set_author(name="Help Panel")
 
-			await interaction.response.send_message(msg, embed=embed)
+		await interaction.response.send_message(msg, embed=embed)
 
 async def setup(bot):
 	await bot.add_cog(Help(bot))
