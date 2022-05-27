@@ -136,7 +136,7 @@ def _server_prefix(conn, server_id: int):
 	with conn.cursor() as cur:
 		cur.execute("SELECT prefix FROM prefixes WHERE id = %s", (str(server_id),))
 		prefix = cur.fetchone()
-	return prefix if prefix is None else ',,'
+	return ',,' if prefix is None else prefix
 
 
 async def get_prefix(bot, message):
