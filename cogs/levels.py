@@ -31,6 +31,7 @@ class Levels(commands.Cog):
 	def __init__(self, bot):
 		# bot initialisation
 		self.bot = bot
+		self.deliver = bot.deliver
 		self.lock = asyncio.Lock()
 		self.updater.start()
 

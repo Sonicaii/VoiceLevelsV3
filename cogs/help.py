@@ -42,7 +42,7 @@ to their date of creation. Discord IDs are linked to their creation time.
 			('``prefix   ``', 'Changes prefix of this bot for this server')
 		]
 
-		if interaction.user.id in self.bot.sudo and not interaction.guild:
+		if ctx.author.id in self.bot.sudo and not ctx.guild:
 			msg = f'**IMPORTANT**\n**RUN "STOP" TO KILL BOT IN CASE OF EMERGENCY**'
 			embed.add_field(name='**IMPORTANT**', value='**RUN "STOP" TO KILL BOT IN CASE OF EMERGENCY**',inline=False)
 
