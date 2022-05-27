@@ -103,7 +103,7 @@ def printv(level, *args):
 		print(level, *args)
 
 
-def get_token(conn: connection, recurse: int = 0) -> (str, bool):
+def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 	""" static method? Gets token from token.txt for run() """
 	need_setup = False
 	try:
@@ -129,7 +129,8 @@ def get_token(conn: connection, recurse: int = 0) -> (str, bool):
 				cur.execute(new_db.create_vl)
 			need_setup = True
 
-	return (get_token(conn, recurse+1)[0] if recurse < 1 else "", need_setup)
+	print([get_token(conn, recurse+1)[0] if recurse < 1 else "", need_setup])
+	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", need_setup]
 
 
 async def get_prefix(bot, message):
