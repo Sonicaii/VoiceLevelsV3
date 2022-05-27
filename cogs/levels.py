@@ -270,16 +270,15 @@ class Levels(commands.Cog):
 			with bot.conn.cursor() as cur:
 				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
 				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
-		
-			dict_nicknames = {i.id: i.display_name for i in interaction.guild.members}
-			total_pages = len(large_dict)//20+1
-
-			if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
-
+			
 			for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True):
-
 				if int(k) in [i.id for i in interaction.guild.members]:
 					sorted_d[int(k)] = v
+
+			dict_nicknames = {i.id: i.display_name for i in interaction.guild.members}
+			total_pages = len(sorted_d)//20+1
+
+			if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
 
 			await interaction.response.send_message(self._format_top(sorted_d, dict_nicknames, page))
 
