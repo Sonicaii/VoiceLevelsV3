@@ -95,7 +95,7 @@ class Levels(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 
-		bot.cogpr("Levels", bot)
+		self.bot.cogpr("Levels", bot)
 
 		# reset when activated, prevents faulty overnight join times
 		class ctx:
