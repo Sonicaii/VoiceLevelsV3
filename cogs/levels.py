@@ -227,6 +227,7 @@ class Levels(commands.Cog):
 
 		return await interaction.response.send_message(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
 
+
 	@app_commands.command(name="all", description="Leaderboard for this server")
 	async def all(self, interaction: discord.Interaction, page: Optional[int] = 1):
 		if interaction.user.id in bot.sudo:
@@ -235,7 +236,7 @@ class Levels(commands.Cog):
 					cur.execute("SELECT json_contents FROM levels")
 					large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 
-				total_pages = len(large_dict)//20 + 1
+				total_pages = (len(large_dict)-1)//20 + 1
 				total_members = len(large_dict)
 
 				if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
@@ -243,11 +244,12 @@ class Levels(commands.Cog):
 				sorted_d = {int(i): j for i, j in sorted(large_dict, key=lambda item: item[1], reverse=True)}
 				dict_nicknames = {}
 				for server in bot.guilds:
-					dict_nicknames.update({str(member.id): member.name for member in server.members})
+					dict_nicknames.update({int(member.id): member.name for member in server.members})
 
 				return await interaction.response.send_message(self._format_top(sorted_d, dict_nicknames, page))
 
 		await self._top(interaction, page)
+
 
 	@app_commands.command(name="top", description="Leaderboard for this server")
 	async def top(self, interaction: discord.Interaction, page: Optional[int] = 1):
@@ -261,7 +263,7 @@ class Levels(commands.Cog):
 	async def _top(self, interaction, page):
 		sorted_d = {}
 
-		total_pages = len(interaction.guild.members)//20 + 1
+		total_pages = (len(interaction.guild.members)-1)//20 + 1
 
 		if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
 
