@@ -1,6 +1,6 @@
 """ Voice Levels header"""
 import time
-from cachetools import cachedmethod, LRUCache, TTLCache, keys
+from cachetools import cached, cachedmethod, LRUCache, TTLCache, keys
 from psycopg2.extensions import connection
 from discord.ext import commands
 
@@ -130,7 +130,7 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 
 	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", True]
 
-
+'''
 class _prefix_factory:
 	global len_bot_guilds  # rip
 
@@ -150,11 +150,19 @@ class _prefix_factory_returner:
 		self._prefix_factory = _prefix_factory(bot)
 
 _prefix_factory_returner = _prefix_factory_returner()
+'''
 
+@cached(cache=LRUCache(maxsize=1000), key=lambda conn, server_id: keys.hashkey(server_id))
+def _server_prefix(conn, server_id: int):
+	with conn.cursor() as cur:
+		cur.execute("SELECT TRIM(prefix) FROM prefixes WHERE id = %s", (str(server_id),))
+		prefix = cur.fetchone()
+	return ',,' if prefix is None else prefix[0]
 
 async def get_prefix(bot, message):
 	""" sets the bot's prefix """
 
+	'''
 	if not bot._prefix_factory_init:
 
 		global len_bot_guilds  # rip
@@ -163,6 +171,7 @@ async def get_prefix(bot, message):
 		prefix_factory_returner.make_factory(bot)
 
 	_server_prefix = _prefix_factory_returner._prefix_factory._server_prefix
+	'''
 
 	# no prefix needed if not in dm
 	return commands.when_mentioned_or(
