@@ -77,7 +77,7 @@ class Snipe(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		self.bot.cogpr("Snipe", bot)
+		bot.cogpr("Snipe", bot)
 
 	@commands.Cog.listener()
 	async def on_message_delete(self, message):
