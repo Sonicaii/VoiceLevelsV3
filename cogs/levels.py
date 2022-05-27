@@ -31,6 +31,7 @@ class Levels(commands.Cog):
 		# bot initialisation
 		self.bot = bot
 		self.lock = asyncio.Lock()
+		self.all_lock = False
 		self.updater.start()
 
 		# list of users who recently disconnected
@@ -95,9 +96,7 @@ class Levels(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 
-		printv(f"\n{bot.user.name} Main Activated"+f"\n{time.ctime()}")
-		printv(2, "user ID:", bot.user.id)
-		printv(2, f"Discord.py Version: {discord.__version__}\n")
+		cogpr("Levels", bot)
 
 		# reset when activated, prevents faulty overnight join times
 		class ctx:
@@ -217,6 +216,15 @@ class Levels(commands.Cog):
 
 		return await interaction.response.send_message(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
 
+	@app_commands.command(name="all", description="Leaderboard for this server")
+	async def all(self, interaction: discord.Interaction, page: Optional[int] = 1):
+		if interaction.author.id == bot.owner_id:
+			async with interaction.channel.typing():
+				cur.execute("SELECT json_contents FROM levels")
+				self.all_lock = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
+
+		await self.top(interaction, page)
+		self.all_lock = False
 
 	@app_commands.command(name="top", description="Leaderboard for this server")
 	async def top(self, interaction: discord.Interaction, page: Optional[int] = 1):
@@ -258,9 +266,12 @@ class Levels(commands.Cog):
 		# Typing in the channel
 		async with interaction.channel.typing():
 
-			with bot.conn.cursor() as cur:
-				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
-				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
+			if self.all_lock:
+				large_dict = self.all_lock
+			else:
+				with bot.conn.cursor() as cur:
+					cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
+					large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 			
 			dict_nicknames = {i.id: i.display_name for i in interaction.guild.members}
 
