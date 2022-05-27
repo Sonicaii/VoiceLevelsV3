@@ -8,7 +8,7 @@ from discord import app_commands, Object
 from discord.app_commands import Choice
 from discord.ext import commands, tasks
 from discord.ext.commands import Context, Greedy
-from typing import List, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 
 from header import (
 	ferror,
@@ -77,7 +77,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 	await ctx.bot.tree.sync()  # this bot only has global commands so this must be run
 
 
-def deliver(self, obj: Union[commands.Context, discord.Interaction, ...]):
+def deliver(self, obj: Union[commands.Context, discord.Interaction, Any]):
 		""" returns an async function that will send message """
 		if isinstance(obj, discord.Interaction):
 			return obj.response.send_message
