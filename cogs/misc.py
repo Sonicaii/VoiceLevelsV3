@@ -18,16 +18,16 @@ class Misc(commands.Cog):
 
 	@commands.hybrid_command(name="members", description="Gets the number of members in the server")
 	async def members(self, ctx: commands.Context):
-		await ctx.send(f"Number of members in this server: {ctx.guild.member_count}")
+		await ctx.interaction.response.send_message(f"Number of members in this server: {ctx.guild.member_count}")
 
 	@commands.hybrid_command(name="latency", description="current latency of bot")
 	async def latency(self, ctx: commands.Context):
-		await ctx.send(f"Current latency is {round(self.bot.latency * 1000)}ms")
+		await ctx.interaction.response.send_message(f"Current latency is {round(self.bot.latency * 1000)}ms")
 
 	@commands.hybrid_command(name="ping", description="current latency of bot")
 	async def ping(self, ctx: commands.Context):
 		# await interaction.pong()  # can't use in this context
-		await ctx.send(f"Current latency is {round(self.bot.latency * 1000)}ms")
+		await ctx.interaction.response.send_message(f"Current latency is {round(self.bot.latency * 1000)}ms")
 
 	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int], fmt) -> None:
 		try:
@@ -65,20 +65,21 @@ class Misc(commands.Cog):
 	@commands.hybrid_command(name="prefix", with_app_command=True)
 	@commands.has_permissions(manage_guild=True)
 	async def prefix(self, ctx, prefix: Optional[str]):
-		if prefix:
-			if len(prefix) > 16:
-				return await ctx.send("Prefix is too long, maximum 16 characters.", ephemeral=True)
-			async with ctx.channel.typing():
-				with self.bot.conn.cursor() as cur:
-					cur.execute("""
-						INSERT INTO prefixes (id, prefix)
-						VALUES (%s, %s)
-						ON CONFLICT (id) DO UPDATE
-							SET prefix = EXCLUDED.prefix
-						""", (str(ctx.guild.id), prefix))
-				await ctx.send(f"New prefix set to: {prefix}")
-		else:
-			await ctx.send("Reset prefix to `,,`")
+		with self.bot.conn.cursor() as cur:
+			if prefix:
+				if len(prefix) > 16:
+					return await ctx.send("Prefix is too long, maximum 16 characters.", ephemeral=True)
+				async with ctx.channel.typing():
+						cur.execute("""
+							INSERT INTO prefixes (id, prefix)
+							VALUES (%s, %s)
+							ON CONFLICT (id) DO UPDATE
+								SET prefix = EXCLUDED.prefix
+							""", (str(ctx.guild.id), prefix))
+					await ctx.send(f"New prefix set to: {prefix}")
+			else:
+				cur.execute("DELETE FROM prefixes WHERE id = %s", (ctx.guild.id,))
+				await ctx.send("Reset prefix to `,,`")
 
 	@commands.command(pass_context=True, name="stop")
 	@commands.is_owner()

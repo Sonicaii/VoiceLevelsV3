@@ -142,9 +142,7 @@ def _server_prefix(conn, server_id: int):
 async def get_prefix(bot, message):
 	""" sets the bot's prefix """
 
-	prefixes = ['<@708260446242734130>', '<@!708260446242734130>']
-	if not message.guild: prefixes.append('')
-	else: prefixes.append(_server_prefix(bot.conn, message.guild.id))
 	# no prefix needed if not in dm
-
-	return commands.when_mentioned_or(*prefixes)(bot, message)
+	return commands.when_mentioned_or(
+		_server_prefix(bot.conn, message.guild.id) if message.guild else ''
+	)(bot, message)
