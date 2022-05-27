@@ -16,15 +16,15 @@ class Misc(commands.Cog):
 	async def cog_unload(self):
 		pass
 
-	@app_commands.command(name="members", description="Gets the number of members in the server")
+	@commands.hybrid_command(name="members", description="Gets the number of members in the server")
 	async def members(self, interaction: discord.Interaction):
 		await interaction.response.send_message(f"Number of members in this server: {interaction.guild.member_count}")
 
-	@app_commands.command(name="latency", description="current latency of bot")
+	@commands.hybrid_command(name="latency", description="current latency of bot")
 	async def latency(self, interaction: discord.Interaction):
 		await interaction.response.send_message(f"Current latency is {round(self.bot.latency * 1000)}ms")
 
-	@app_commands.command(name="ping", description="current latency of bot")
+	@commands.hybrid_command(name="ping", description="current latency of bot")
 	async def ping(self, interaction: discord.Interaction):
 		# await interaction.pong()  # can't use in this context
 		await interaction.response.send_message(f"Current latency is {round(self.bot.latency * 1000)}ms")
