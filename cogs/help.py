@@ -12,9 +12,9 @@ class Help(commands.Cog, name='Help'):
 	async def on_ready(self):
 		self.bot.cogpr("Help", self.bot)
 
-	@app_commands.command(name="help", description="Get help about Voice Level's functions!")
-	async def help(self, interaction: discord.Interaction,
-		subcommand: Optional[Literal["levels", "snipe",]]
+	@commands.hybrid_command(name="help", description="Get help about Voice Level's functions!")
+	async def help(self, ctx: commands.Context,
+		# subcommand: Optional[Literal["levels", "snipe",]]
 	):
 		msg = ""
 		embed = discord.Embed(description="_ _\n_ _", colour=0xaeffae)
@@ -39,8 +39,7 @@ Putting a number after "snipe" will get you the message that was deleted at the 
 			('``lookup  ``', '''This command translate Discord snowflake IDs (any Discord ID)
 to their date of creation. Discord IDs are linked to their creation time.
 *``Aliases: lk``*'''),
-			('``memes   ``', '''do "help memes" for more details.'
-"memes" toggles meme replies server-wide''')
+			('``prefix   ``', 'Changes prefix of this bot for this server')
 		]
 
 		if interaction.user.id in self.bot.sudo and not interaction.guild:
@@ -56,7 +55,7 @@ to their date of creation. Discord IDs are linked to their creation time.
 		embed.add_field(name='_ _\nMiscellaneous', value=desc[1], inline=False)
 		embed.set_author(name="Help Panel")
 
-		await interaction.response.send_message(msg, embed=embed)
+		await self.bot.deliver(ctx)(msg, embed=embed)
 
 async def setup(bot):
 	await bot.add_cog(Help(bot))
