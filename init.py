@@ -77,12 +77,12 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 	await ctx.bot.tree.sync()  # this bot only has global commands so this must be run
 
 
-def deliver(self, obj: Union[commands.Context, discord.Interaction, Any]):
-		""" returns an async function that will send message """
-		if isinstance(obj, discord.Interaction):
-			return obj.response.send_message
-		else:
-			return obj.send
+def deliver(obj: Union[commands.Context, discord.Interaction, Any]):
+	""" returns an async function that will send message """
+	if isinstance(obj, discord.Interaction):
+		return obj.response.send_message
+	else:
+		return obj.send
 
 
 async def main():
