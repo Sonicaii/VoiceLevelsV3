@@ -230,14 +230,24 @@ class Levels(commands.Cog):
 	@app_commands.command(name="all", description="Leaderboard for this server")
 	async def all(self, interaction: discord.Interaction, page: Optional[int] = 1):
 		if interaction.user.id in bot.sudo:
-			print(f"{interaction.user.id} Requested all, {bot.sudo} {interaction.user.id in bot.sudo}")
 			async with interaction.channel.typing():
 				with bot.conn.cursor() as cur:
 					cur.execute("SELECT json_contents FROM levels")
-					all_lock = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
-					print(all_lock)
+					large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 
-		await self._top(interaction, page, all_lock=all_lock)
+				total_pages = len(large_dict)//20 + 1
+				total_members = len(large_dict)
+
+				if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
+
+				sorted_d = {int(i): j for i, j in sorted(large_dict, key=lambda item: item[1], reverse=True)}
+				dict_nicknames = {}
+				for server in bot.guilds:
+					dict_nicknames.update({str(member.id): member.name for member in server.members})
+
+				return await interaction.response.send_message(self._format_top(sorted_d, dict_nicknames, page, total_pages))
+
+		await self._top(interaction, page)
 
 	@app_commands.command(name="top", description="Leaderboard for this server")
 	async def top(self, interaction: discord.Interaction, page: Optional[int] = 1):
@@ -248,55 +258,20 @@ class Levels(commands.Cog):
 	async def leaderboard(self, interaction: discord.Interaction, page: Optional[int] = 1):
 		await self._top(interaction, page)
 
-	async def _top(self, interaction, page, all_lock=False):
+	async def _top(self, interaction, page):
 		sorted_d = {}
 
-		'''
-		all_check = bot.owner_id == interaction.user.id and "all" in ctx.message.content
-		if all_check:
-			total_members = len([member for server in bot.guilds for member in server.members])
-		'''
+		total_pages = len(interaction.guild.members)//20 + 1
 
-		# leaderboard in DMs ( joke )
-		# if not ctx.guild:
-		if False:
-			if ctx.author.id in top_level_users:
-				for i in range(len(fulld)):
-					g_mem_position = n_def(namestr, member=int(nameid[i]))
-
-					if namesecs[i] != '0' and g_mem_position is not None:
-						guild_mem_valid.append((nameid[i], g_mem_position))
-						guild_members_id.append(nameid[i])
-
-			else:
-				if namesecs[n_def(namestr, ctx.author.id)] != "0":
-					guild_mem_valid.append((ctx.author.id, n_def(namestr, ctx.author.id)))
-					guild_members_id.append(ctx.author.id)
-
-				guild_mem_valid.append((bot.user.id, n_def(namestr, bot.user.id)))
-				guild_members_id.append(bot.user.id)
-
-		total_pages = len(interaction.guild.members)//20
-
-		# At least 1 page 
-		if not total_pages and len(interaction.guild.members):
-			total_pages = 1
-
-		# (total_members if all_check else len(interaction.guild.members))// 20
-
-		if page > total_pages:
-			return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
+		if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
 
 		# Typing in the channel
 		async with interaction.channel.typing():
-			print(all_lock)
-			if all_lock:
-				large_dict = all_lock
-			else:
-				with bot.conn.cursor() as cur:
-					cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
-					large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
-			
+
+			with bot.conn.cursor() as cur:
+				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
+				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
+		
 			dict_nicknames = {i.id: i.display_name for i in interaction.guild.members}
 
 			for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True):
@@ -304,26 +279,18 @@ class Levels(commands.Cog):
 				if int(k) in [i.id for i in interaction.guild.members]:
 					sorted_d[int(k)] = v
 
-			'''
-			if all_check:
-				sorted_d = {i: j for i, j in sorted(large_dict, key=lambda item: item[1], reverse=True)}
-				dict_nicknames = {}
-				for server in bot.guilds:
-					dict_nicknames.update({str(member.id): member.name for member in server.members})
-			'''
+			await interaction.response.send_message(self._format_top(sorted_d, dict_nicknames, page))
 
-			# formatted = """Leaderboard of global scores from users of {}\n>>> ```md\n#Rank  Hours   Level    Name\n""".format("all servers" if all_check else "this server")
-			formatted = """Leaderboard of global scores from users of this server\n>>> ```md\n#Rank  Hours   Level    Name\n"""
-			# print(list(sorted_d.items())[(page-1)*20:page*20])
-			for member_id, member_seconds in list(sorted_d.items())[(page-1)*20:page*20]: # {((4 - len(str(cnt)))) * " "} # {(7 - len(str(round(member_seconds/60/60, 2))))*" "} # {" "*(4 -len(str(get_level(member_seconds))))}
-				try:
-					nickname = dict_nicknames[member_id]
-				except KeyError:
-					nickname = member_id
-				formatted += f""" {str(cnt := list(sorted_d).index(member_id) + 1)+".":<5}{round(member_seconds/60/60,2):<7} [ {get_level(member_seconds):<4} ]( {nickname} )\n"""
+	def _format_top(self, sorted_d, dict_nicknames, page):
 
-		await interaction.response.send_message(formatted+"```")
-
+		formatted = """Leaderboard of global scores from users of this server\n>>> ```md\n#Rank  Hours   Level    Name\n"""
+		for member_id, member_seconds in list(sorted_d.items())[(page-1)*20:page*20]:
+			try:
+				nickname = dict_nicknames[member_id]
+			except KeyError:
+				nickname = member_id
+			formatted += f""" {str(cnt := list(sorted_d).index(member_id) + 1)+".":<5}{round(member_seconds/60/60,2):<7} [ {get_level(member_seconds):<4} ]( {nickname} )\n"""
+		return formatted+"```"
 
 	@commands.command(pass_context=True)
 	async def update(self, ctx, token=False):
