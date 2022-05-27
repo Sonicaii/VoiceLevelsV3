@@ -42,7 +42,7 @@ to their date of creation. Discord IDs are linked to their creation time.
 "memes" toggles meme replies server-wide''')
 				]
 
-		if interaction.author.id in bot.sudo and not interaction.guild:
+		if interaction.user.id in bot.sudo and not interaction.guild:
 			msg = f'**IMPORTANT**\n**RUN "STOP" TO KILL BOT IN CASE OF EMERGENCY**'
 			embed.add_field(name='**IMPORTANT**', value='**RUN "STOP" TO KILL BOT IN CASE OF EMERGENCY**',inline=False)
 
