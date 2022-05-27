@@ -236,7 +236,7 @@ class Levels(commands.Cog):
 					cur.execute("SELECT json_contents FROM levels")
 					large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 
-				total_pages = (len(large_dict)-1)//20 + 1
+				total_pages = len(large_dict)//20+1
 				total_members = len(large_dict)
 
 				if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
@@ -263,7 +263,7 @@ class Levels(commands.Cog):
 	async def _top(self, interaction, page):
 		sorted_d = {}
 
-		total_pages = (len(interaction.guild.members)-1)//20 + 1
+		total_pages = len(interaction.guild.members)//20+1
 
 		if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
 
