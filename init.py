@@ -99,7 +99,7 @@ async def main():
 
 			bot.cogpr = cogpr
 			bot.deliver = deliver
-			bot._prefix_factory_init = False
+			# bot._prefix_factory_init = False
 			bot._prefix_cache_pop = lambda i: _server_prefix.cache.pop((i,))
 
 			for ext in ["cogs."+i for i in [

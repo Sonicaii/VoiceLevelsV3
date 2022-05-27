@@ -173,6 +173,8 @@ async def get_prefix(bot, message):
 	_server_prefix = _prefix_factory_returner._prefix_factory._server_prefix
 	'''
 
+	print(_server_prefix.cache)
+
 	# no prefix needed if not in dm
 	return commands.when_mentioned_or(
 		_server_prefix(bot.conn, message.guild.id) if message.guild else ''
