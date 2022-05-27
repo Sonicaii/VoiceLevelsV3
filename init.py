@@ -52,6 +52,13 @@ async def on_ready():
 		type=discord.ActivityType.playing
 	))
 
+	with bot.conn.cursor() as cur:
+		if bot.need_setup:
+			cur.execute("INSERT INTO sudo VALUES %s", ((str(bot.owner_id),),))
+		bot.sudo = [bot.owner_id]
+		else:
+			cur.execute("SELECT id FROM sudo")
+			bot.sudo = [int(i[0]) for i in cur.fetchall()]
 
 @bot.event
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
@@ -61,6 +68,8 @@ async def on_guild_join(guild):  # Can be abused and rate limit the bot
 @bot.command()
 # @commands.is_owner()
 async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
+	if ctx.author.id not in bot.sudo:
+		return
 	"""
 	https://gist.github.com/AbstractUmbra/a9c188797ae194e592efe05fa129c57f
 		Usage:
@@ -91,7 +100,8 @@ async def main():
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)
 
-			await bot.start(get_token(bot.conn))
+			token, bot.need_setup = get_token(bot.conn)
+			await bot.start(token)
 
 
 if __name__ == "__main__":

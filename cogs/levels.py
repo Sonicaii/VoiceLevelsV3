@@ -218,7 +218,7 @@ class Levels(commands.Cog):
 
 	@app_commands.command(name="all", description="Leaderboard for this server")
 	async def all(self, interaction: discord.Interaction, page: Optional[int] = 1):
-		if interaction.author.id == bot.owner_id:
+		if interaction.user.id in bot.sudo:
 			async with interaction.channel.typing():
 				cur.execute("SELECT json_contents FROM levels")
 				self.all_lock = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
@@ -310,7 +310,7 @@ class Levels(commands.Cog):
 	async def update(self, ctx, token=False):
 		""" manually run through all channels and update into data.json """
 
-		if not bot.owner_id == ctx.message.author.id:
+		if ctx.message.author.id not in bot.sudo:
 			return
 
 		copy = self.user_updates.copy()

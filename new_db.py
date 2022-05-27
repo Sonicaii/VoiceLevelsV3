@@ -12,7 +12,8 @@ create_vl = """
 
 CREATE TABLE levels (
   right_two char(2) NOT NULL,
-  json_contents json NOT NULL DEFAULT '{{}}'
+  json_contents json NOT NULL DEFAULT '{{}}',
+  PRIMARY KEY (right_two)
 );
 
 --
@@ -22,11 +23,11 @@ CREATE TABLE levels (
 INSERT INTO levels (right_two, json_contents) VALUES
 {};
 
---
--- Indexes for table levels
---
-ALTER TABLE levels
-  ADD PRIMARY KEY (right_two);
+
+CREATE TABLE sudo (
+  id text NOT NULL,
+  PRIMARY KEY (id)
+);
 
 COMMIT;
 """.format(f"\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(","))
@@ -52,10 +53,6 @@ CREATE TABLE token (
 
 INSERT INTO token (token) VALUES
 ('{}');
-
---
--- Indexes for table levels
---
 
 COMMIT;
 """.format(
