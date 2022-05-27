@@ -64,7 +64,7 @@ class Misc(commands.Cog):
 
 
 	@commands.hybrid_command(name="prefix", with_app_command=True)
-	@has_permissions(manage_guild=True)
+	@commands.has_permissions(manage_guild=True)
 	async def prefix(self, ctx, prefix: Optional[str]):
 		if prefix:
 			if len(prefix) > 16:
