@@ -154,6 +154,7 @@ _prefix_factory_returner = _prefix_factory_returner()
 
 @cached(cache=LRUCache(maxsize=1000), key=lambda conn, server_id: keys.hashkey(server_id))
 def _server_prefix(conn, server_id: int):
+	return ",," # TODO: CODE CACHE FUNCTIONS, lib not what it needs
 	with conn.cursor() as cur:
 		cur.execute("SELECT TRIM(prefix) FROM prefixes WHERE id = %s", (str(server_id),))
 		prefix = cur.fetchone()
