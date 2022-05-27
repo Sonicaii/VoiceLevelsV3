@@ -70,12 +70,12 @@ class Misc(commands.Cog):
 				if len(prefix) > 16:
 					return await ctx.send("Prefix is too long, maximum 16 characters.", ephemeral=True)
 				async with ctx.channel.typing():
-						cur.execute("""
-							INSERT INTO prefixes (id, prefix)
-							VALUES (%s, %s)
-							ON CONFLICT (id) DO UPDATE
-								SET prefix = EXCLUDED.prefix
-							""", (str(ctx.guild.id), prefix))
+					cur.execute("""
+						INSERT INTO prefixes (id, prefix)
+						VALUES (%s, %s)
+						ON CONFLICT (id) DO UPDATE
+							SET prefix = EXCLUDED.prefix
+						""", (str(ctx.guild.id), prefix))
 					await ctx.send(f"New prefix set to: {prefix}")
 			else:
 				cur.execute("DELETE FROM prefixes WHERE id = %s", (ctx.guild.id,))
