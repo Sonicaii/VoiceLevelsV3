@@ -231,6 +231,7 @@ class Levels(commands.Cog):
 	@app_commands.command(name="all", description="Leaderboard for this server")
 	async def all(self, interaction: discord.Interaction, page: Optional[int] = 1):
 		if interaction.user.id in bot.sudo:
+			print(f"{interaction.user.id} Requested all, {bot.sudo} {interaction.user.id in bot.sudo}")
 			async with interaction.channel.typing():
 				with bot.conn.cursor() as cur:
 					cur.execute("SELECT json_contents FROM levels")
