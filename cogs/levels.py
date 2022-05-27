@@ -260,7 +260,7 @@ class Levels(commands.Cog):
 		total_pages = len(interaction.guild.members)//20
 
 		# At least 1 page 
-		if total_pages != 0 and len(interaction.guild.members):
+		if not total_pages and len(interaction.guild.members):
 			total_pages = 1
 
 		# (total_members if all_check else len(interaction.guild.members))// 20
