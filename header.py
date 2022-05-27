@@ -134,7 +134,7 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 @lru_cache(maxsize=1000)
 def _server_prefix(conn, server_id: int):
 	with conn.cursor() as cur:
-		cur.execute("SELECT prefix FROM prefixes WHERE id = %s", (str(server_id),))
+		cur.execute("SELECT TRIM(prefix) FROM prefixes WHERE id = %s", (str(server_id),))
 		prefix = cur.fetchone()
 	return ',,' if prefix is None else prefix[0]
 

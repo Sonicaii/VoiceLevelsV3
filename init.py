@@ -6,7 +6,7 @@ import time, datetime
 import discord
 from discord import app_commands, Object
 from discord.app_commands import Choice
-from discord.ext import tasks, commands
+from discord.ext import commands, tasks
 from discord.ext.commands import Context, Greedy
 from typing import List, Literal, Optional, Union
 
@@ -77,6 +77,14 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 	await ctx.bot.tree.sync()  # this bot only has global commands so this must be run
 
 
+def deliver(self, obj: Union[commands.Context, discord.Interaction, ...]):
+		""" returns an async function that will send message """
+		if isinstance(obj, discord.Interaction):
+			return obj.response.send_message
+		else:
+			return obj.send
+
+
 async def main():
 	print("Connecting to database...")
 
@@ -89,6 +97,7 @@ async def main():
 		async with bot:
 
 			bot.cogpr = cogpr
+			bot.deliver = deliver
 
 			for ext in ["cogs."+i for i in [
 					"levels",

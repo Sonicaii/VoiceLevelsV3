@@ -8,6 +8,7 @@ class Misc(commands.Cog):
 
 	def __init__(self, bot):
 		self.bot = bot
+		self.deliver = bot.deliver
 
 	@commands.Cog.listener()
 	async def on_ready(self):
@@ -18,16 +19,16 @@ class Misc(commands.Cog):
 
 	@commands.hybrid_command(name="members", description="Gets the number of members in the server")
 	async def members(self, ctx: commands.Context):
-		await ctx.interaction.response.send_message(f"Number of members in this server: {ctx.guild.member_count}")
+		await self.deliver(ctx)(f"Number of members in this server: {ctx.guild.member_count}")
 
 	@commands.hybrid_command(name="latency", description="current latency of bot")
 	async def latency(self, ctx: commands.Context):
-		await ctx.interaction.response.send_message(f"Current latency is {round(self.bot.latency * 1000)}ms")
+		await self.deliver(ctx)(f"Current latency is {round(self.bot.latency * 1000)}ms")
 
 	@commands.hybrid_command(name="ping", description="current latency of bot")
 	async def ping(self, ctx: commands.Context):
 		# await interaction.pong()  # can't use in this context
-		await ctx.interaction.response.send_message(f"Current latency is {round(self.bot.latency * 1000)}ms")
+		await self.deliver(ctx)(f"Current latency is {round(self.bot.latency * 1000)}ms")
 
 	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int], fmt) -> None:
 		try:
@@ -68,7 +69,7 @@ class Misc(commands.Cog):
 		with self.bot.conn.cursor() as cur:
 			if prefix:
 				if len(prefix) > 16:
-					return await ctx.send("Prefix is too long, maximum 16 characters.", ephemeral=True)
+					return await deliver(ctx)("Prefix is too long, maximum 16 characters.", ephemeral=True)
 				async with ctx.channel.typing():
 					cur.execute("""
 						INSERT INTO prefixes (id, prefix)
@@ -76,10 +77,10 @@ class Misc(commands.Cog):
 						ON CONFLICT (id) DO UPDATE
 							SET prefix = EXCLUDED.prefix
 						""", (str(ctx.guild.id), prefix))
-					await ctx.send(f"New prefix set to: {prefix}")
+					await self.deliver(ctx)(f"New prefix set to: {prefix}")
 			else:
 				cur.execute("DELETE FROM prefixes WHERE id = %s", (ctx.guild.id,))
-				await ctx.send("Reset prefix to `,,`")
+				await self.deliver(ctx)("Reset prefix to `,,`")
 
 	@commands.command(pass_context=True, name="stop")
 	@commands.is_owner()
