@@ -130,11 +130,12 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 
 	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", True]
 
+
 class _prefix_factory:
 	def __init__(self, bot):
 		self.bot = bot
 
-	@cachedmethod(cache=LRUCache(maxsize=len(bot.guilds)//1.5), key=lambda conn, server_id: keys.hashkey(server_id))
+	@cachedmethod(cache=LRUCache(maxsize=len(self.bot.guilds)//1.5), key=lambda conn, server_id: keys.hashkey(server_id))
 	def _server_prefix(conn, server_id: int):
 		with conn.cursor() as cur:
 			cur.execute("SELECT TRIM(prefix) FROM prefixes WHERE id = %s", (str(server_id),))
@@ -146,6 +147,7 @@ class _prefix_factory_returner:
 		self._prefix_factory = _prefix_factory(bot)
 
 _prefix_factory_returner = _prefix_factory_returner()
+
 
 async def get_prefix(bot, message):
 	""" sets the bot's prefix """
