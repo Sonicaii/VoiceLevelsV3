@@ -20,7 +20,10 @@ class Misc(commands.Cog):
 	async def members(self, interaction: discord.Interaction):
 		await interaction.response.send_message(f"Number of members in this server: {interaction.guild.member_count}")
 
-	# alias: latency
+	@app_commands.command(name="latency", description="current latency of bot")
+	async def latency(self, interaction: discord.Interaction):
+		await interaction.response.send_message(f"Current latency is {round(self.bot.latency * 1000)}ms")
+		
 	@app_commands.command(name="ping", description="current latency of bot")
 	async def ping(self, interaction: discord.Interaction):
 		# await interaction.pong()  # can't use in this context

@@ -200,6 +200,10 @@ class Levels(commands.Cog):
 	async def info(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
 		await self._level(interaction, user)
 
+	@app_commands.command(name="time", description="Gets the time spent in voice channel of a specified user")
+	async def time(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
+		await self._level(interaction, user)
+
 	async def _level(self, interaction, user):
 		lookup = interaction.user if user is None else user
 
@@ -324,7 +328,7 @@ class Levels(commands.Cog):
 		async with self.lock:
 			await self.writeInData()
 		
-		printv(2, "\nCalled an update:\n\tUser actions: ", self.user_actions, "\n\tUser joins: ", self.user_joins, "\n\tUser updates: ", copy)
+		print("\nCalled an update:\n\tUser actions: ", self.user_actions, "\n\tUser joins: ", self.user_joins, "\n\tUser updates: ", copy)
 
 		return await ctx.send("Updated")
 

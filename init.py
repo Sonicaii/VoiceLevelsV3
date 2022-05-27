@@ -14,11 +14,8 @@ from header import (
 	ferror,
 	get_token,
 	get_prefix,
-	cogpr,
-	printv,
+	cogpr
 )
-
-from preset import printv
 
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
 bot = commands.Bot(
@@ -47,8 +44,8 @@ bot = commands.Bot(
 async def on_ready():
 	cogpr("Main", bot)
 	await bot.change_presence(activity=discord.Activity(
-		name="Testing Voice Levels V3",
-		type=discord.ActivityType.playing
+		name="for ,, / Voice Levels V3",
+		type=discord.ActivityType.watching
 	))
 
 	with bot.conn.cursor() as cur:
@@ -96,7 +93,7 @@ async def main():
 			for ext in ["cogs."+i for i in [
 					"levels",
 					"misc",
-					# "help",
+					"help",
 					"snipe",
 				]]:
 				print(f"loading extension: {ext}")

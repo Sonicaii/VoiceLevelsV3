@@ -121,6 +121,9 @@ class Snipe(commands.Cog):
 
 
 	@app_commands.command(name="snipe", description="Snipes messages")
+	@app_commands.describe(
+		distance="Target distance (how many messages away)"
+	)
 	async def snipe(self, interaction: discord.Interaction, distance: Optional[int]):
 
 		m_c_id = interaction.channel.id
