@@ -245,7 +245,7 @@ class Levels(commands.Cog):
 				for server in bot.guilds:
 					dict_nicknames.update({str(member.id): member.name for member in server.members})
 
-				return await interaction.response.send_message(self._format_top(sorted_d, dict_nicknames, page, total_pages))
+				return await interaction.response.send_message(self._format_top(sorted_d, dict_nicknames, page))
 
 		await self._top(interaction, page)
 
@@ -293,7 +293,7 @@ class Levels(commands.Cog):
 		return formatted+"```"
 
 	@commands.command(pass_context=True)
-	async def update(self, ctx, token=False):
+	async def update(self, ctx):
 		""" manually run through all channels and update into data.json """
 
 		if ctx.message.author.id not in bot.sudo:
