@@ -7,7 +7,7 @@ from psycopg2.extras import Json
 import json
 
 
-def get_level_f(seconds: int) -> tuple:
+def get_level_f(seconds: int) -> (int, str):
 	""" function gets the level in (level: int, percentage to next level: str) """
 	d, i = math.modf((0.75*((seconds/360)**0.5)+0.05*seconds/360)/4)
 	return int(i), d
