@@ -55,7 +55,7 @@ async def on_ready():
 	with bot.conn.cursor() as cur:
 		if bot.need_setup:
 			cur.execute("INSERT INTO sudo VALUES %s", ((str(bot.owner_id),),))
-		bot.sudo = [bot.owner_id]
+			bot.sudo = [bot.owner_id]
 		else:
 			cur.execute("SELECT id FROM sudo")
 			bot.sudo = [int(i[0]) for i in cur.fetchall()]
