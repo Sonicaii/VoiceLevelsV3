@@ -220,8 +220,9 @@ class Levels(commands.Cog):
 	async def all(self, interaction: discord.Interaction, page: Optional[int] = 1):
 		if interaction.user.id in bot.sudo:
 			async with interaction.channel.typing():
-				cur.execute("SELECT json_contents FROM levels")
-				self.all_lock = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
+				with bot.conn.cursor() as cur:
+					cur.execute("SELECT json_contents FROM levels")
+					self.all_lock = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 
 		await self.top(interaction, page)
 		self.all_lock = False
