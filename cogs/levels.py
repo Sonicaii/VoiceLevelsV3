@@ -261,11 +261,8 @@ class Levels(commands.Cog):
 		await self._top(interaction, page)
 
 	async def _top(self, interaction, page):
+
 		sorted_d = {}
-
-		total_pages = len(interaction.guild.members)//20+1
-
-		if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
 
 		# Typing in the channel
 		async with interaction.channel.typing():
@@ -275,6 +272,9 @@ class Levels(commands.Cog):
 				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 		
 			dict_nicknames = {i.id: i.display_name for i in interaction.guild.members}
+			total_pages = len(dict_nicknames)//20+1
+
+			if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
 
 			for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True):
 
