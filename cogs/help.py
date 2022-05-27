@@ -13,7 +13,7 @@ class Help(commands.Cog, name='Help'):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		self.bot.cogpr("Help", bot)
+		self.bot.cogpr("Help", self.bot)
 
 	@commands.group(name="help", invoke_without_command=True)
 	async def help_command(self, ctx, *cog):

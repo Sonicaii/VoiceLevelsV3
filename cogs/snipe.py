@@ -77,11 +77,11 @@ class Snipe(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		self.bot.cogpr("Snipe", bot)
+		self.bot.cogpr("Snipe", self.bot)
 
 	@commands.Cog.listener()
 	async def on_message_delete(self, message):
-		if message.author == bot.user:
+		if message.author == self.bot.user:
 			# Don't log itself
 			return
 

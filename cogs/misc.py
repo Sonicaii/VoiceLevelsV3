@@ -11,7 +11,7 @@ class Misc(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		self.bot.cogpr("Misc", bot)
+		self.bot.cogpr("Misc", self.bot)
 
 	async def cog_unload(self):
 		pass
@@ -24,7 +24,7 @@ class Misc(commands.Cog):
 	@app_commands.command(name="ping", description="current latency of bot")
 	async def ping(self, interaction: discord.Interaction):
 		# await interaction.pong()  # can't use in this context
-		await interaction.response.send_message(f"Current latency is {round(bot.latency * 1000)}ms")
+		await interaction.response.send_message(f"Current latency is {round(self.bot.latency * 1000)}ms")
 
 	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int], fmt) -> None:
 		try:

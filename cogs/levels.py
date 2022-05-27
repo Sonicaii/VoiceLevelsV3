@@ -95,14 +95,14 @@ class Levels(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 
-		self.bot.cogpr("Levels", bot)
+		self.bot.cogpr("Levels", self.bot)
 
 		# reset when activated, prevents faulty overnight join times
 		class ctx:
 			async def send(*args, **kwargs): pass
 			class message:
 				class author:
-					id = bot.owner_id
+					id = self.bot.owner_id
 
 		await self.update(ctx)
 
@@ -174,7 +174,7 @@ class Levels(commands.Cog):
 		# 		await self.writeInData()
 
 		# opens the corresponding file\
-		with bot.conn.cursor() as cur:
+		with self.bot.conn.cursor() as cur:
 			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", (str(lookup.id)[-2:],))
 			user_times = cur.fetchone()[0]  # wow it already converted from json to py objects!
 			
@@ -207,7 +207,7 @@ class Levels(commands.Cog):
 		# 		await self.writeInData()
 
 		# opens the corresponding file
-		with bot.conn.cursor() as cur:
+		with self.bot.conn.cursor() as cur:
 			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", (str(lookup.id)[-2:],))
 			user_times = cur.fetchone()[0]  # wow it already converted from json to py objects!
 
@@ -230,9 +230,9 @@ class Levels(commands.Cog):
 
 	@app_commands.command(name="all", description="Leaderboard for this server")
 	async def all(self, interaction: discord.Interaction, page: Optional[int] = 1):
-		if interaction.user.id in bot.sudo:
+		if interaction.user.id in self.bot.sudo:
 			async with interaction.channel.typing():
-				with bot.conn.cursor() as cur:
+				with self.bot.conn.cursor() as cur:
 					cur.execute("SELECT json_contents FROM levels")
 					large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 
@@ -243,7 +243,7 @@ class Levels(commands.Cog):
 
 				sorted_d = {int(i): j for i, j in sorted(large_dict, key=lambda item: item[1], reverse=True)}
 				dict_nicknames = {}
-				for server in bot.guilds:
+				for server in self.bot.guilds:
 					dict_nicknames.update({int(member.id): member.name for member in server.members})
 
 				return await interaction.response.send_message(self._format_top(sorted_d, dict_nicknames, page))
@@ -267,7 +267,7 @@ class Levels(commands.Cog):
 		# Typing in the channel
 		async with interaction.channel.typing():
 
-			with bot.conn.cursor() as cur:
+			with self.bot.conn.cursor() as cur:
 				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
 				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 			
@@ -298,7 +298,7 @@ class Levels(commands.Cog):
 	async def update(self, ctx):
 		""" manually run through all channels and update into data.json """
 
-		if ctx.message.author.id not in bot.sudo:
+		if ctx.message.author.id not in self.bot.sudo:
 			return
 
 		copy = self.user_updates.copy()
@@ -312,7 +312,7 @@ class Levels(commands.Cog):
 
 		member = member(0)
 
-		for server in bot.guilds: # list of guilds
+		for server in self.bot.guilds: # list of guilds
 			for details in server.channels: # list of server channels
 				if str(details.type) == "voice":
 					if details.voice_states:
