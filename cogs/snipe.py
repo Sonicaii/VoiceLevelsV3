@@ -1,13 +1,12 @@
-﻿# recycled
-if __name__ == "__main__":
-	exit()
-	# exits if not imported
+﻿import discord
+from discord import app_commands
+from discord.ext import commands
+from typing import Optional
 
-
-from __main__ import *
 from io import BytesIO
 from aiohttp import ClientSession
 from urllib.parse import urlparse
+
 
 global debug
 debug = False
@@ -78,7 +77,7 @@ class Snipe(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		cogpr("Snipe", bot)
+		self.bot.cogpr("Snipe", bot)
 
 	@commands.Cog.listener()
 	async def on_message_delete(self, message):

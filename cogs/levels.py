@@ -1,11 +1,9 @@
-if __name__ == "__main__":
-	exit()
-	# exits if not imported
-
-from __main__ import *
-from psycopg2.extras import Json
 import json
-
+import discord
+from discord import app_commands
+from discord.ext import tasks, commands
+from psycopg2.extras import Json
+from typing import Optional
 
 def get_level_f(seconds: int) -> (int, str):
 	""" function gets the level in (level: int, percentage to next level: str) """
@@ -95,7 +93,7 @@ class Levels(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 
-		cogpr("Levels", bot)
+		self.bot.cogpr("Levels", bot)
 
 		# reset when activated, prevents faulty overnight join times
 		class ctx:

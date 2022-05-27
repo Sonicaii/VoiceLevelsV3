@@ -20,11 +20,10 @@ from header import (
 
 from preset import printv
 
-print("Creating commands.Bot object")
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
 bot = commands.Bot(
 	case_insensitive=True,
-	# help_command=None,
+	help_command=None,
 	command_prefix=get_prefix,
 	intents=discord.Intents(**{i:True for i in [  # TODO !!! ADD VOICE CHANNEL DETECTION IN INTENTS
 		"message_content",
@@ -100,6 +99,7 @@ async def main():
 				print(f"loading extension: {ext}")
 				await bot.load_extension(ext)
 
+			bot.cogpr = cogpr
 			token, bot.need_setup = get_token(bot.conn)
 			await bot.start(token)
 

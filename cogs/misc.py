@@ -1,7 +1,8 @@
-# import asyncio
-# bad practice but ... fix later
-from __main__ import *
+import discord
+from discord import app_commands
+from discord.ext import commands
 from discord.utils import snowflake_time
+from typing import Union, Optional
 
 class Misc(commands.Cog):
 
@@ -10,7 +11,7 @@ class Misc(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_ready(self):
-		cogpr("Misc", bot)
+		self.bot.cogpr("Misc", bot)
 
 	async def cog_unload(self):
 		pass
