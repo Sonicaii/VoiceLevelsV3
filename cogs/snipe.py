@@ -8,9 +8,6 @@ from aiohttp import ClientSession
 from urllib.parse import urlparse
 
 
-global debug
-debug = False
-
 snipe_target = {}
 
 class View(discord.ui.View):

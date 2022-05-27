@@ -6,10 +6,11 @@ from discord import app_commands
 from discord.ext import tasks, commands
 from psycopg2.extras import Json
 from typing import Optional
+from math import modf
 
 def get_level_f(seconds: int) -> (int, str):
 	""" function gets the level in (level: int, percentage to next level: str) """
-	d, i = math.modf((0.75*((seconds/360)**0.5)+0.05*seconds/360)/4)
+	d, i = modf((0.75*((seconds/360)**0.5)+0.05*seconds/360)/4)
 	return int(i), d
 
 	if seconds <= 21600: # 6 hours
