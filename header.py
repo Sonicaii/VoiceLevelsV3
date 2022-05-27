@@ -105,11 +105,10 @@ def printv(level, *args):
 
 def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 	""" static method? Gets token from token.txt for run() """
-	need_setup = False
 	try:
 		with conn.cursor() as cur:
 			cur.execute("SELECT token FROM token")
-			return cur.fetchone()[0]
+			return [cur.fetchone()[0], False]
 	except Exception: # psycopg2.errors.UndefinedTable
 		import new_db
 		conn.rollback() # Need to rollback after exception
@@ -127,10 +126,8 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 			ferror("You do not have any tables in your database, setting up now")
 			with conn.cursor() as cur:
 				cur.execute(new_db.create_vl)
-			need_setup = True
 
-	print([get_token(conn, recurse+1)[0] if recurse < 1 else "", need_setup])
-	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", need_setup]
+	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", True]
 
 
 async def get_prefix(bot, message):
