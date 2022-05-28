@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import tasks, commands
 from psycopg2.extras import Json
-from typing import Optional
+from typing import Optional, Union
 from math import modf
 
 def get_level_f(seconds: int) -> (int, str):
