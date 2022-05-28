@@ -94,6 +94,7 @@ async def main():
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
 	with psycopg2.connect(db_url, sslmode='require') as bot.conn:
+		bot.conn.autocommit = True
 		print("Connected to database")
 		async with bot:
 

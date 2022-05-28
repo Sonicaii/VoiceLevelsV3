@@ -79,8 +79,9 @@ class Misc(commands.Cog):
 						""", (str(ctx.guild.id), prefix))
 					await self.deliver(ctx)(f"New prefix set to: {prefix}")
 			else:
-				cur.execute("DELETE FROM prefixes WHERE id = %s", (str(ctx.guild.id),))
+				cur.execute("DELETE FROM prefixes WHERE id ~ %s", (str(ctx.guild.id),))
 				await self.deliver(ctx)("Reset prefix to `,,`")
+
 		self.bot._prefix_cache_pop(ctx.guild.id)
 
 	@commands.command(pass_context=True, name="stop")
