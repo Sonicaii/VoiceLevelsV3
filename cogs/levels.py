@@ -320,8 +320,8 @@ class Levels(commands.Cog):
 		await self._update(ctx)
 
 	async def _update(self, ctx, startup=False):
-		print(f"Sudo _update: {self.bot.sudo} {ctx.author.id not in self.bot.sudo}")
-		if ctx.author.id not in self.bot.sudo:
+		print(f"Sudo _update: {self.bot.sudo} {ctx.message.author.id not in self.bot.sudo}")
+		if ctx.message.author.id not in self.bot.sudo:
 			return
 
 		copy = self.user_updates.copy()
