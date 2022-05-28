@@ -102,7 +102,7 @@ class Levels(commands.Cog):
 
 		self.bot.cogpr("Levels", self.bot)
 
-		id = (await self.bot.application_info).owner.id
+		id = (await self.bot.application_info()).owner.id
 
 		# reset when activated, prevents faulty overnight join times?
 		class ctx:
