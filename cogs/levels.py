@@ -171,6 +171,7 @@ class Levels(commands.Cog):
 		await self._total(interaction, user)
 
 	async def _total(self, interaction, user):
+		interaction = await interaction.from_interaction()
 		lookup = interaction.user if user is None else user
 
 		# if lookup.id in self.user_actions:
@@ -194,16 +195,16 @@ class Levels(commands.Cog):
 
 		return await interaction.response.send_message(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
 
-	@app_commands.command(name="level", description="Gets the time spent in voice channel of a specified user")
+	@commands.hybrid_command(name="level", description="Gets the time spent in voice channel of a specified user")
 	async def level(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
 		""" returns human readable text """
 		await self._level(interaction, user)
 
-	@app_commands.command(name="info", description="Gets the time spent in voice channel of a specified user")
+	@commands.hybrid_command(name="info", description="Gets the time spent in voice channel of a specified user")
 	async def info(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
 		await self._level(interaction, user)
 
-	@app_commands.command(name="time", description="Gets the time spent in voice channel of a specified user")
+	@commands.hybrid_command(name="time", description="Gets the time spent in voice channel of a specified user")
 	async def time(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
 		await self._level(interaction, user)
 
