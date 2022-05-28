@@ -321,7 +321,7 @@ class Levels(commands.Cog):
 
 	async def _update(self, ctx, startup=False):
 		print(f"sudo: {self.bot.sudo}")
-		if ctx.message.author.id not in self.bot.sudo
+		if ctx.message.author.id not in self.bot.sudo and not startup:
 			return
 
 		copy = self.user_updates.copy()
