@@ -109,7 +109,7 @@ class Levels(commands.Cog):
 				class author:
 					id = self.bot.owner_id
 
-		await self.update(ctx)
+		await self._update(ctx)
 
 
 	@commands.Cog.listener()
@@ -248,7 +248,7 @@ class Levels(commands.Cog):
 
 	@commands.hybrid_command(name="all", description="Leaderboard for this server")
 	async def all(self, ctx: commands.Context, page: Optional[int] = 1):
-		if not page.isdigit: page = 1
+		if type(page) != int and not page.isdigit: page = 1
 		if ctx.author.id in self.bot.sudo:
 			async with ctx.channel.typing():
 				with self.bot.conn.cursor() as cur:
@@ -281,7 +281,7 @@ class Levels(commands.Cog):
 
 	async def _top(self, ctx, page):
 
-		if not page.isdigit: page = 1
+		if type(page) != int and not page.isdigit: page = 1
 		sorted_d = {}
 
 		# Typing in the channel
@@ -317,7 +317,9 @@ class Levels(commands.Cog):
 	@commands.command(pass_context=True)
 	async def update(self, ctx):
 		""" manually run through all channels and update into data.json """
+		await self._update(ctx)
 
+	async def _update(self, ctx):
 		if ctx.message.author.id not in self.bot.sudo:
 			return
 
