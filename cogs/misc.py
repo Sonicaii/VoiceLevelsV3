@@ -39,7 +39,8 @@ class Misc(commands.Cog):
 					int(thing.id) \
 				if hasattr(thing, "id") else \
 					int(
-						findall(r"(?<=[<@#!:a-z])(\d+)", thing)[0] if type(thing) == str else thing
+						findall(r"(?<=[<@#!:a-z])(\d+)", thing)[0] \
+						if type(thing) is str and not thing.isdigit() else thing
 					)
 				)
 			))
