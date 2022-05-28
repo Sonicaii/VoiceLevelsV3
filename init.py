@@ -93,25 +93,26 @@ async def main():
 	if not db_url:
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
-	async with psycopg2.connect(db_url, sslmode='require', async_=True) as bot.conn, bot:
+	with psycopg2.connect(db_url, sslmode='require') as bot.conn:
 		print("Connected to database")
+		async with bot:
 
-		bot.cogpr = cogpr
-		bot.deliver = deliver
-		bot._prefix_factory_init = False
-		bot._prefix_cache_pop = lambda i: _server_prefix.cache.pop(i, None)
+			bot.cogpr = cogpr
+			bot.deliver = deliver
+			bot._prefix_factory_init = False
+			bot._prefix_cache_pop = lambda i: _server_prefix.cache.pop(i, None)
 
-		for ext in ["cogs."+i for i in [
-				"levels",
-				"misc",
-				"help",
-				"snipe",
-			]]:
-			print(f"loading extension: {ext}")
-			await bot.load_extension(ext)
+			for ext in ["cogs."+i for i in [
+					"levels",
+					"misc",
+					"help",
+					"snipe",
+				]]:
+				print(f"loading extension: {ext}")
+				await bot.load_extension(ext)
 
-		token, bot.need_setup = get_token(bot.conn)
-		await bot.start(token)
+			token, bot.need_setup = get_token(bot.conn)
+			await bot.start(token)
 
 
 if __name__ == "__main__":
