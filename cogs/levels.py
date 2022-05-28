@@ -109,7 +109,7 @@ class Levels(commands.Cog):
 				class author:
 					id = self.bot.owner_id
 
-		await self._update(ctx)
+		await self._update(ctx, startup=True)
 
 
 	@commands.Cog.listener()
@@ -319,8 +319,9 @@ class Levels(commands.Cog):
 		""" manually run through all channels and update into data.json """
 		await self._update(ctx)
 
-	async def _update(self, ctx):
-		if ctx.message.author.id not in self.bot.sudo:
+	async def _update(self, ctx, startup=False):
+		print(f"sudo: {self.bot.sudo}")
+		if ctx.message.author.id not in self.bot.sudo
 			return
 
 		copy = self.user_updates.copy()
