@@ -5,8 +5,9 @@ import discord
 from discord import app_commands
 from discord.ext import tasks, commands
 from psycopg2.extras import Json
-from typing import Optional, Union
+from typing import Optional
 from math import modf
+from re import findall
 
 def get_level_f(seconds: int) -> (int, str):
 	""" function gets the level in (level: int, percentage to next level: str) """
@@ -195,27 +196,32 @@ class Levels(commands.Cog):
 		return await interaction.response.send_message(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
 
 	@commands.hybrid_command(name="level", description="Gets the time spent in voice channel of a specified user")
-	async def level(self, ctx: commands.Context, user: Optional[Union[discord.Object, str]] = None):
+	async def level(self, ctx: commands.Context, user: Optional[str] = None):
 		""" returns human ctx text """
 		await self._level(ctx, user)
 
 	@commands.hybrid_command(name="info", description="Gets the time spent in voice channel of a specified user")
-	async def info(self, ctx: commands.Context, user: Optional[Union[discord.Object, str]] = None):
+	async def info(self, ctx: commands.Context, user: Optional[str] = None):
 		await self._level(ctx, user)
 
 	@commands.hybrid_command(name="time", description="Gets the time spent in voice channel of a specified user")
-	async def time(self, ctx: commands.Context, user: Optional[Union[discord.Object, str]] = None):
+	async def time(self, ctx: commands.Context, user: Optional[str] = None):
 		await self._level(ctx, user)
 
 	async def _level(self, ctx, user):
 		lookup = ctx.author
 		if user is not None:
+			"""
 			if type(user) is str and user.isdigit():
 				lookup = discord.Object(id=int(user))
 				lookup.name = user
 			elif hasattr(user, "id") and hasattr(user, "name"):
 				# elif isinstance(user, discord.User):
 				lookup = user
+			"""
+			if lookup := findall(r"(?<=[<@#!:a-z])(\d+)", user):
+				lookup = discord.Object(id=lookup[0])
+				lookup.name = user
 
 		# if lookup.id in self.user_actions:
 		# 	async with self.lock:
