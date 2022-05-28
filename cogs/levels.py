@@ -195,22 +195,27 @@ class Levels(commands.Cog):
 		return await interaction.response.send_message(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
 
 	@commands.hybrid_command(name="level", description="Gets the time spent in voice channel of a specified user")
-	async def level(self, ctx: commands.Context, user: Optional[discord.User] = None):
+	async def level(self, ctx: commands.Context, user: Optional[Union[discord.User, str]] = None):
 		""" returns human ctx text """
 		await self._level(ctx, user)
 
 	@commands.hybrid_command(name="info", description="Gets the time spent in voice channel of a specified user")
-	async def info(self, ctx: commands.Context, user: Optional[discord.User] = None):
+	async def info(self, ctx: commands.Context, user: Optional[Union[discord.User, str]] = None):
 		await self._level(ctx, user)
 
 	@commands.hybrid_command(name="time", description="Gets the time spent in voice channel of a specified user")
-	async def time(self, ctx: commands.Context, user: Optional[discord.User] = None):
+	async def time(self, ctx: commands.Context, user: Optional[Union[discord.User, str]] = None):
 		await self._level(ctx, user)
 
 	async def _level(self, ctx, user):
 		lookup = ctx.author
 		if user is not None:
-			print(user)
+			if type(user) is str and user.isdigit():
+				lookup = discord.Object(id=int(user))
+				lookup.name = user
+			elif hasattr(user, "id") and hasattr(user, "name"):
+				# elif isinstance(user, discord.User):
+				lookup = user
 
 		# if lookup.id in self.user_actions:
 		# 	async with self.lock:
