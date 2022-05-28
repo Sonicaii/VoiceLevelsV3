@@ -170,10 +170,8 @@ class Levels(commands.Cog):
 	async def seconds(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
 		await self._total(interaction, user)
 
-	async def _total(self, ctx, user):
-		lookup = ctx.author
-		if user is not None:
-			print(user)
+	async def _total(self, interaction, user):
+		lookup = interaction.user if user is None else user
 
 		# if lookup.id in self.user_actions:
 		# 	async with self.lock:
@@ -186,7 +184,7 @@ class Levels(commands.Cog):
 			
 		if str(lookup.id) not in user_times:
 			# record does not exist
-			return await self.deliver(ctx)(f"<@!{lookup.id}> has no time saved yet.")
+			return await interaction.response.send_message(f"<@!{lookup.id}> has no time saved yet.")
 
 		# gets live info and the user times
 		current_user_time = \
@@ -194,7 +192,7 @@ class Levels(commands.Cog):
 		if lookup.id in self.user_joins else \
 			user_times[str(lookup.id)]
 
-		return await self.deliver(ctx)(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
+		return await interaction.response.send_message(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
 
 	@commands.hybrid_command(name="level", description="Gets the time spent in voice channel of a specified user")
 	async def level(self, ctx: commands.Context, user: Optional[discord.User] = None):
@@ -209,8 +207,10 @@ class Levels(commands.Cog):
 	async def time(self, ctx: commands.Context, user: Optional[discord.User] = None):
 		await self._level(ctx, user)
 
-	async def _level(self, interaction, user):
-		lookup = interaction.user if user is None else user
+	async def _level(self, ctx, user):
+		lookup = ctx.author
+		if user is not None:
+			print(user)
 
 		# if lookup.id in self.user_actions:
 		# 	async with self.lock:
@@ -223,7 +223,7 @@ class Levels(commands.Cog):
 
 		if str(lookup.id) not in user_times:
 			# record does not exist
-			return await interaction.response.send_message(f"<@!{lookup.id}> has no time saved yet.")
+			return await self.deliver(ctx)(f"<@!{lookup.id}> has no time saved yet.")
 
 		# gets live info and the user times
 		# current_user_times
@@ -235,7 +235,7 @@ class Levels(commands.Cog):
 		)
 		hours, minutes, seconds = str(cut).split()[-1].split(":")
 
-		return await interaction.response.send_message(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
+		return await self.deliver(ctx)(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
 
 
 	@app_commands.command(name="all", description="Leaderboard for this server")
