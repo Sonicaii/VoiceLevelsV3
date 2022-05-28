@@ -102,12 +102,11 @@ class Levels(commands.Cog):
 
 		self.bot.cogpr("Levels", self.bot)
 
-		# reset when activated, prevents faulty overnight join times
+		# reset when activated, prevents faulty overnight join times?
 		class ctx:
 			async def send(*args, **kwargs): pass
-			class message:
-				class author:
-					id = self.bot.owner_id
+			class author:
+				id = self.bot.owner_id
 
 		await self._update(ctx)
 
@@ -320,7 +319,8 @@ class Levels(commands.Cog):
 		await self._update(ctx)
 
 	async def _update(self, ctx):
-		if ctx.message.author.id not in self.bot.sudo:
+		print(f"Sudo _update: {self.bot.sudo} {ctx.author.id not in self.bot.sudo}")
+		if ctx.author.id not in self.bot.sudo:
 			return
 
 		copy = self.user_updates.copy()
