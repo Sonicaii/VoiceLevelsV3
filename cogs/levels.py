@@ -109,7 +109,7 @@ class Levels(commands.Cog):
 				class author:
 					id = self.bot.owner_id
 
-		await self._update(ctx, startup=True)
+		await self._update(ctx)
 
 
 	@commands.Cog.listener()
@@ -319,8 +319,7 @@ class Levels(commands.Cog):
 		""" manually run through all channels and update into data.json """
 		await self._update(ctx)
 
-	async def _update(self, ctx, startup=False):
-		print(f"Sudo _update: {self.bot.sudo} {ctx.message.author.id not in self.bot.sudo}")
+	async def _update(self, ctx):
 		if ctx.message.author.id not in self.bot.sudo:
 			return
 
@@ -346,7 +345,7 @@ class Levels(commands.Cog):
 		async with self.lock:
 			await self.writeInData()
 		
-		print("\nCalled an update: "+ctx.author.id+"\n\tUser actions:", self.user_actions, "\n\tUser joins:", self.user_joins, "\n\tUser updates:", copy)
+		print("\nCalled an update:",ctx.author.id,"\n\tUser actions:", self.user_actions, "\n\tUser joins:", self.user_joins, "\n\tUser updates:", copy)
 
 		return await ctx.send("Updated")
 
