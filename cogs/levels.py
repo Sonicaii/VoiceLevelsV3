@@ -322,7 +322,7 @@ class Levels(commands.Cog):
 		await self._update(ctx)
 
 	async def _update(self, ctx):
-		print(f"Sudo _update: {self.bot.sudo} {ctx.author.id} {ctx.author.id not in self.bot.sudo}")
+		print(f"Sudo _update: {self.bot.sudo} {ctx.author.id not in self.bot.sudo}")
 		if ctx.author.id not in self.bot.sudo:
 			return
 
@@ -335,14 +335,10 @@ class Levels(commands.Cog):
 			pass
 
 		for server in self.bot.guilds: # list of guilds
-			print(server)
 			for details in server.channels: # list of server channels
-				print(details, details.type)
 				if str(details.type) == "voice":
-					print(details.voice_states)
 					if details.voice_states:
 						for i in details.voice_states: # dict { id : info}
-							print(i)
 							member.id = i
 							await self._on_voice_state_update(member, None, "joined")
 
