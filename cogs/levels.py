@@ -227,11 +227,15 @@ class Levels(commands.Cog):
 				lookup.name = user
 			else:
 				fa = lambda string: findall(r"(?<=[<@#!:a-z])(\d+)", string)
-				if lookup := fa(ctx.message.content): pass
-				if lookup := fa(user): pass
-				else: lookup = [0]
-				lookup = discord.Object(id=lookup[0])
-				lookup.name = user
+				if   lk := fa(ctx.message.content): pass
+				elif lk := fa(user): pass
+				else: lk = False
+				
+				if lk:
+					lookup = discord.Object(id=lk[0])
+					lookup.name = user
+				else:
+					return await self.deliver(ctx)(f"Invalid input")
 
 		# if lookup.id in self.user_actions:
 		# 	async with self.lock:
