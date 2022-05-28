@@ -124,8 +124,9 @@ class Levels(commands.Cog):
 		5. delete their join time if their action was leave ( after.channel == None )
 		6. update their join time to current time
 		"""
+		await self._on_voice_state_update(member, before, after)
 
-		# print(before, after)
+	async def _on_voice_state_update(self, member, before, after):
 
 		if type(after) != str:
 			if before.channel == after.channel or (member.id not in self.user_joins and after.channel == None):
@@ -319,7 +320,7 @@ class Levels(commands.Cog):
 		await self._update(ctx)
 
 	async def _update(self, ctx):
-		print(f"Sudo _update: {self.bot.sudo} {ctx.author.id not in self.bot.sudo}")
+		print(f"Sudo _update: {self.bot.sudo} {ctx.author.id} {ctx.author.id not in self.bot.sudo}")
 		if ctx.author.id not in self.bot.sudo:
 			return
 
@@ -329,18 +330,19 @@ class Levels(commands.Cog):
 			await self.writeInData() # Update everyone who is currently in
 
 		class member:
-			def __init__(self, i):
-				self.id = i
-
-		member = member(0)
+			pass
 
 		for server in self.bot.guilds: # list of guilds
+			print(server)
 			for details in server.channels: # list of server channels
+				print(details, details.type)
 				if str(details.type) == "voice":
+					print(details.voice_states)
 					if details.voice_states:
 						for i in details.voice_states: # dict { id : info}
+							print(i)
 							member.id = i
-							await self.on_voice_state_update(member, None, "joined")
+							await self._on_voice_state_update(member, None, "joined")
 
 		async with self.lock:
 			await self.writeInData()
