@@ -94,7 +94,7 @@ class Levels(commands.Cog):
 
 		self.user_actions = []
 
-		bot.conn.commit()
+		self.bot.conn.commit()
 
 	@commands.Cog.listener()
 	async def on_ready(self):

@@ -31,16 +31,22 @@ class Misc(commands.Cog):
 			return await ctx.interaction.response.pong()
 		await self.deliver(ctx)(f"Current latency is {round(self.bot.latency * 1000)}ms")
 
-	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int], fmt) -> None:
+	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int, str], fmt) -> None:
 		try:
-			msg = fmt.format(snowflake_time=\
-				discord.utils.format_dt(
-						snowflake_time(
-							int(thing.lstrip("<@").lstrip("!").rstrip(">") if type(thing) == str else thing) \
-						if not hasattr(thing, "id") else \
-							thing.id
+			msg = fmt.format(snowflake_time=discord.utils.format_dt(
+				snowflake_time(
+					int(thing.id) \
+				if hasattr(thing, "id") else \
+					int(
+						thing. \
+						lstrip("<"). \
+						lstrip("@"). \
+						lstrip("#"). \
+						lstrip("!"). \
+						rstrip(">") if type(thing) == str else thing
 					)
-				))
+				)
+			))
 		except ValueError:
 			msg = f"Invalid input {thing}"
 		return await self.deliver(interaction)(msg)
@@ -55,7 +61,7 @@ class Misc(commands.Cog):
 	async def id(self, interaction: discord.Interaction, discord_id: str):
 		print(discord_id)
 
-		await self._process_id(interaction, discord.Object(id=discord_id), f"`{discord_id}` is equivalent to {{snowflake_time}}")
+		await self._process_id(interaction, discord_id, f"`{discord_id}` is equivalent to {{snowflake_time}}")
 
 	@app_commands.command(name="user", description="Get when user account was made")
 	async def user(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
@@ -68,10 +74,9 @@ class Misc(commands.Cog):
 		await self._process_id(interaction, channel, f"{channel.name} with the ID of `{channel.id}`\nwas created at {{snowflake_time}}")
 
 	@commands.hybrid_command(name="lookup", with_app_command=True)
-	async def lookup(self, ctx: commands.Context):
-		print(ctx.message.content)
-		if ctx.interaction:
-			print(ctx.interaction.data)
+	async def lookup(self, ctx: commands.Context, thing: Optional[str] = None):
+		if thing is None: thing = ctx.author.id
+		await self._process_id(ctx, thing, f"{thing} is {{snowflake_time}}")
 
 	@commands.hybrid_command(name="prefix", with_app_command=True)
 	@commands.has_permissions(manage_guild=True)

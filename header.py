@@ -6,7 +6,7 @@ from psycopg2.extensions import connection
 from discord.ext import commands
 
 # colours.py ------
-letters = ["k", "r", "g", "y", "b", "m", "c", "w", "K", "R", "G", "Y", "B", "M", "C", "W"]
+_letters = ["k", "r", "g", "y", "b", "m", "c", "w", "K", "R", "G", "Y", "B", "M", "C", "W"]
 class fg:
 	"""
 		Console foreground colouriser
@@ -27,10 +27,10 @@ class fg:
 		capital = bold (not working)
 	"""
 	d = {}
-	for num, letter in enumerate(letters[:8]):
+	for num, letter in enumerate(_letters[:8]):
 		exec(letter+"= '\033["+str(num+30)+"m{}\033[0m'.format")
 		d[letter] = "\033[{}m{}\033[0m".format(num+30, "{}").format
-	for num, letter in enumerate(letters[8:]):
+	for num, letter in enumerate(_letters[8:]):
 		exec(letter+"= '\033["+str(num+30)+"m{}\033[0m'.format")
 		d[letter] = "\033[{}m;1m{}\033[0m".format(num+38, "{}").format
 
@@ -54,7 +54,7 @@ class bg:
 		capital = bold (not working)
 	"""
 	d = {}
-	for num, letter in enumerate(letters):
+	for num, letter in enumerate(_letters):
 		exec(letter+"= '\033["+str(num+40)+"m{}\033[0m'.format")
 		d[letter] = "\033[{}m{}\033[0m".format(num+40, "{}").format
 
@@ -94,7 +94,7 @@ def ferror(*text: str):
 
 def cogpr(name: str, bot: object, colour: str="c") -> str:
 	""" format cog start output"""
-	return printr(fg.d[colour]("Activated ")+fg.d[colour](f"\n{bot.user.name} ")+fg.y(name)+f"\n{time.ctime()}")
+	return printr(fg.d[colour]("\nActivated ")+fg.d[colour](f"{bot.user.name} ")+fg.m(name)+f"\n{time.ctime()}")
 
 
 def printv(level, *args):
