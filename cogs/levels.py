@@ -209,7 +209,8 @@ class Levels(commands.Cog):
 		await self._level(ctx, user)
 
 	async def _level(self, ctx, user):
-		lookup = ctx.author
+		print(ctx.author, ctx.interaction)
+		lookup = ctx.author if ctx.interaction is None else ctx.interaction.user
 		if user is not None:
 			"""
 			if type(user) is str and user.isdigit():
