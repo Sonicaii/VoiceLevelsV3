@@ -166,7 +166,7 @@ class _server_prefix:
 			prefix = cur.fetchone()
 
 		self.cache[server_id] = ',,' if prefix is None else prefix[0]
-		while len(self.cache) > cache_size:
+		while len(self.cache) > self.cache_size:
 			self.cache.popitem(last=False)
 		return self.cache[server_id]
 
