@@ -38,7 +38,7 @@ Putting a number after "snipe" will get you the message that was deleted at the 
 			('``ping    ``', 'This command gives you the latency of this bot.\n*``Aliases: latency``*'),
 			('``lookup  ``', '''This command translate Discord snowflake IDs (any Discord ID)
 to their date of creation. Discord IDs are linked to their creation time.
-*``Aliases: lk``*'''),
+*``Slash commands: user, channel, id``*'''),
 			('``prefix   ``', 'Changes prefix of this bot for this server')
 		]
 

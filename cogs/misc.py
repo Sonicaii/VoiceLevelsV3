@@ -27,21 +27,23 @@ class Misc(commands.Cog):
 
 	@commands.hybrid_command(name="ping", description="current latency of bot")
 	async def ping(self, ctx: commands.Context):
-		# await interaction.pong()  # can't use in this context
+		if ctx.interaction:
+			return await ctx.interaction.response.pong()
 		await self.deliver(ctx)(f"Current latency is {round(self.bot.latency * 1000)}ms")
 
 	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int], fmt) -> None:
 		try:
-			return await interaction.response.send_message(fmt.format(snowflake_time=\
+			msg = fmt.format(snowflake_time=\
 				discord.utils.format_dt(
 						snowflake_time(
-						int(thing.lstrip("<@").lstrip("!").rstrip(">") if type(thing) == str else thing) \
-						if type(thing) == int else \
-						thing.id
+							int(thing.lstrip("<@").lstrip("!").rstrip(">") if type(thing) == str else thing) \
+						if not hasattr(thing, "id") else \
+							thing.id
 					)
-				)))
+				))
 		except ValueError:
-			return await interaction.response.send_message(f"Invalid input {thing}")
+			msg = f"Invalid input {thing}"
+		return await self.deliver(interaction)(msg)
 
 	@app_commands.command(name="id", description="Discord ID to time")
 	@app_commands.describe(
@@ -51,6 +53,8 @@ class Misc(commands.Cog):
 		discord_id="discord-id"
 	)
 	async def id(self, interaction: discord.Interaction, discord_id: str):
+		print(discord_id)
+
 		await self._process_id(interaction, discord.Object(id=discord_id), f"`{discord_id}` is equivalent to {{snowflake_time}}")
 
 	@app_commands.command(name="user", description="Get when user account was made")
@@ -62,6 +66,12 @@ class Misc(commands.Cog):
 	async def channel(self, interaction: discord.Interaction, channel: Optional[Union[app_commands.AppCommandChannel, discord.Thread]] = None):
 		if not channel: channel = interaction.channel
 		await self._process_id(interaction, channel, f"{channel.name} with the ID of `{channel.id}`\nwas created at {{snowflake_time}}")
+
+	@commands.hybrid_command(name="lookup", with_app_command=True)
+	async def lookup(self, ctx: commands.Context):
+		print(ctx.message.content)
+		if ctx.interaction:
+			print(ctx.interaction.data)
 
 	@commands.hybrid_command(name="prefix", with_app_command=True)
 	@commands.has_permissions(manage_guild=True)
