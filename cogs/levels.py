@@ -106,7 +106,7 @@ class Levels(commands.Cog):
 		class ctx:
 			async def send(*args, **kwargs): pass
 			class author:
-				id = self.bot.owner_id
+				id = (await self.bot.application_info).owner.id
 
 		await self._update(ctx)
 
