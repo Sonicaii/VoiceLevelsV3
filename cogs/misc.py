@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from discord.utils import snowflake_time
 from typing import Union, Optional
+from re import findall
 
 class Misc(commands.Cog):
 
@@ -38,17 +39,12 @@ class Misc(commands.Cog):
 					int(thing.id) \
 				if hasattr(thing, "id") else \
 					int(
-						thing. \
-						lstrip("<"). \
-						lstrip("@"). \
-						lstrip("#"). \
-						lstrip("!"). \
-						rstrip(">") if type(thing) == str else thing
+						findall(r"(?<=[<@#!:a-z])(\d+)", thing)[0] if type(thing) == str else thing
 					)
 				)
 			))
-		except ValueError:
-			msg = f"Invalid input {thing}"
+		except (ValueError, IndexError):
+			msg = f"Invalid input: {thing}"
 		return await self.deliver(interaction)(msg)
 
 	@app_commands.command(name="id", description="Discord ID to time")
@@ -76,7 +72,7 @@ class Misc(commands.Cog):
 	@commands.hybrid_command(name="lookup", with_app_command=True)
 	async def lookup(self, ctx: commands.Context, thing: Optional[str] = None):
 		if thing is None: thing = ctx.author.id
-		await self._process_id(ctx, thing, f"{thing} is {{snowflake_time}}")
+		await self._process_id(ctx, thing, f"{thing} translates to {{snowflake_time}}")
 
 	@commands.hybrid_command(name="prefix", with_app_command=True)
 	@commands.has_permissions(manage_guild=True)
