@@ -209,17 +209,8 @@ class Levels(commands.Cog):
 		await self._level(ctx, user)
 
 	async def _level(self, ctx, user):
-		print(ctx.author, user)
 		lookup = ctx.author if ctx.interaction is None else ctx.interaction.user
 		if user is not None:
-			"""
-			if type(user) is str and user.isdigit():
-				lookup = discord.Object(id=int(user))
-				lookup.name = user
-			elif hasattr(user, "id") and hasattr(user, "name"):
-				# elif isinstance(user, discord.User):
-				lookup = user
-			"""
 			if len(ctx.message.mentions) > 0:
 				lookup = ctx.message.mentions[0]
 			elif user.isdigit():
@@ -236,10 +227,6 @@ class Levels(commands.Cog):
 					lookup.name = user
 				else:
 					return await self.deliver(ctx)(f"Invalid input")
-
-		# if lookup.id in self.user_actions:
-		# 	async with self.lock:
-		# 		await self.writeInData()
 
 		# opens the corresponding file
 		with self.bot.conn.cursor() as cur:
