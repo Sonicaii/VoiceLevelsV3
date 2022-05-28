@@ -94,7 +94,7 @@ def ferror(*text: str):
 
 def cogpr(name: str, bot: object, colour: str="c") -> str:
 	""" format cog start output"""
-	return printr(fg.d[colour](f"\n{bot.user.name} ")+name+fg.d[colour](" Activated")+f"\n{time.ctime()}")
+	return printr(fg.d[colour]("Activated ")+fg.d[colour](f"\n{bot.user.name} ")+fg.y(name)+f"\n{time.ctime()}")
 
 
 def printv(level, *args):
