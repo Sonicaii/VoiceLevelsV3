@@ -227,8 +227,8 @@ class Levels(commands.Cog):
 				lookup.name = user
 			else:
 				fa = lambda string: findall(r"(?<=[<@#!:a-z])(\d+)", string)
-				if not lookup := fa(ctx.message.content): pass
-				if not lookup := fa(user): pass
+				if not (lookup := fa(ctx.message.content)): pass
+				if not (lookup := fa(user)): pass
 				else: lookup = [0]
 				lookup = discord.Object(id=lookup[0])
 				lookup.name = user
