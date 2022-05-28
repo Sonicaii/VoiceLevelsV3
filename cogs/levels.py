@@ -102,13 +102,13 @@ class Levels(commands.Cog):
 
 		self.bot.cogpr("Levels", self.bot)
 
-		id = (await self.bot.application_info()).owner.id
+		_id = (await self.bot.application_info()).owner.id
 
 		# reset when activated, prevents faulty overnight join times?
 		class ctx:
 			async def send(*args, **kwargs): pass
 			class author:
-				id = id
+				id = _id
 
 		await self._update(ctx)
 
