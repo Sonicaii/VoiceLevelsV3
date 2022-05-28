@@ -222,7 +222,14 @@ class Levels(commands.Cog):
 			"""
 			if len(ctx.message.mentions) > 0:
 				lookup = ctx.message.mentions[0]
-			elif lookup := findall(r"(?<=[<@#!:a-z])(\d+)", ctx.message.content):
+			elif user.isdigit():
+				lookup = discord.Object(id=int(user))
+				lookup.name = user
+			else:
+				fa = lambda string: findall(r"(?<=[<@#!:a-z])(\d+)", string)
+				if not lookup := fa(ctx.message.content): pass
+				if not lookup := fa(user): pass
+				else: lookup = [0]
 				lookup = discord.Object(id=lookup[0])
 				lookup.name = user
 
@@ -237,7 +244,7 @@ class Levels(commands.Cog):
 
 		if str(lookup.id) not in user_times:
 			# record does not exist
-			return await self.deliver(ctx)(f"<@!{lookup.id}> has no time saved yet.")
+			return await self.deliver(ctx)(f"{lookup.name} has no time saved yet.")
 
 		# gets live info and the user times
 		# current_user_times
