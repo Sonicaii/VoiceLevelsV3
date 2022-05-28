@@ -219,7 +219,9 @@ class Levels(commands.Cog):
 				# elif isinstance(user, discord.User):
 				lookup = user
 			"""
-			if lookup := findall(r"(?<=[<@#!:a-z])(\d+)", user):
+			if len(ctx.message.mentions) > 0:
+				lookup = ctx.message.mentions[0]
+			elif lookup := findall(r"(?<=[<@#!:a-z])(\d+)", ctx.message.content):
 				lookup = discord.Object(id=lookup[0])
 				lookup.name = user
 
