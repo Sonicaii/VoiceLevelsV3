@@ -320,8 +320,8 @@ class Levels(commands.Cog):
 		await self._update(ctx)
 
 	async def _update(self, ctx, startup=False):
-		print(f"sudo: {self.bot.sudo}")
-		if ctx.message.author.id not in self.bot.sudo and not startup:
+		print(f"Sudo _update: {self.bot.sudo} {ctx.author.id not in self.bot.sudo}")
+		if ctx.author.id not in self.bot.sudo:
 			return
 
 		copy = self.user_updates.copy()
@@ -346,7 +346,7 @@ class Levels(commands.Cog):
 		async with self.lock:
 			await self.writeInData()
 		
-		print("\nCalled an update:\n\tUser actions: ", self.user_actions, "\n\tUser joins: ", self.user_joins, "\n\tUser updates: ", copy)
+		print("\nCalled an update: "+ctx.author.id+"\n\tUser actions:", self.user_actions, "\n\tUser joins:", self.user_joins, "\n\tUser updates:", copy)
 
 		return await ctx.send("Updated")
 

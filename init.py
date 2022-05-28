@@ -56,7 +56,7 @@ async def on_ready():
 		else:
 			cur.execute("SELECT TRIM(id) FROM sudo")
 			bot.sudo = [int(i[0]) for i in cur.fetchall()]
-	print(f"Sudo: {bot.sudo}")
+	print(f"Sudo Users: {bot.sudo}")
 
 @bot.event
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
