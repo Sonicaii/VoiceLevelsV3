@@ -1,6 +1,7 @@
 """ Voice Levels header"""
 import time
-from cachetools import cached, cachedmethod, LRUCache, TTLCache, keys
+from collections import OrderedDict
+# from cachetools import cached, cachedmethod, LRUCache, TTLCache, keys
 from psycopg2.extensions import connection
 from discord.ext import commands
 
@@ -151,14 +152,25 @@ class _prefix_factory_returner:
 
 _prefix_factory_returner = _prefix_factory_returner()
 '''
+class _server_prefix:
+	cache_size = 1000
+	cache = OrderedDict()
 
-@cached(cache=LRUCache(maxsize=1000), key=lambda conn, server_id: keys.hashkey(server_id))
-def _server_prefix(conn, server_id: int):
-	return ",," # TODO: CODE CACHE FUNCTIONS, lib not what it needs
-	with conn.cursor() as cur:
-		cur.execute("SELECT TRIM(prefix) FROM prefixes WHERE id = %s", (str(server_id),))
-		prefix = cur.fetchone()
-	return ',,' if prefix is None else prefix[0]
+	def __call__(self, conn, server_id: int):
+		if (prefix := self.cache.get(server_id)) is not None:
+			self.cache.move_to_end(server_id)
+			return prefix
+
+		with conn.cursor() as cur:
+			cur.execute("SELECT TRIM(prefix) FROM prefixes WHERE id = %s", (str(server_id),))
+			prefix = cur.fetchone()
+
+		self.cache[server_id] = ',,' if prefix is None else prefix[0]
+		while len(self.cache) > cache_size:
+			self.cache.popitem(last=False)
+		return self.cache[server_id]
+
+_server_prefix = _server_prefix()
 
 async def get_prefix(bot, message):
 	""" sets the bot's prefix """
@@ -174,7 +186,11 @@ async def get_prefix(bot, message):
 	_server_prefix = _prefix_factory_returner._prefix_factory._server_prefix
 	'''
 
-	print(_server_prefix.cache)
+	if not bot._prefix_factory_init:
+		_server_prefix.cache_size = (len(bot.guilds) // 1.25) if len(bot.guilds) > 1000 else len(bot.guilds)
+		bot._prefix_factory_init = True
+
+	# print(_server_prefix.cache)
 
 	# no prefix needed if not in dm
 	return commands.when_mentioned_or(
