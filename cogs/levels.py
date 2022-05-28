@@ -162,21 +162,17 @@ class Levels(commands.Cog):
 		return
 
 
-	@app_commands.command(name="total", description="Shows total time in seconds")
-	async def total(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
+	@commands.hybrid_command(name="total", description="Shows total time in seconds")
+	async def total(self, ctx: commands.Context, user: Optional[discord.User] = None):
 		""" Return's the user's time in seconds """
-		await self._total(interaction, user)
+		await self._total(ctx, user)
 
-	@app_commands.command(name="seconds", description="Shows total time in seconds")
-	async def seconds(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
-		await self._total(interaction, user)
+	@commands.hybrid_command(name="seconds", description="Shows total time in seconds")
+	async def seconds(self, ctx: commands.Context, user: Optional[discord.User] = None):
+		await self._total(ctx, user)
 
-	async def _total(self, interaction, user):
-		lookup = interaction.user if user is None else user
-
-		# if lookup.id in self.user_actions:
-		# 	async with self.lock:
-		# 		await self.writeInData()
+	async def _total(self, ctx, user):
+		lookup = ctx.author if user is None else user
 
 		# opens the corresponding file\
 		with self.bot.conn.cursor() as cur:
@@ -185,7 +181,7 @@ class Levels(commands.Cog):
 			
 		if str(lookup.id) not in user_times:
 			# record does not exist
-			return await interaction.response.send_message(f"<@!{lookup.id}> has no time saved yet.")
+			return await self.deliver(ctx)(f"<@!{lookup.id}> has no time saved yet.")
 
 		# gets live info and the user times
 		current_user_time = \
@@ -193,7 +189,7 @@ class Levels(commands.Cog):
 		if lookup.id in self.user_joins else \
 			user_times[str(lookup.id)]
 
-		return await interaction.response.send_message(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
+		return await self.deliver(ctx)(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
 
 	@commands.hybrid_command(name="level", description="Gets the time spent in voice channel of a specified user")
 	async def level(self, ctx: commands.Context, user: Optional[str] = None):
@@ -250,10 +246,11 @@ class Levels(commands.Cog):
 		return await self.deliver(ctx)(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
 
 
-	@app_commands.command(name="all", description="Leaderboard for this server")
-	async def all(self, interaction: discord.Interaction, page: Optional[int] = 1):
-		if interaction.user.id in self.bot.sudo:
-			async with interaction.channel.typing():
+	@commands.hybrid_command(name="all", description="Leaderboard for this server")
+	async def all(self, ctx: commands.Context, page: Optional[int] = 1):
+		if not page.isdigit: page = 1
+		if ctx.author.id in self.bot.sudo:
+			async with ctx.channel.typing():
 				with self.bot.conn.cursor() as cur:
 					cur.execute("SELECT json_contents FROM levels")
 					large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
@@ -261,49 +258,50 @@ class Levels(commands.Cog):
 				total_pages = len(large_dict)//20+1
 				total_members = len(large_dict)
 
-				if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
+				if page > total_pages: return await self.deliver(ctx)(f"Nothing on page {page}. Total {total_pages} pages")
 
 				sorted_d = {int(i): j for i, j in sorted(large_dict, key=lambda item: item[1], reverse=True)}
 				dict_nicknames = {}
 				for server in self.bot.guilds:
 					dict_nicknames.update({int(member.id): member.name for member in server.members})
 
-				return await interaction.response.send_message(self._format_top(sorted_d, dict_nicknames, page))
+				return await self.deliver(ctx)(self._format_top(sorted_d, dict_nicknames, page))
 
-		await self._top(interaction, page)
+		await self._top(ctx, page)
 
 
-	@app_commands.command(name="top", description="Leaderboard for this server")
-	async def top(self, interaction: discord.Interaction, page: Optional[int] = 1):
+	@commands.hybrid_command(name="top", description="Leaderboard for this server")
+	async def top(self, ctx: commands.Context, page: Optional[int] = 1):
 		""" leaderboard of the server's times """
-		await self._top(interaction, page)
+		await self._top(ctx, page)
 
-	@app_commands.command(name="leaderboard", description="Leaderboard for this server")
-	async def leaderboard(self, interaction: discord.Interaction, page: Optional[int] = 1):
-		await self._top(interaction, page)
+	@commands.hybrid_command(name="leaderboard", description="Leaderboard for this server")
+	async def leaderboard(self, ctx: commands.Context, page: Optional[int] = 1):
+		await self._top(ctx, page)
 
-	async def _top(self, interaction, page):
+	async def _top(self, ctx, page):
 
+		if not page.isdigit: page = 1
 		sorted_d = {}
 
 		# Typing in the channel
-		async with interaction.channel.typing():
+		async with ctx.channel.typing():
 
 			with self.bot.conn.cursor() as cur:
-				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in interaction.guild.members)),))
+				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in ctx.guild.members)),))
 				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 			
-			list_of_ids = [i.id for i in interaction.guild.members]
+			list_of_ids = [i.id for i in ctx.guild.members]
 			for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True):
 				if int(k) in list_of_ids:
 					sorted_d[int(k)] = v
 
-			dict_nicknames = {i.id: i.display_name for i in interaction.guild.members}
+			dict_nicknames = {i.id: i.display_name for i in ctx.guild.members}
 			total_pages = len(sorted_d)//20+1
 
-			if page > total_pages: return await interaction.response.send_message(f"Nothing on page {page}. Total {total_pages} pages")
+			if page > total_pages: return await self.deliver(ctx)(f"Nothing on page {page}. Total {total_pages} pages")
 
-			await interaction.response.send_message(self._format_top(sorted_d, dict_nicknames, page))
+			await self.deliver(ctx)(self._format_top(sorted_d, dict_nicknames, page))
 
 	def _format_top(self, sorted_d, dict_nicknames, page):
 
