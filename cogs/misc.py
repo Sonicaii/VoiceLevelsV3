@@ -77,7 +77,7 @@ class Misc(commands.Cog):
 						ON CONFLICT (id) DO UPDATE
 							SET prefix = EXCLUDED.prefix
 						""", (str(ctx.guild.id), prefix))
-					await self.deliver(ctx)(f"New prefix set to: {prefix}")
+					return await self.deliver(ctx)(f"New prefix set to: {prefix}")
 			else:
 				cur.execute("DELETE FROM prefixes WHERE id = %s", (str(ctx.guild.id),))
 				await self.deliver(ctx)("Reset prefix to `,,`")
