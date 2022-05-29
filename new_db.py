@@ -29,6 +29,8 @@ CREATE TABLE prefixes (
   PRIMARY KEY (id)
 );
 
+INSERT INTO prefixes (id, prefix) VALUES (0, %s);
+
 CREATE TABLE sudo (
   id char(19) NOT NULL,
   PRIMARY KEY (id)
@@ -61,7 +63,8 @@ INSERT INTO token (token) VALUES
 
 COMMIT;
 """.format(
-
   "YOUR_BOT_TOKEN"
-
 )
+
+# Default bot prefix
+create_vl = create_vl % ",,"

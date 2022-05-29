@@ -345,7 +345,7 @@ class Levels(commands.Cog):
 		async with self.lock:
 			await self.writeInData()
 		
-		print("\nCalled an update:",ctx.author.id,"\n\tUser actions:", self.user_actions, "\n\tUser joins:", self.user_joins, "\n\tUser updates:", copy)
+		# print("\nCalled an update:",ctx.author.id,"\n\tUser actions:", self.user_actions, "\n\tUser joins:", self.user_joins, "\n\tUser updates:", copy)
 
 		return await ctx.send("Updated")
 
