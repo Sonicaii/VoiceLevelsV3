@@ -108,7 +108,7 @@ async def main():
 					"help",
 					"snipe",
 				]]:
-				print(f"loading extension: {ext}")
+				
 				await bot.load_extension(ext)
 
 			token, bot.need_setup = get_token(bot.conn)
