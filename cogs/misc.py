@@ -109,7 +109,7 @@ class Misc(commands.Cog):
 		exit()
 
 	@commands.command(pass_context=True, name="cache_size")
-	async def cache_size(self, ctx: discord.Context):
+	async def cache_size(self, ctx: commands.Context):
 		if ctx.author.id not in self.bot.sudo:
 			return
 		await bot.deliver(ctx)(f"Cache size is: {bot._prefix_cache_size()}")
