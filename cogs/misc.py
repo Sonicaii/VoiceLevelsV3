@@ -112,7 +112,7 @@ class Misc(commands.Cog):
 	async def cache_size(self, ctx: commands.Context):
 		if ctx.author.id not in self.bot.sudo:
 			return
-		await bot.deliver(ctx)(f"Cache size is: {self.bot._prefix_cache_size()}")
+		await self.deliver(ctx)(f"Cache size is: {self.bot._prefix_cache_size()}")
 
 async def setup(bot):
 	await bot.add_cog(Misc(bot))
