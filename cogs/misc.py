@@ -108,5 +108,11 @@ class Misc(commands.Cog):
 		await interaction.response.send_message("Killed process (might auto-reload, run another stop after)", ephemeral=True)
 		exit()
 
+	@commands.command(pass_context=True, name="cache_size")
+	async def cache_size(self, ctx: discord.Context):
+		if ctx.author.id not in self.bot.sudo:
+			return
+		await bot.deliver(ctx)(f"Cache size is: {bot._prefix_cache_size()}")
+
 async def setup(bot):
 	await bot.add_cog(Misc(bot))

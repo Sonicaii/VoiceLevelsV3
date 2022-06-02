@@ -63,7 +63,6 @@ async def on_guild_join(guild):  # Can be abused and rate limit the bot
 
 
 @bot.command()
-# @commands.is_owner()
 async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
 	if ctx.author.id not in bot.sudo:
 		return
@@ -101,6 +100,7 @@ async def main():
 			bot.deliver = deliver
 			bot._prefix_factory_init = False
 			bot._prefix_cache_pop = lambda i: _server_prefix.cache.pop(i, None)
+			bot._prefix_cache_size = lambda: _server_prefix.cache_size
 
 			for ext in ["cogs."+i for i in [
 					"levels",
