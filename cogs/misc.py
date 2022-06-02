@@ -42,7 +42,8 @@ class Misc(commands.Cog):
 						findall(r"(?<=[<@#!:a-z])(\d+)", thing)[0] \
 						if type(thing) is str and not thing.isdigit() else thing
 					)
-				)
+				),
+				style="F"
 			))
 		except (ValueError, IndexError):
 			msg = f"Invalid input: {thing}"
