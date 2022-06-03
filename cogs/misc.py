@@ -29,7 +29,7 @@ class Misc(commands.Cog):
 	@commands.hybrid_command(name="ping", description="current latency of bot")
 	async def ping(self, ctx: commands.Context):
 		if ctx.interaction:
-			return await ctx.interaction.response.pong()
+			# return await ctx.interaction.response.pong()  # What does this even do
 		await self.deliver(ctx)(f"Current latency is {round(self.bot.latency * 1000)}ms")
 
 	async def _process_id(self, interaction: discord.Interaction, thing: Union[discord.Object, int, str], fmt) -> None:
