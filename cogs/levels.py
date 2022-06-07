@@ -132,12 +132,13 @@ class Levels(commands.Cog):
 		await self._on_voice_state_update(member, before, after)
 
 	async def _on_voice_state_update(self, member, before, after):
-		print(member, before, after)
 
 		if before.channel == after.channel or (member.id not in self.user_joins and after.channel == None):
 			# name of the channel unchanged: not a disconnect or move
 			# disconnected while no record of inital connection
 			return
+
+		print("has moved: ", member, before, after)
 
 		self.user_actions.add(member.id)
 
@@ -338,9 +339,9 @@ class Levels(commands.Cog):
 			for details in server.channels: # list of server channels
 				if str(details.type) == "voice":
 					if details.voice_states:
-						for i in details.voice_states: # dict { id : info}
-							member.id = i
-							await self._on_voice_state_update(member, None, "joined")
+						for id in details.voice_states: # dict { id : info}
+							self.user_joins[id] = int(time.time())
+							self.user_actions.add(id)
 
 		async with self.lock:
 			await self.writeInData()
