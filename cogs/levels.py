@@ -105,13 +105,11 @@ class Levels(commands.Cog):
 
 		self.bot.cogpr("Levels", self.bot)
 
-		_id = (await self.bot.application_info()).owner.id
-
 		# reset when activated, prevents faulty overnight join times?
 		class ctx:
 			async def send(*args, **kwargs): pass
 			class author:
-				id = _id
+				id = self.bot.sudo[0]
 
 		await self._update(ctx)
 
@@ -241,7 +239,7 @@ class Levels(commands.Cog):
 		total_seconds = user_times[str(lookup.id)]
 		if lookup.id in self.user_joins:
 			total_seconds += int(time.time()) - self.user_joins[member.id]
-		if lookup.id in self.user_updates[l2(lookup.id)][lookup.id]:
+		if lookup.id in self.user_updates[l2(lookup.id)]:
 			total_seconds += self.user_updates[l2(lookup.id)][lookup.id]
 
 		cut = datetime.timedelta(seconds=total_seconds)
@@ -331,9 +329,6 @@ class Levels(commands.Cog):
 
 		async with self.lock:
 			await self.writeInData() # Update everyone who is currently in
-
-		class member:
-			pass
 
 		for server in self.bot.guilds: # list of guilds
 			for details in server.channels: # list of server channels
