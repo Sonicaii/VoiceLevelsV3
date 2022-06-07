@@ -2,7 +2,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.utils import snowflake_time
-from time import time
+from datetime import datetime, timedelta
 from typing import Union, Optional
 from re import findall
 
@@ -15,7 +15,7 @@ class Misc(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 		self.bot.cogpr("Misc", self.bot)
-		self.start_time = time()
+		self.start_time = datetime.now()
 
 	async def cog_unload(self):
 		pass
@@ -23,7 +23,7 @@ class Misc(commands.Cog):
 	@commands.command(pass_context=True, name="uptime", description="Get uptime of bot")
 	async def uptime(self, ctx: commands.Context):
 		if ctx.author.id in self.bot.sudo:
-			await self.deliver(ctx)(f"Time since last restart: {time() - self.start_time}")
+			await self.deliver(ctx)(f"Time since last restart: {timedelta(seconds=(datetime.now()-self.start_time).seconds)}")
 
 	@commands.hybrid_command(name="members", description="Gets the number of members in the server")
 	async def members(self, ctx: commands.Context):
