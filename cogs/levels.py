@@ -26,6 +26,9 @@ def get_level(seconds: int) -> int:
 	""" function gets level in int """
 	return get_level_f(seconds)[0]
 
+def l2(id: int) -> str:
+	return str(id)[-2:]
+
 class Levels(commands.Cog):
 	""" Main cog that handles detecting, processing and displaying levels """
 
@@ -37,7 +40,7 @@ class Levels(commands.Cog):
 		self.updater.start()
 
 		# list of users who recently disconnected
-		self.user_actions = []
+		# self.user_actions = set()
 		self.user_joins = {}
 		self.user_updates = {
 			str(i).zfill(2): {} for i in range(100)
@@ -93,7 +96,7 @@ class Levels(commands.Cog):
 		}
 		# '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
 
-		self.user_actions = []
+		# self.user_actions.clear()
 
 		self.bot.conn.commit()
 
@@ -129,6 +132,7 @@ class Levels(commands.Cog):
 		await self._on_voice_state_update(member, before, after)
 
 	async def _on_voice_state_update(self, member, before, after):
+		print(member.name, before.channel, after.channel)
 
 		if type(after) != str:
 			if before.channel == after.channel or (member.id not in self.user_joins and after.channel == None):
@@ -136,30 +140,28 @@ class Levels(commands.Cog):
 				# disconnected while no record of inital connection
 				return
 
-		if member.id not in self.user_actions: self.user_actions.append(member.id)
+		# self.user_actions.add(member.id)
 
-		# add their join time
+		# add if not exist
 		if member.id not in self.user_joins:
 			self.user_joins[member.id]: int = int(time.time())
 			return
 
-		# add update time
-		# no not delete here
-		if member.id not in self.user_updates:
-			self.user_updates[str(member.id)[-2:]][member.id]: int = 0
+		# add if not exist
+		if member.id not in self.user_updates[l2(member.id)]:
+			self.user_updates[l2(member.id)][member.id]: int = 0
 
-		# change update time
-		self.user_updates[str(member.id)[-2:]][member.id] += int(time.time()) - self.user_joins[member.id]
+		# add duration
+		self.user_updates[l2(member.id)][member.id] += int(time.time()) - self.user_joins[member.id]
+
+		# if it was not a leave: restart the count
+		# starts the count if it was a first time join
+		self.user_joins[member.id] = int(time.time())
 
 		# removes from needing updates
 		if type(after) != str:
 			if after.channel == None:
 				del self.user_joins[member.id]
-				return
-
-		# if it was not a leave: restart the count
-		# starts the count if it was a first time join
-		self.user_joins[member.id] = int(time.time())
 
 		return
 
@@ -178,7 +180,7 @@ class Levels(commands.Cog):
 
 		# opens the corresponding file\
 		with self.bot.conn.cursor() as cur:
-			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", (str(lookup.id)[-2:],))
+			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", (l2(lookup.id),))
 			user_times = cur.fetchone()[0]  # wow it already converted from json to py objects!
 			
 		if str(lookup.id) not in user_times:
@@ -226,9 +228,9 @@ class Levels(commands.Cog):
 				else:
 					return await self.deliver(ctx)(f"Invalid input")
 
-		# opens the corresponding file
+		# opens the corresponding part
 		with self.bot.conn.cursor() as cur:
-			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", (str(lookup.id)[-2:],))
+			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", (l2(lookup.id),))
 			user_times = cur.fetchone()[0]  # wow it already converted from json to py objects!
 
 		if str(lookup.id) not in user_times:
@@ -290,7 +292,7 @@ class Levels(commands.Cog):
 		async with ctx.channel.typing():
 
 			with self.bot.conn.cursor() as cur:
-				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(str(i.id)[-2:] for i in ctx.guild.members)),))
+				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(l2(i.id) for i in ctx.guild.members)),))
 				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
 			
 			list_of_ids = [i.id for i in ctx.guild.members]
@@ -344,7 +346,7 @@ class Levels(commands.Cog):
 		async with self.lock:
 			await self.writeInData()
 		
-		# print("\nCalled an update:",ctx.author.id,"\n\tUser actions:", self.user_actions, "\n\tUser joins:", self.user_joins, "\n\tUser updates:", copy)
+		# print("\nCalled an update:",ctx.author.id, "\n\tUser joins:", self.user_joins, "\n\tUser updates:", copy)
 
 		return await ctx.send("Updated")
 
