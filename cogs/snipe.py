@@ -14,6 +14,7 @@ snipe_target = {}
 
 class View(discord.ui.View):
 	def __init__(self, *args, **kwargs):
+		self.sniper_id = 0
 		super().__init__(*args, **kwargs)
 
 	@discord.ui.button(
@@ -21,14 +22,8 @@ class View(discord.ui.View):
 		# style=discord.ButtonStyle.danger
 	)
 	async def callback(self, interaction: discord.Interaction, select: discord.ui.button):
-		# await interaction.response.send_message(
-		# 	# f"`Original msg ID:     {og_msg.id}\n" +
-		# 	f"`User:                {interaction.user.name} {interaction.user.id}`\n" +
-		# 	f"`this msg ID:  {interaction.message.id}`\n" +
-		# 	f"`this channel: {interaction.channel}`\n"+
-		# 	f"`Data?: {interaction.data}`"
-		# 	, ephemeral=True)
 		for msg in snipe_target[interaction.channel.id]:
+			
 			# locating the message, could rewrite using ordered dict instead
 			if msg.id == self.msg.id:
 				# the person who clicked the bin button was the original sniper
@@ -94,7 +89,6 @@ class Snipe(commands.Cog):
 	def o_m_d(self, message):
 
 		m_c_id = message.channel.id
-		temp_key = message.id
 
 		msg = self.msg(
 			author=type("author",(object,), dict( # filter out unused author attributes
@@ -144,47 +138,47 @@ class Snipe(commands.Cog):
 			snipe_range = -1
 
 		if snipe_target.get(m_c_id) is None:
-			return await interaction.response.send_message("Couldn't find target to snipe in this channel.", ephemeral=True)
 			# Nothing in list currently
+			return await interaction.response.send_message("Couldn't find target to snipe in this channel.", ephemeral=True)
+
+		if snipe_target[m_c_id][snipe_range].is_denied(interaction.user.id):
+			return await interaction.response.send_message("You are unable to snipe this message", ephemeral=True)
+
+		if dist:
+			if dist > len(snipe_target[m_c_id]):
+				return await interaction.response.send_message("Couldn't find target to snipe. No targets that far out.", ephemeral=True)
+			else:
+				msg = snipe_target[m_c_id][-dist]
+				range_msg = f"from {dist}00m"
+				if dist > 35:
+					range_msg += " which is further than the world's longest confirmed sniper kill"
+
 		else:
-			if snipe_target[m_c_id][snipe_range].is_denied(interaction.user.id):
-				return await interaction.response.send_message("You are unable to snipe this message", ephemeral=True)
+			msg = snipe_target[m_c_id][-1]
+			range_msg = "the closest target"
 
-			if dist:
-				if dist > len(snipe_target[m_c_id]):
-					return await interaction.response.send_message("Couldn't find target to snipe. No targets that far out.", ephemeral=True)
-				else:
-					msg = snipe_target[m_c_id][-dist]
-					range_msg = f"from {dist}00m"
-					if dist > 35:
-						range_msg += " which is further than the world's longest confirmed sniper kill"
+		send = f"""<@{interaction.user.id}> hit {msg.author.name}, {range_msg}, who said\n{msg.content}\n"""
+		file = None
+		if len(msg.attachments) == 1:
+			async with ClientSession() as session:
+				async with session.get(msg.attachments[0]) as resp:
+					if resp.status != 200:
+						send += msg.attachments[0]
+						await interaction.response.send_message('Could not download attachment file', ephemeral=True)
+					file = BytesIO(await resp.read())
+		else:
+			for url in msg.attachments:
+				send += url + "\n"
 
-			else:
-				msg = snipe_target[m_c_id][-1]
-				range_msg = "the closest target"
-
-			send = f"""<@{interaction.user.id}> hit {msg.author.name}, {range_msg}, who said\n{msg.content}\n"""
-			file = None
-			if len(msg.attachments) == 1:
-				async with ClientSession() as session:
-					async with session.get(msg.attachments[0]) as resp:
-						if resp.status != 200:
-							send += msg.attachments[0]
-							await interaction.response.send_message('Could not download attachment file', ephemeral=True)
-						file = BytesIO(await resp.read())
-			else:
-				for url in msg.attachments:
-					send += url + "\n"
-
-			view=View()
-			view.msg = msg
-			view.sniper_id = interaction.user.id
-			new_msg = await interaction.response.send_message(
-				send,
-				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
-				file=discord.File(file, basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING,
-				view=view
-			)
+		view=View()
+		view.msg = msg
+		view.sniper_id = interaction.user.id
+		new_msg = await interaction.response.send_message(
+			send,
+			# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
+			file=discord.File(file, basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING,
+			view=view
+		)
 
 
 async def setup(bot):

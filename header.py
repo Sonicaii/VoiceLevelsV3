@@ -98,7 +98,7 @@ def cogpr(name: str, bot: object, colour: str="c") -> str:
 
 
 def printv(level, *args):
-	""" TODO depricate, relace with logging module """
+	""" TODO relace with logging module """
 	if type(level) == int:
 		print(*args)
 	else:

@@ -61,8 +61,6 @@ async def on_guild_join(guild):  # Can be abused and rate limit the bot
 
 @bot.command()
 async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
-	if ctx.author.id not in bot.sudo:
-		return
 	"""
 	https://gist.github.com/AbstractUmbra/a9c188797ae194e592efe05fa129c57f
 		Usage:
@@ -70,16 +68,16 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 			`!sync ~` -> sync to current guild only.
 			`!sync guild_id1 guild_id2` -> syncs specifically to these two guilds.
 	"""
+	if ctx.author.id not in bot.sudo:
+		return
+
 	await ctx.send("Sycning global...")
 	await ctx.bot.tree.sync()  # this bot only has global commands so this must be run
 
 
 def deliver(obj: Union[commands.Context, discord.Interaction, Any]):
 	""" returns an async function that will send message """
-	if isinstance(obj, discord.Interaction):
-		return obj.response.send_message
-	else:
-		return obj.send
+	return obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
 
 
 async def main():
