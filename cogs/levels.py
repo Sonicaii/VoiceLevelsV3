@@ -132,7 +132,7 @@ class Levels(commands.Cog):
 		await self._on_voice_state_update(member, before, after)
 
 	async def _on_voice_state_update(self, member, before, after):
-		print(member.name, before.channel, after.channel)
+		print(member, before, after)
 
 		if before.channel == after.channel or (member.id not in self.user_joins and after.channel == None):
 			# name of the channel unchanged: not a disconnect or move
