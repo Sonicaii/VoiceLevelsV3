@@ -322,6 +322,7 @@ class Levels(commands.Cog):
 		await self._update(ctx)
 
 	async def _update(self, ctx):
+		print(f"{ctx.author.id} Called for update")
 		if ctx.author.id not in self.bot.sudo:
 			return
 
