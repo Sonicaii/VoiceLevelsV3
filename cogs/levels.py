@@ -40,7 +40,7 @@ class Levels(commands.Cog):
 		self.updater.start()
 
 		# list of users who recently disconnected
-		# self.user_actions = set()
+		self.user_actions = set()
 		self.user_joins = {}
 		self.user_updates = {
 			str(i).zfill(2): {} for i in range(100)
@@ -96,7 +96,7 @@ class Levels(commands.Cog):
 		}
 		# '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
 
-		# self.user_actions.clear()
+		self.user_actions.clear()
 
 		self.bot.conn.commit()
 
@@ -134,13 +134,12 @@ class Levels(commands.Cog):
 	async def _on_voice_state_update(self, member, before, after):
 		print(member.name, before.channel, after.channel)
 
-		if type(after) != str:
-			if before.channel == after.channel or (member.id not in self.user_joins and after.channel == None):
-				# name of the channel unchanged: not a disconnect or move
-				# disconnected while no record of inital connection
-				return
+		if before.channel == after.channel or (member.id not in self.user_joins and after.channel == None):
+			# name of the channel unchanged: not a disconnect or move
+			# disconnected while no record of inital connection
+			return
 
-		# self.user_actions.add(member.id)
+		self.user_actions.add(member.id)
 
 		# add if not exist
 		if member.id not in self.user_joins:
@@ -159,9 +158,8 @@ class Levels(commands.Cog):
 		self.user_joins[member.id] = int(time.time())
 
 		# removes from needing updates
-		if type(after) != str:
-			if after.channel == None:
-				del self.user_joins[member.id]
+		if after.channel == None:
+			del self.user_joins[member.id]
 
 		return
 
@@ -241,8 +239,8 @@ class Levels(commands.Cog):
 		# current_user_times
 		total_seconds = user_times[str(lookup.id)]
 		cut = datetime.timedelta(seconds=\
-				total_seconds + int(time.time()) - self.user_joins[lookup.id] \
-			if lookup.id in self.user_joins else \
+				total_seconds + int(time.time()) - self.user_updates[l2(lookup.id)][lookup.id] \
+			if lookup.id in self.user_actions else \
 				total_seconds
 		)
 		hours, minutes, seconds = str(cut).split()[-1].split(":")
