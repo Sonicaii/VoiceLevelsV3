@@ -238,11 +238,12 @@ class Levels(commands.Cog):
 		# gets live info and the user times
 		# current_user_times
 		total_seconds = user_times[str(lookup.id)]
-		cut = datetime.timedelta(seconds=\
-				total_seconds + int(time.time()) - self.user_updates[l2(lookup.id)][lookup.id] \
-			if lookup.id in self.user_actions else \
-				total_seconds
-		)
+		if lookup.id in self.user_joins:
+			total_seconds += int(time.time()) - self.user_joins[member.id]
+		if lookup.id in self.user_updates[l2(lookup.id)][lookup.id]:
+			total_seconds += self.user_updates[l2(lookup.id)][lookup.id]
+
+		cut = datetime.timedelta(seconds=total_seconds)
 		hours, minutes, seconds = str(cut).split()[-1].split(":")
 
 		return await self.deliver(ctx)(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
