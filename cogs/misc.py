@@ -14,9 +14,15 @@ class Misc(commands.Cog):
 	@commands.Cog.listener()
 	async def on_ready(self):
 		self.bot.cogpr("Misc", self.bot)
+		self.start_time = time.time()
 
 	async def cog_unload(self):
 		pass
+
+	@commands.command(pass_context=True, name="uptime", description="Get uptime of bot")
+	async def uptime(self, ctx: commands.Context):
+		if ctx.author.id in self.bot.sudo:
+			await self.deliver(ctx)(f"Time since last restart: {time.time() - self.start_time}")
 
 	@commands.hybrid_command(name="members", description="Gets the number of members in the server")
 	async def members(self, ctx: commands.Context):
