@@ -2,7 +2,6 @@ import asyncio
 import json
 import time, datetime
 import discord
-from discord import app_commands
 from discord.ext import tasks, commands
 from psycopg2.extras import Json
 from typing import Optional
@@ -135,8 +134,6 @@ class Levels(commands.Cog):
 			# name of the channel unchanged: not a disconnect or move
 			# disconnected while no record of inital connection
 			return
-
-		print("has moved: ", member, before, after)
 
 		self.user_actions.add(member.id)
 
@@ -322,7 +319,6 @@ class Levels(commands.Cog):
 		await self._update(ctx)
 
 	async def _update(self, ctx):
-		print(f"{ctx.author.id} Called for update")
 		if ctx.author.id not in self.bot.sudo:
 			return
 

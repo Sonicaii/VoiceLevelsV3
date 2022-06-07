@@ -1,12 +1,12 @@
 ﻿import asyncio
-import os
 import discord
 from discord import app_commands
 from discord.ext import commands
-from typing import Optional
 
-from io import BytesIO
 from aiohttp import ClientSession
+from io import BytesIO
+from os.path import basename
+from typing import Optional
 from urllib.parse import urlparse
 
 
@@ -182,7 +182,7 @@ class Snipe(commands.Cog):
 			new_msg = await interaction.response.send_message(
 				send,
 				# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
-				file=discord.File(file, os.path.basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING,
+				file=discord.File(file, basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING,
 				view=view
 			)
 

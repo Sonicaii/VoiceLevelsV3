@@ -152,6 +152,7 @@ class _prefix_factory_returner:
 
 _prefix_factory_returner = _prefix_factory_returner()
 '''
+
 class _server_prefix:
 	cache_size = 1000
 	cache = OrderedDict()
