@@ -109,7 +109,7 @@ class Levels(commands.Cog):
 		class ctx:
 			async def send(*args, **kwargs): pass
 			class author:
-				id = self.bot.sudo[0]
+				id = self.bot.sudo[-1]
 
 		await self._update(ctx)
 
