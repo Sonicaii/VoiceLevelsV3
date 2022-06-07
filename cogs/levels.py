@@ -238,7 +238,7 @@ class Levels(commands.Cog):
 		# current_user_times
 		total_seconds = user_times[str(lookup.id)]
 		if lookup.id in self.user_joins:
-			total_seconds += int(time.time()) - self.user_joins[member.id]
+			total_seconds += int(time.time()) - self.user_joins[lookup.id]
 		if lookup.id in self.user_updates[l2(lookup.id)]:
 			total_seconds += self.user_updates[l2(lookup.id)][lookup.id]
 
