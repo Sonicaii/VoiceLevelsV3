@@ -53,42 +53,49 @@ class Levels(commands.Cog):
 		class user: ... # looks better lol
 
 		# Get data
-		with self.bot.conn.cursor() as cur:
-			occupied = tuple(k for k, v in self.user_updates.items() if v)
-			if not occupied: return
+		try:
+			cur = self.bot.conn.cursor()
+		except psycopg2.InterfaceError:
+			self.bot.refresh_conn()
+			cur = self.bot.conn.cursor()
 
-			cur.execute("SELECT right_two, json_contents FROM levels WHERE right_two IN %s", (occupied,))
-			results = cur.fetchall()
-			for right_two, json_contents in results:
-				for user.id, user.time in self.user_updates[right_two].items():
-					try:
-						json_contents[str(user.id)] += user.time
-					except KeyError:
-						json_contents[str(user.id)] = user.time
+		occupied = tuple(k for k, v in self.user_updates.items() if v)
+		if not occupied: return
 
-			# don't even try to sql inject only with discord user id and time in seconds
+		cur.execute("SELECT right_two, json_contents FROM levels WHERE right_two IN %s", (occupied,))
+		results = cur.fetchall()
+		for right_two, json_contents in results:
+			for user.id, user.time in self.user_updates[right_two].items():
+				try:
+					json_contents[str(user.id)] += user.time
+				except KeyError:
+					json_contents[str(user.id)] = user.time
+
+		# don't even try to sql inject only with discord user id and time in seconds
+		"""
+			Manual import
+			>>> var = {"id": time, "id": time ... }
+			>>> results = [(str(i).zfill(2), {},) for i in range(100)]
+			>>> for k, v in var.items():
+			>>> 	results[int(k[-2:])][1][k] = v
+		"""
+		cur.execute(
 			"""
-				Manual import
-				>>> var = {"id": time, "id": time ... }
-				>>> results = [(str(i).zfill(2), {},) for i in range(100)]
-				>>> for k, v in var.items():
-				>>> 	results[int(k[-2:])][1][k] = v
-			"""
-			cur.execute(
-				"""
-					UPDATE levels SET
-						json_contents = c.json_contents
-					FROM (values
-						%s
-					) AS c(right_two, json_contents)
-					WHERE levels.right_two::bpchar = c.right_two::bpchar;
-				""" % ", ".join([f"('{r_t}'::bpchar, '{json.dumps(v)}'::json)" for r_t, v in results])
+				UPDATE levels SET
+					json_contents = c.json_contents
+				FROM (values
+					%s
+				) AS c(right_two, json_contents)
+				WHERE levels.right_two::bpchar = c.right_two::bpchar;
+			""" % ", ".join([f"('{r_t}'::bpchar, '{json.dumps(v)}'::json)" for r_t, v in results])
 
-				# Json(v) gets inferred as type records
-				# , [tuple( (r_t, Json(v)) for r_t, v in results)]
+			# Json(v) gets inferred as type records
+			# , [tuple( (r_t, Json(v)) for r_t, v in results)]
 
-			)
-			# { ", ".join(["('"+r_t+"'::bpchar, '"+json.dumps(v)+"'::json)" for r_t, v in results]) }
+		)
+		# { ", ".join(["('"+r_t+"'::bpchar, '"+json.dumps(v)+"'::json)" for r_t, v in results]) }
+
+		cur.close()
 
 		self.user_updates = {
 			str(i).zfill(2): {} for i in range(100)

@@ -80,6 +80,9 @@ def deliver(obj: Union[commands.Context, discord.Interaction, Any]):
 	return obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
 
 
+def refresh_conn(self):
+	self.conn = psycopg2.connect(os.environ.get("DATABASE_URL"), sslmode='require')
+
 async def main():
 	print("Connecting to database...")
 
@@ -87,28 +90,31 @@ async def main():
 	if not db_url:
 		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
-	with psycopg2.connect(db_url, sslmode='require') as bot.conn:
-		print("Connected to database")
-		async with bot:
+	bot.conn = psycopg2.connect(db_url, sslmode='require')
 
-			bot.cogpr = cogpr
-			bot.deliver = deliver
-			bot._prefix_factory_init = False
-			bot._prefix_cache_pop = lambda i: _server_prefix.cache.pop(i, None)
-			bot._prefix_cache_size = lambda: _server_prefix.cache_size
+	print("Connected to database")
+	async with bot:
 
-			for ext in ["cogs."+i for i in [
-					"levels",
-					"misc",
-					"help",
-					"snipe",
-				]]:
-				
-				await bot.load_extension(ext)
+		bot.cogpr = cogpr
+		bot.deliver = deliver
+		bot.refresh_conn = refresh_conn
+		bot._prefix_factory_init = False
+		bot._prefix_cache_pop = lambda i: _server_prefix.cache.pop(i, None)
+		bot._prefix_cache_size = lambda: _server_prefix.cache_size
 
-			token, bot.need_setup = get_token(bot.conn)
-			await bot.start(token)
+		for ext in ["cogs."+i for i in [
+				"levels",
+				"misc",
+				"help",
+				"snipe",
+			]]:
+			
+			await bot.load_extension(ext)
 
+		token, bot.need_setup = get_token(bot.conn)
+		await bot.start(token)
+
+	bot.conn.close()
 
 if __name__ == "__main__":
 	asyncio.run(main())
