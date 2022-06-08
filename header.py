@@ -129,6 +129,8 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 		# 	with conn.cursor() as cur:
 			cur.execute(new_db.create_vl)
 
+		conn.commit()
+
 	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", True]
 
 '''
