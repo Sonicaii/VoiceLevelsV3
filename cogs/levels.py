@@ -111,6 +111,8 @@ class Levels(commands.Cog):
 
 		self.bot.cogpr("Levels", self.bot)
 
+		await asyncio.sleep(15) # Wait a bit for sudo to load in init.py
+
 		# reset when activated, prevents faulty overnight join times?
 		class ctx:
 			async def send(*args, **kwargs): pass

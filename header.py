@@ -116,6 +116,7 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 		conn.rollback() # Need to rollback after exception
 
 		ferror(f"NO TOKEN IN DATABASE!")
+		print(e)
 		ferror("Edit new_db.py to insert bot token or run:")
 		ferror("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
 
