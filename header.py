@@ -116,18 +116,17 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 		conn.rollback() # Need to rollback after exception
 
 		ferror(f"NO TOKEN IN DATABASE!")
-		print(e)
 		ferror("Edit new_db.py to insert bot token or run:")
 		ferror("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
 
 		with conn.cursor() as cur:
 			cur.execute(new_db.create_token)
-		# 	cur.execute(new_db.detect)
-		# 	has_tables = cur.fetchone()[0]
+			# 	cur.execute(new_db.detect)
+			# 	has_tables = cur.fetchone()[0]
 
-		# if not has_tables:
-		# 	ferror("You do not have any tables in your database, setting up now")
-		# 	with conn.cursor() as cur:
+			# if not has_tables:
+			# 	ferror("You do not have any tables in your database, setting up now")
+			# 	with conn.cursor() as cur:
 			cur.execute(new_db.create_vl)
 
 		conn.commit()
