@@ -112,7 +112,10 @@ async def main():
 			await bot.load_extension(ext)
 
 		token, bot.need_setup = get_token(bot.conn)
-		await bot.start(token)
+		try:
+			await bot.start(token)
+		except discord.errors.LoginFailure as e:
+			ferror(e)
 
 	bot.conn.close()
 

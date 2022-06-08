@@ -106,7 +106,7 @@ def printv(level, *args):
 
 
 def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
-	""" static method? Gets token from token.txt for run() """
+	""" static method? Gets token from database for run() """
 	try:
 		with conn.cursor() as cur:
 			cur.execute("SELECT token FROM token")
@@ -117,7 +117,7 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 
 		ferror(f"NO TOKEN IN DATABASE!")
 		ferror("Edit new_db.py to insert bot token or run:")
-		ferror("\t"+"INSERT INTO token (token) VALUES ('BOT_TOKEN');")
+		ferror("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
 
 		with conn.cursor() as cur:
 			cur.execute(new_db.create_token)
