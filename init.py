@@ -115,7 +115,8 @@ async def main():
 		try:
 			await bot.start(token)
 		except discord.errors.LoginFailure as e:
-			ferror(e)
+			ferror("Invalid token! Please refresh or insert correct token into the database")
+			ferror("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
 
 	bot.conn.close()
 
