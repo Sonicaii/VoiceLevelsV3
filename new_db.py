@@ -29,7 +29,7 @@ CREATE TABLE prefixes (
   PRIMARY KEY (id)
 );
 
-INSERT INTO prefixes (id, prefix) VALUES (0, %s);
+INSERT INTO prefixes (id, prefix) VALUES (0, '%s');
 
 CREATE TABLE sudo (
   id char(19) NOT NULL,
