@@ -111,11 +111,12 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 		with conn.cursor() as cur:
 			cur.execute("SELECT token FROM token")
 			return [cur.fetchone()[0], False]
-	except Exception: # psycopg2.errors.UndefinedTable
+	except Exception as e: # psycopg2.errors.UndefinedTable
 		import new_db
 		conn.rollback() # Need to rollback after exception
 
 		ferror(f"NO TOKEN IN DATABASE!")
+		print(e)
 		ferror("Edit new_db.py to insert bot token or run:")
 		ferror("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
 
