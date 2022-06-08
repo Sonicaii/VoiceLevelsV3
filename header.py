@@ -121,13 +121,13 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 
 		with conn.cursor() as cur:
 			cur.execute(new_db.create_token)
-			cur.execute(new_db.detect)
-			has_tables = cur.fetchone()[0]
+		# 	cur.execute(new_db.detect)
+		# 	has_tables = cur.fetchone()[0]
 
-		if not has_tables:
-			ferror("You do not have any tables in your database, setting up now")
-			with conn.cursor() as cur:
-				cur.execute(new_db.create_vl)
+		# if not has_tables:
+		# 	ferror("You do not have any tables in your database, setting up now")
+		# 	with conn.cursor() as cur:
+			cur.execute(new_db.create_vl)
 
 	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", True]
 
