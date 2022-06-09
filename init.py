@@ -55,9 +55,11 @@ async def on_ready():
 			if not bot.sudo:
 				raise psycopg2.errors.UndefinedTable
 		except psycopg2.errors.UndefinedTable:
-			print(f"ownder id: {bot.owner_id}")
-			cur.execute("INSERT INTO sudo VALUES %s", ((str(bot.owner_id),),))
-			bot.sudo = [int(bot.owner_id)]
+			owner_id = (await bot.application_info()).owner.id
+			print(f"owner id: {owner_id}")
+
+			cur.execute("INSERT INTO sudo VALUES %s", ((str(owner_id),),))
+			bot.sudo = [int(owner_id)]
 			conn.commit()
 			print(bot.sudo)
 
