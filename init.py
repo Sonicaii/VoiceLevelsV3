@@ -46,16 +46,21 @@ async def on_ready():
 		type=discord.ActivityType.watching
 	))
 
+	# INSERT INTO sudo VALUES ('discord id')
 	with bot.conn.cursor() as cur:
 		try:
 			cur.execute("SELECT TRIM(id) FROM sudo")
 			bot.sudo = [int(i[0]) for i in cur.fetchall()]
+			print(bot.sudo)
 			if not bot.sudo:
 				raise psycopg2.errors.UndefinedTable
 		except psycopg2.errors.UndefinedTable:
+			print(f"ownder id: {bot.owner_id}")
 			cur.execute("INSERT INTO sudo VALUES %s", ((str(bot.owner_id),),))
-			bot.sudo = [bot.owner_id]
-			
+			bot.sudo = [int(bot.owner_id)]
+			conn.commit()
+			print(bot.sudo)
+
 
 @bot.event
 async def on_guild_join(guild):  # Can be abused and rate limit the bot
