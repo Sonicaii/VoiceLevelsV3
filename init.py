@@ -90,6 +90,7 @@ def deliver(obj: Union[commands.Context, discord.Interaction, Any]):
 def refresh_conn(self):
 	self.conn = psycopg2.connect(os.environ.get("DATABASE_URL"), sslmode='require')
 
+
 async def main():
 	print("Connecting to database...")
 
@@ -126,6 +127,7 @@ async def main():
 			ferror("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
 
 	bot.conn.close()
+
 
 if __name__ == "__main__":
 	asyncio.run(main())

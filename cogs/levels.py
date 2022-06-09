@@ -1,6 +1,7 @@
 import asyncio
+import datetime
 import json
-import time, datetime
+import time
 import discord
 from discord.ext import tasks, commands
 from psycopg2.extras import Json
@@ -8,16 +9,17 @@ from typing import Optional
 from math import modf
 from re import findall
 
+
 def get_level_f(seconds: int) -> (int, str):
 	""" function gets the level in (level: int, percentage to next level: str) """
 	d, i = modf((0.75*((seconds/360)**0.5)+0.05*seconds/360)/4)
 	return int(i), d
 
-	if seconds <= 21600: # 6 hours
+	if seconds <= 21600:  # 6 hours
 		return int(seconds/180), (str(seconds/180 - int(seconds/180)).split(".")[1]+"0")[:2]
-	elif seconds <= 86400: # 24 hours
+	elif seconds <= 86400:  # 24 hours
 		return 120 + int((seconds - 21600)*80/64800), (str((seconds - 21600)*80/64800 - int((seconds - 21600)*80/64800)).split(".")[1]+"0")[:2]
-	else: # seconds <= 604800: # 7 days
+	else:  # seconds <= 604800:  # 7 days
 		return 200 + int(seconds/6048), (str(seconds/6048+200 - int(seconds/6048+200)).split(".")[1]+"0")[:2]
 
 
@@ -25,8 +27,10 @@ def get_level(seconds: int) -> int:
 	""" function gets level in int """
 	return get_level_f(seconds)[0]
 
+
 def l2(id: int) -> str:
 	return str(id)[-2:]
+
 
 class Levels(commands.Cog):
 	""" Main cog that handles detecting, processing and displaying levels """
@@ -50,7 +54,7 @@ class Levels(commands.Cog):
 	async def writeInData(self) -> None:
 		""" this function writes the data into the database """
 
-		class user: ... # looks better lol
+		class user: ...  # looks better lol
 
 		# Get data
 		try:
@@ -115,7 +119,7 @@ class Levels(commands.Cog):
 
 		self.bot.cogpr("Levels", self.bot)
 
-		await asyncio.sleep(15) # Wait a bit for sudo to load in init.py
+		await asyncio.sleep(15)  # Wait a bit for sudo to load in init.py
 
 		# reset when activated, prevents faulty overnight join times?
 		class ctx:
@@ -125,6 +129,9 @@ class Levels(commands.Cog):
 
 		await self._update(ctx)
 
+	async def cog_unload(self):
+		with self.lock:
+			self.writeInData()
 
 	@commands.Cog.listener()
 	async def on_voice_state_update(self, member, before, after):
@@ -140,6 +147,7 @@ class Levels(commands.Cog):
 		6. update their join time to current time
 		"""
 		await self._on_voice_state_update(member, before, after)
+
 
 	async def _on_voice_state_update(self, member, before, after):
 
@@ -172,7 +180,6 @@ class Levels(commands.Cog):
 
 		return
 
-
 	@commands.hybrid_command(name="total", description="Shows total time in seconds")
 	async def total(self, ctx: commands.Context, user: Optional[discord.User] = None):
 		""" Return's the user's time in seconds """
@@ -182,13 +189,14 @@ class Levels(commands.Cog):
 	async def seconds(self, ctx: commands.Context, user: Optional[discord.User] = None):
 		await self._total(ctx, user)
 
+
 	async def _total(self, ctx, user):
 		lookup = ctx.author if user is None else user
 
 		# opens the corresponding file\
 		with self.bot.conn.cursor() as cur:
 			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", (l2(lookup.id),))
-			user_times = cur.fetchone()[0]  # wow it already converted from json to py objects!
+			user_times = cur.fetchone()[0]   # wow it already converted from json to py objects!
 			
 		if str(lookup.id) not in user_times:
 			# record does not exist
@@ -214,6 +222,7 @@ class Levels(commands.Cog):
 	@commands.hybrid_command(name="time", description="Gets the time spent in voice channel of a specified user")
 	async def time(self, ctx: commands.Context, user: Optional[str] = None):
 		await self._level(ctx, user)
+
 
 	async def _level(self, ctx, user):
 		lookup = ctx.author if ctx.interaction is None else ctx.interaction.user
@@ -257,7 +266,6 @@ class Levels(commands.Cog):
 
 		return await self.deliver(ctx)(f"{lookup.name} has spent {cut.days} days, {hours} hours, {minutes.lstrip('0')} minutes and {seconds.lstrip('0')} seconds on call: level {get_level(total_seconds)}")
 
-
 	@commands.hybrid_command(name="all", description="Leaderboard for this server")
 	async def all(self, ctx: commands.Context, page: Optional[int] = 1):
 		if type(page) != int and not page.isdigit: page = 1
@@ -281,7 +289,6 @@ class Levels(commands.Cog):
 
 		await self._top(ctx, page)
 
-
 	@commands.hybrid_command(name="top", description="Leaderboard for this server")
 	async def top(self, ctx: commands.Context, page: Optional[int] = 1):
 		""" leaderboard of the server's times """
@@ -290,6 +297,7 @@ class Levels(commands.Cog):
 	@commands.hybrid_command(name="leaderboard", description="Leaderboard for this server")
 	async def leaderboard(self, ctx: commands.Context, page: Optional[int] = 1):
 		await self._top(ctx, page)
+
 
 	async def _top(self, ctx, page):
 
@@ -315,6 +323,7 @@ class Levels(commands.Cog):
 
 			await self.deliver(ctx)(self._format_top(sorted_d, dict_nicknames, page))
 
+
 	def _format_top(self, sorted_d, dict_nicknames, page):
 
 		formatted = """Leaderboard of global scores from users of this server\n>>> ```md\n#Rank  Hours   Level    Name\n"""
@@ -331,6 +340,7 @@ class Levels(commands.Cog):
 		""" manually run through all channels and update into data.json """
 		await self._update(ctx)
 
+
 	async def _update(self, ctx):
 		if ctx.author.id not in self.bot.sudo:
 			return
@@ -338,19 +348,19 @@ class Levels(commands.Cog):
 		copy = self.user_updates.copy()
 
 		async with self.lock:
-			await self.writeInData() # Update everyone who is currently in
+			await self.writeInData()  # Update everyone who is currently in
 
-		for server in self.bot.guilds: # list of guilds
-			for details in server.channels: # list of server channels
+		for server in self.bot.guilds:  # list of guilds
+			for details in server.channels:  # list of server channels
 				if str(details.type) == "voice":
 					if details.voice_states:
-						for id in details.voice_states: # dict { id : info}
+						for id in details.voice_states:  # dict { id : info}
 							self.user_joins[id] = int(time.time())
 							self.user_actions.add(id)
 
 		async with self.lock:
 			await self.writeInData()
-		
+
 		# print("\nCalled an update:",ctx.author.id, "\n\tUser joins:", self.user_joins, "\n\tUser updates:", copy)
 
 		return await ctx.send("Updated")

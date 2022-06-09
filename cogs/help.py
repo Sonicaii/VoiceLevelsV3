@@ -3,6 +3,7 @@ from discord import app_commands
 from discord.ext import commands
 from typing import Any, Optional, Literal
 
+
 class Help(commands.Cog, name='Help'):
 
 	def __init__(self, bot):
@@ -56,6 +57,7 @@ to their date of creation. Discord IDs are linked to their creation time.
 		embed.set_author(name="Help Panel")
 
 		await self.bot.deliver(ctx)(msg, embed=embed)
+
 
 async def setup(bot):
 	await bot.add_cog(Help(bot))

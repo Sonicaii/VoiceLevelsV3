@@ -18,5 +18,6 @@ class MyCog(commands.Cog):
 		""" /command-2 """
 		await interaction.response.send_message("Hello from private command!", ephemeral=True)
 
+
 async def setup(bot: commands.Bot) -> None:
 	await bot.add_cog(MyCog(bot))

@@ -12,6 +12,7 @@ from urllib.parse import urlparse
 
 snipe_target = {}
 
+
 class View(discord.ui.View):
 	def __init__(self, *args, **kwargs):
 		self.sniper_id = 0
