@@ -60,7 +60,7 @@ async def on_ready():
 
 			cur.execute("INSERT INTO sudo VALUES %s", ((str(owner_id),),))
 			bot.sudo = [int(owner_id)]
-			conn.commit()
+			bot.conn.commit()
 			print(bot.sudo)
 
 
