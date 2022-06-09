@@ -73,12 +73,11 @@ class Levels(commands.Cog):
 
 		# don't even try to sql inject only with discord user id and time in seconds
 		"""
-			Manual import
+			Manual import (Sometimes gets stuck if your bot is running.)
 			>>> import psycopg2, json
 			>>> var = {"id": time, "id": time ... }
 			>>> results = [(str(i).zfill(2), {},) for i in range(100)]
-			>>> for k, v in var.items():
-			>>> 	results[int(str(k)[-2:])][1][k] = v
+			>>> for k, v in var.items(): results[int(str(k)[-2:])][1][k] = v
 			>>> conn = psycopg2.connect('YOUR_DATABASE_URL', sslmode='require')
 			>>> cur = conn.cursor()
 			>>> # cur.execute( THE COMMAND UNDER THIS COMMENT
@@ -93,11 +92,11 @@ class Levels(commands.Cog):
 				) AS c(right_two, json_contents)
 				WHERE levels.right_two::bpchar = c.right_two::bpchar;
 			""" % ", ".join([f"('{r_t}'::bpchar, '{json.dumps(v)}'::json)" for r_t, v in results])
-
+		)
 			# Json(v) gets inferred as type records
 			# , [tuple( (r_t, Json(v)) for r_t, v in results)]
 
-		)
+		# )
 		# { ", ".join(["('"+r_t+"'::bpchar, '"+json.dumps(v)+"'::json)" for r_t, v in results]) }
 
 		cur.close()

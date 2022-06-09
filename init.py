@@ -51,17 +51,14 @@ async def on_ready():
 		try:
 			cur.execute("SELECT TRIM(id) FROM sudo")
 			bot.sudo = [int(i[0]) for i in cur.fetchall()]
-			print(bot.sudo)
 			if not bot.sudo:
 				raise psycopg2.errors.UndefinedTable
 		except psycopg2.errors.UndefinedTable:
 			owner_id = (await bot.application_info()).owner.id
-			print(f"owner id: {owner_id}")
 
 			cur.execute("INSERT INTO sudo VALUES %s", ((str(owner_id),),))
 			bot.sudo = [int(owner_id)]
 			bot.conn.commit()
-			print(bot.sudo)
 
 
 @bot.event
