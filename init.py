@@ -11,7 +11,7 @@ from header import (
 	ferror,
 	get_token,
 	get_prefix,
-	_server_prefix,
+	server_prefix,
 	cogpr
 )
 
@@ -20,7 +20,7 @@ bot = commands.Bot(
 	case_insensitive=True,
 	help_command=None,
 	command_prefix=get_prefix,
-	intents=discord.Intents(**{i:True for i in [  # TODO !!! ADD VOICE CHANNEL DETECTION IN INTENTS
+	intents=discord.Intents(**{i:True for i in [
 		"message_content",
 		"voice_states",
 		"members",
@@ -106,9 +106,9 @@ async def main():
 		bot.cogpr = cogpr
 		bot.deliver = deliver
 		bot.refresh_conn = refresh_conn
-		bot._prefix_factory_init = False
-		bot._prefix_cache_pop = lambda i: _server_prefix.cache.pop(i, None)
-		bot._prefix_cache_size = lambda: _server_prefix.cache_size
+		bot.prefix_factory_init = False
+		bot.prefix_cache_pop = lambda i: server_prefix.cache.pop(i, None)
+		bot.prefix_cache_size = lambda: server_prefix.cache_size
 
 		for ext in ["cogs."+i for i in [
 				"levels",
@@ -122,7 +122,7 @@ async def main():
 		token, bot.need_setup = get_token(bot.conn)
 		try:
 			await bot.start(token)
-		except discord.errors.LoginFailure as e:
+		except discord.errors.LoginFailure:
 			ferror("Invalid token! Please refresh or insert correct token into the database")
 			ferror("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
 

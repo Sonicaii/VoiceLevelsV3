@@ -1,4 +1,5 @@
 """ Voice Levels header"""
+import os
 import time
 from collections import OrderedDict
 # from cachetools import cached, cachedmethod, LRUCache, TTLCache, keys
@@ -92,7 +93,7 @@ def ferror(*text: str):
 	return printr(">\t! "+str(*text))
 
 
-def cogpr(name: str, bot: object, colour: str="c") -> str:
+def cogpr(name: str, bot: object, colour: str = 3"c") -> str:
 	""" format cog start output"""
 	return printr(fg.d[colour]("\nActivated ")+fg.d[colour](f"{bot.user.name} ")+fg.m(name)+f"\n{time.ctime()}")
 
@@ -105,7 +106,7 @@ def printv(level, *args):
 		print(level, *args)
 
 
-def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
+def get_token_old(conn: connection, recurse: int = 0) -> [str, bool]:
 	""" static method? Gets token from database for run() """
 	try:
 		with conn.cursor() as cur:
@@ -133,6 +134,23 @@ def get_token(conn: connection, recurse: int = 0) -> [str, bool]:
 		conn.commit()
 
 	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", True]
+
+def get_token(conn: connection) -> [str, bool]:
+	""" Returns the bot token from environment variables, and bool for need_setup"""
+	token = os.environ.get("BOT_TOKEN")
+	if token:
+		return [token.strip(), False]
+
+	ferror(f"NO TOKEN IN ENVIRONMENT VARS!")
+	ferror("Head to your Heroku dashboard->settings and add the config var BOT_TOKEN")
+	import new_db
+
+	with conn.cursor() as cur:
+		cur.execute(new_db.create_vl)
+
+	conn.commit()
+
+	return ["", False]
 
 '''
 class _prefix_factory:
@@ -174,7 +192,7 @@ class _server_prefix:
 			self.cache.popitem(last=False)
 		return self.cache[server_id]
 
-_server_prefix = _server_prefix()
+server_prefix = _server_prefix()
 
 async def get_prefix(bot, message):
 	""" sets the bot's prefix """
@@ -191,10 +209,10 @@ async def get_prefix(bot, message):
 	'''
 
 	if not bot._prefix_factory_init:
-		_server_prefix.cache_size = (len(bot.guilds) // 1.25) if len(bot.guilds) > 1000 else len(bot.guilds)
+		server_prefix.cache_size = (len(bot.guilds) // 1.25) if len(bot.guilds) > 1000 else len(bot.guilds)
 		bot._prefix_factory_init = True
 
 	# no prefix needed if not in dm
 	return commands.when_mentioned_or(
-		_server_prefix(bot.conn, message.guild.id) if message.guild else ''
+		server_prefix(bot.conn, message.guild.id) if message.guild else ''
 	)(bot, message)
