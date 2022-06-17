@@ -2,6 +2,14 @@
 
 The new and improved **Voice Levels** discord.py bot with slash commands and Postgres database
 
+#### Requirements
+Run `pipenv`/`pip install -r requirements.txt`
+- discord.py version 2.0
+- psycopg2
+- python-dotenv
+##### Other requirements
+- Postgres server
+
 ## Hosting on Heroku:
 
 1. Make Heroku account and deploy!<br />[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Sonicaii/VoiceLevelsV3/)
@@ -11,7 +19,7 @@ The new and improved **Voice Levels** discord.py bot with slash commands and Pos
 5. Add new config env var with your bot token. [Heroku Application -> Settings -> Config Vars](https://dashboard.heroku.com/apps/)
 6. Invite to your server(s) using this link, with your bot id:<br />
 > `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
-7. enable python dyno to start the bot in the resources dab
+7. enable python dyno to start the bot in the resources tab
 
 ## Hosting on local machine / server
 1. Download code
