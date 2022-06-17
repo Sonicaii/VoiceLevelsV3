@@ -135,16 +135,14 @@ class Levels(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_voice_state_update(self, member, before, after):
-		""" Voice Updates """
-		# ! @todo: search algorithms
-		
 		"""
-		1. check if it was a disconnect/ reconnect/ move
-		2. check if they have a previous join time ( make one if not )
-		3. check if they have an update time ( make on if not )
-		4. add their time.now - time.previous join to their update
-		5. delete their join time if their action was leave ( after.channel == None )
-		6. update their join time to current time
+		Voice Updates
+			1. check if it was a disconnect/ reconnect/ move
+			2. check if they have a previous join time ( make one if not )
+			3. check if they have an update time ( make on if not )
+			4. add their time.now - time.previous join to their update
+			5. delete their join time if their action was leave ( after.channel == None )
+			6. update their join time to current time
 		"""
 		await self._on_voice_state_update(member, before, after)
 

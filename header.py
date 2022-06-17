@@ -99,7 +99,12 @@ def ferror(*text: str):
 
 def cogpr(name: str, bot: object, colour: str = "c") -> str:
 	""" format cog start output"""
-	return printr(fg.d[colour]("\nActivated ")+fg.d[colour](f"{bot.user.name} ")+fg.m(name)+f"\n{time.ctime()}")
+	return return printr(
+		fg.d[colour]("\nActivated ")
+		+ fg.d[colour](f"{bot.user.name} ")
+		+ fg.m(name)
+		+ f"\n{time.ctime()}"
+	)
 
 
 def printv(level, *args):
@@ -134,10 +139,9 @@ def get_token_old(conn: connection, recurse: int = 0) -> [str, bool]:
 			# 	ferror("You do not have any tables in your database, setting up now")
 			# 	with conn.cursor() as cur:
 			cur.execute(new_db.create_vl)
-
 		conn.commit()
-
 	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", True]
+
 
 def get_token(conn: connection) -> str:
 	""" Returns the bot token from environment variables, and bool for need_setup"""
@@ -160,12 +164,10 @@ def get_token(conn: connection) -> str:
 				);
 		""")
 		if not cur.fetchone()[0]:
-
 			import new_db
 
 			cur.execute(new_db.create_vl)
 			conn.commit()
-
 	return token
 
 '''
@@ -208,7 +210,9 @@ class _server_prefix:
 			self.cache.popitem(last=False)
 		return self.cache[server_id]
 
+
 server_prefix = _server_prefix()
+
 
 async def get_prefix(bot, message):
 	""" sets the bot's prefix """
@@ -224,9 +228,9 @@ async def get_prefix(bot, message):
 	_server_prefix = _prefix_factory_returner._prefix_factory._server_prefix
 	'''
 
-	if not bot._prefix_factory_init:
+	if not bot.prefix_factory_init:
 		server_prefix.cache_size = (len(bot.guilds) // 1.25) if len(bot.guilds) > 1000 else len(bot.guilds)
-		bot._prefix_factory_init = True
+		bot.prefix_factory_init = True
 
 	# no prefix needed if not in dm
 	return commands.when_mentioned_or(

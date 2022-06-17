@@ -26,28 +26,30 @@ class View(discord.ui.View):
 		for msg in snipe_target[interaction.channel.id]:
 			
 			# locating the message, could rewrite using ordered dict instead
-			if msg.id == self.msg.id:
-				# the person who clicked the bin button was the original sniper
-				if interaction.user.id == self.sniper_id:
-					await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.")
-				else:
-					msg.add(self.sniper_id)
-					await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed <@{self.sniper_id}>'s ammunition.")
-				await interaction.message.delete()
-				await asyncio.sleep(5)
+			if msg.id != self.msg.id:
+				continue
 
-				return await interaction.delete_original_message()
+			# the person who clicked the bin button was the original sniper
+			if interaction.user.id == self.sniper_id:
+				await interaction.response.send_message(f"<@{interaction.user.id}> denied their own hit.")
+			else:
+				msg.add(self.sniper_id)
+				await interaction.response.send_message(f"<@{interaction.user.id}> denied hit and destroyed <@{self.sniper_id}>'s ammunition.")
+			await interaction.message.delete()
+			await asyncio.sleep(5)
+
+			return await interaction.delete_original_message()
 
 		# This should never send
 		await interaction.response.send_message(
 			"Something went wrong.\n"
 			"Could obtain information on where the bin was attached to\n"
 			"This should not have happened, please contact the bot's developer and tell them what you did to get this message",
-			ephemeral=True
-			)
+			ephemeral=True,
+		)
 
 
-class msg():
+class msg:
 	""" contains message attributes """
 	def __init__(self, **kwargs):
 		for k, v in kwargs.items():
@@ -64,7 +66,6 @@ class msg():
 
 
 class Snipe(commands.Cog):
-
 	def __init__(self, bot, msg):
 		self.bot = bot
 		self.msg = msg
@@ -96,12 +97,12 @@ class Snipe(commands.Cog):
 				name=message.author.name,
 				nick=message.author.nick,
 				id=message.author.id
-				)
+				),
 			),
 			content=message.content,
 			id=message.id,
 			# embed=message.embeds[0] if message.embeds else False,
-			attachments=[i.url for i in message.attachments]
+			attachments=[i.url for i in message.attachments],
 		)
 
 		if m_c_id in snipe_target:
@@ -109,11 +110,11 @@ class Snipe(commands.Cog):
 
 			if len(temp_append) > 35:  # arbitrary value of 35: 3500m furthest sniper kill distance
 				del temp_append[0]
-
 			temp_append.append(msg)
 			snipe_target[m_c_id] = temp_append
+
 		else:
-			# Beginning of list\
+			# Beginning of list
 			snipe_target[m_c_id] = [msg]
 
 
@@ -170,7 +171,6 @@ class Snipe(commands.Cog):
 		else:
 			for url in msg.attachments:
 				send += url + "\n"
-
 		view=View()
 		view.msg = msg
 		view.sniper_id = interaction.user.id
@@ -178,7 +178,7 @@ class Snipe(commands.Cog):
 			send,
 			# embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
 			file=discord.File(file, basename(urlparse(msg.attachments[0]).path)) if file else discord.utils.MISSING,
-			view=view
+			view=view,
 		)
 
 

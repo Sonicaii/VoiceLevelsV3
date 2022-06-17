@@ -98,7 +98,7 @@ class Misc(commands.Cog):
 				cur.execute("DELETE FROM prefixes WHERE id ~ %s", (str(ctx.guild.id),))
 				await self.deliver(ctx)("Reset prefix to `,,`")
 		self.bot.conn.commit()
-		self.bot._prefix_cache_pop(ctx.guild.id)
+		self.bot.prefix_cache_pop(ctx.guild.id)
 
 	@commands.command(pass_context=True, name="stop")
 	@commands.is_owner()
@@ -115,7 +115,7 @@ class Misc(commands.Cog):
 	async def cache_size(self, ctx: commands.Context):
 		if ctx.author.id not in self.bot.sudo:
 			return
-		await self.deliver(ctx)(f"Cache size is: {self.bot._prefix_cache_size()}")
+		await self.deliver(ctx)(f"Cache size is: {self.bot.prefix_cache_size()}")
 
 
 async def setup(bot):

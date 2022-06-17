@@ -2,6 +2,7 @@ from os import environ
 from dotenv import load_dotenv
 load_dotenv()
 
+
 detect = "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE table_schema = current_database()"
 create_vl = """
 --

@@ -5,34 +5,30 @@ import discord
 from discord import Object
 from discord.ext import commands
 from discord.ext.commands import Context, Greedy
-from typing import Any, Literal, Optional, Union
 from dotenv import load_dotenv
+from typing import Any, Literal, Optional, Union
 
 load_dotenv()
 
-from header import (
-	ferror,
-	get_token,
-	get_prefix,
-	server_prefix,
-	cogpr
-)
+from header import ferror, get_token, get_prefix, server_prefix, cogpr
 
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
 bot = commands.Bot(
 	case_insensitive=True,
 	help_command=None,
 	command_prefix=get_prefix,
-	intents=discord.Intents(**{i:True for i in [
-		"message_content",
-		"voice_states",
-		"members",
-		"integrations",
-		"webhooks",
-		"guilds",
-		"messages",
-	]}),
-	description="""User levels based on time spent in voice channels."""
+	intents=discord.Intents(
+		**{i: True for i in [
+			"message_content",
+			"voice_states",
+			"members",
+			"integrations",
+			"webhooks",
+			"guilds",
+			"messages",
+		]}
+	),
+	description="""User levels based on time spent in voice channels.""",
 )
 
 # @bot.event
@@ -48,10 +44,12 @@ bot = commands.Bot(
 @bot.event
 async def on_ready():
 	cogpr("Main", bot)
-	await bot.change_presence(activity=discord.Activity(
-		name="for ,, / Voice Levels V3",
-		type=discord.ActivityType.watching
-	))
+	await bot.change_presence(
+		activity=discord.Activity(
+			name=f"for {os.environ.get('BOT_PREFIX')} / Voice Levels V3",
+			type=discord.ActivityType.watching,
+		)
+	)
 
 	# INSERT INTO sudo VALUES ('discord id')
 	with bot.conn.cursor() as cur:
@@ -60,9 +58,9 @@ async def on_ready():
 			bot.sudo = [int(i[0]) for i in cur.fetchall()]
 			if not bot.sudo:
 				raise psycopg2.errors.UndefinedTable
+
 		except psycopg2.errors.UndefinedTable:
 			owner_id = (await bot.application_info()).owner.id
-
 			cur.execute("INSERT INTO sudo VALUES %s", ((str(owner_id),),))
 			bot.sudo = [int(owner_id)]
 			bot.conn.commit()
@@ -74,7 +72,7 @@ async def on_guild_join(guild):  # Can be abused and rate limit the bot
 
 
 @bot.command()
-async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
+async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None):
 	"""
 	https://gist.github.com/AbstractUmbra/a9c188797ae194e592efe05fa129c57f
 		Usage:
@@ -130,7 +128,8 @@ async def main():
 		try:
 			await bot.start(token)
 		except discord.errors.LoginFailure:
-			ferror("Invalid token! Please refresh or insert correct token into the database")
+			ferror("Invalid token!")
+			ferror("Please refresh or insert correct token into the database")
 			ferror("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
 
 	bot.conn.close()
