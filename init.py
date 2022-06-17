@@ -6,6 +6,9 @@ from discord import Object
 from discord.ext import commands
 from discord.ext.commands import Context, Greedy
 from typing import Any, Literal, Optional, Union
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from header import (
 	ferror,
@@ -39,7 +42,7 @@ bot = commands.Bot(
 # 	await bot.process_commands(message)
 
 @bot.event
-async def on_ready():
+async def setup_hook():
 	cogpr("Main", bot)
 	await bot.change_presence(activity=discord.Activity(
 		name="for ,, / Voice Levels V3",
