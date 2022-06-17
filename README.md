@@ -8,7 +8,7 @@ Run `pipenv`/`pip install -r requirements.txt`
 - psycopg2
 - python-dotenv
 ##### Other requirements
-- Postgres server
+- Postgres database
 
 ## Hosting on Heroku:
 
