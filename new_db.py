@@ -1,3 +1,7 @@
+from os import environ
+from dotenv import load_dotenv
+load_dotenv()
+
 detect = "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE table_schema = current_database()"
 create_vl = """
 --
@@ -39,6 +43,7 @@ CREATE TABLE sudo (
 COMMIT;
 """.format(f"\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(","))
 
+# Create token now unused
 create_token = """
 --
 -- Database: voice_levels
@@ -59,12 +64,10 @@ CREATE TABLE token (
 --
 
 INSERT INTO token (token) VALUES
-('{}');
+('%s');
 
 COMMIT;
-""".format(
-  "YOUR_BOT_TOKEN"
-)
+""" % environ.get("BOT_TOKEN")
 
 # Default bot prefix
-create_vl = create_vl % ",,"
+create_vl = create_vl % environ.get("BOT_PREFIX")

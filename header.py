@@ -135,22 +135,34 @@ def get_token_old(conn: connection, recurse: int = 0) -> [str, bool]:
 
 	return [get_token(conn, recurse+1)[0] if recurse < 1 else "", True]
 
-def get_token(conn: connection) -> [str, bool]:
+def get_token(conn: connection) -> str:
 	""" Returns the bot token from environment variables, and bool for need_setup"""
 	token = os.environ.get("BOT_TOKEN")
-	if token:
-		return [token.strip(), False]
+	if not token:
+		ferror(f"NO TOKEN IN ENVIRONMENT VARS!")
+		ferror("Head to your Heroku dashboard->settings and add the config var BOT_TOKEN")
+		ferror("If you're hosting locally, edit .env and update your BOT_TOKEN")
 
-	ferror(f"NO TOKEN IN ENVIRONMENT VARS!")
-	ferror("Head to your Heroku dashboard->settings and add the config var BOT_TOKEN")
-	import new_db
-
+	# Init database if doesn't exist
 	with conn.cursor() as cur:
-		cur.execute(new_db.create_vl)
+		cur.execute("""
+			SELECT EXISTS (
+				SELECT FROM 
+					information_schema.tables 
+				WHERE 
+					table_schema LIKE 'public' AND 
+					table_type LIKE 'BASE TABLE' AND
+					table_name = 'levels'
+				);
+		""")
+		if not cur.fetchone()[0]:
 
-	conn.commit()
+			import new_db
 
-	return ["", False]
+			cur.execute(new_db.create_vl)
+			conn.commit()
+
+	return token
 
 '''
 class _prefix_factory:
