@@ -17,7 +17,7 @@ Run `pipenv`/`pip install -r requirements.txt`
 2. Install the [Heroku Postgres Add-on](https://dashboard.heroku.com/provision-addon?addonServiceId=6c67493d-8fc2-4cd4-9161-4f1ec11cbe69&planId=062a1cc7-f79f-404c-9f91-135f70175577) for the database
 3. Create a discord application on [Discord Developer Portal](https://discord.com/developers/applications)
 4. Get new bot token in the [discord developer dashboard -> Bot -> (Add bot if you don't have one) / get / reset token](https://discord.com/developers/applications) 
-5. Add new enviornment variable on heroku as `BOT_TOKEN` with your bot token and `BOT_PREFIX` with your desired prefix. [Heroku Application -> Settings -> Config Vars](https://dashboard.heroku.com/apps/)
+5. Add new enviornment variable on heroku as `BOT_TOKEN` with your bot token and `BOT_PREFIX` with your desired prefix. [Heroku Application -> Settings -> Config Vars](https://dashboard.heroku.com/apps/). `DATABASE_URL` should be already set from installing the Add-on.
 6. Invite to your server(s) using this link, with your bot id:<br />
 > `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
 7. enable python dyno to start the bot in the resources tab
@@ -25,5 +25,5 @@ Run `pipenv`/`pip install -r requirements.txt`
 ## Hosting on local machine / server
 1. Download code
 2. Follow steps 2 to 4 above
-3. Edit .env file or environment variables, setting DATABASE_URL to your postgres database (uses ssl connection), BOT_TOKEN and BOT_PREFIX to your token and preferred default prefix
+3. Edit .env file or environment variables, setting `DATABASE_URL` to your postgres database (uses ssl connection), `BOT_TOKEN` and `BOT_PREFIX` to your token and preferred default prefix
 4. Run `init.py` to start bot or `pipenv run init.py`
