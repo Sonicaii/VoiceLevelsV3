@@ -24,6 +24,6 @@ Run `pipenv`/`pip install -r requirements.txt`
 
 ## Hosting on local machine / server
 1. Download code
-2. Follow steps 2 to 4 above
+2. Follow steps 3 and 4 above
 3. Edit .env file or environment variables, setting `DATABASE_URL` to your postgres database (uses ssl connection), `BOT_TOKEN` and `BOT_PREFIX` to your token and preferred default prefix
 4. Run `init.py` to start bot or `pipenv run init.py`
