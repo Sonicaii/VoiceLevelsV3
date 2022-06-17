@@ -18,13 +18,19 @@ Run `pipenv`/`pip install -r requirements.txt`
 3. Create a discord application on [Discord Developer Portal](https://discord.com/developers/applications)
 4. Get new bot token from Discord Developer Portal -> Your Application -> Bot -> (Add bot if you don't have one) / get / reset token
 5. Add new enviornment variable on heroku as `BOT_TOKEN` with your bot token and `BOT_PREFIX` with your desired prefix. [Heroku Application -> Settings -> Config Vars](https://dashboard.heroku.com/apps/). `DATABASE_URL` should be already set from installing the Add-on.
-6. Invite to your server(s) using this link, with your bot id:<br />
-> `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
+6. Enable [privileged intents](https://discord.com/developers/applications/). From Your Application -> Bot -> Privileged Gateway Intents, enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
 7. enable python dyno to start the bot in the resources tab
+8. Invite to your server(s) using this link, with your bot id:<br />
+> `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
+
+
 
 ## Hosting on local machine / server
 1. Download code
-2. Follow steps 3 and 4 above
+2. Create a discord application on [Discord Developer Portal](https://discord.com/developers/applications)
+4. Get new bot token from Discord Developer Portal -> Your Application -> Bot -> (Add bot if you don't have one) / get / reset token
 3. Edit .env file or environment variables, setting `DATABASE_URL` to your postgres database (uses ssl connection), `BOT_TOKEN` and `BOT_PREFIX` to your token and preferred default prefix
-4. Follow step 6 above to invite bot
+4. Enable [privileged intents](https://discord.com/developers/applications/). From Your Application -> Bot -> Privileged Gateway Intents, enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
 5. Run `init.py` to start bot or `pipenv run init.py`
+6. Invite to your server(s) using this link, with your bot id:<br />
+> `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
