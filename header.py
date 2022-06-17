@@ -6,7 +6,11 @@ from collections import OrderedDict
 from psycopg2.extensions import connection
 from discord.ext import commands
 
+
 # colours.py ------
+
+os.system("color")
+
 _letters = ["k", "r", "g", "y", "b", "m", "c", "w", "K", "R", "G", "Y", "B", "M", "C", "W"]
 class fg:
 	"""

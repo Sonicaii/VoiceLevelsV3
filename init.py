@@ -41,8 +41,12 @@ bot = commands.Bot(
 
 # 	await bot.process_commands(message)
 
+# @bot.event
+# async def setup_hook():
+# 	# run once
+
 @bot.event
-async def setup_hook():
+async def on_ready():
 	cogpr("Main", bot)
 	await bot.change_presence(activity=discord.Activity(
 		name="for ,, / Voice Levels V3",
