@@ -23,46 +23,46 @@ class Help(commands.Cog, name='Help'):
 		desc: list = ["" for i in range(4)]
 
 		modules: list = [
-            (
-                "``top     ``",
-                """This command lists the server's members by voice level rank.
+			(
+				"``top     ``",
+				"""This command lists the server's members by voice level rank.
 *``Aliases: leaderboard, all``*""",
-            ),
-            (
-                "``total   ``",
-                """This command gives your total time in seconds, minutes, hours and days.
+			),
+			(
+				"``total   ``",
+				"""This command gives your total time in seconds, minutes, hours and days.
 *``Aliases: seconds``*""",
-            ),
-            (
-                "``level   ``",
-                """This command gives your or the mentioned person their actual calculated time.
+			),
+			(
+				"``level   ``",
+				"""This command gives your or the mentioned person their actual calculated time.
 *``Aliases: time, info``*""",
-            ),
-            (
-                "``snipe   ``",
-                """This command gives you the most recent message that was deleted.
+			),
+			(
+				"``snipe   ``",
+				"""This command gives you the most recent message that was deleted.
 Putting a number after "snipe" will get you the message that was deleted at the specified distance away.
 *``e.g. snipe 3 will get the message 3 deleted messages ago.``*""",
-            ),
-        ]
+			),
+		]
 
-        misc: list = [
-            (
-                "``members ``",
-                "This command gives you the amount of members of this server.",
-            ),
-            (
-                "``ping    ``",
-                "This command gives you the latency of this bot.\n*``Aliases: latency``*",
-            ),
-            (
-                "``lookup  ``",
-                """This command translate Discord snowflake IDs (any Discord ID)
+		misc: list = [
+			(
+				"``members ``",
+				"This command gives you the amount of members of this server.",
+			),
+			(
+				"``ping    ``",
+				"This command gives you the latency of this bot.\n*``Aliases: latency``*",
+			),
+			(
+				"``lookup  ``",
+				"""This command translate Discord snowflake IDs (any Discord ID)
 to their date of creation. Discord IDs are linked to their creation time.
 *``Slash commands: user, channel, id``*""",
-            ),
-            ("``prefix   ``", "Changes prefix of this bot for this server"),
-        ]
+			),
+			("``prefix   ``", "Changes prefix of this bot for this server"),
+		]
 
 		if ctx.author.id in self.bot.sudo and not ctx.guild:
 			msg = f'**IMPORTANT**\n**RUN "STOP" TO KILL BOT IN CASE OF EMERGENCY**'
