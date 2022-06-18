@@ -438,7 +438,7 @@ class Levels(commands.Cog):
 						for id in details.voice_states:  # dict { id : info}
 							self.user_joins[id] = int(time.time())
 							self.user_actions.add(id)
-							log.debug(f"found {id}")
+							log.debug(f"\t\tfound {id}")
 
 		if not startup: log.warning(f"{ctx.author.id} Called an update")
 		log.debug(f"\n\tUser joins: {self.user_joins}\n\tUser updates: {copy}")
