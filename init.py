@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import asyncio
 import logging
 import logging.handlers
@@ -11,10 +10,9 @@ from discord.ext import commands
 from discord.ext.commands import Context, Greedy
 from dotenv import load_dotenv
 from typing import Any, Literal, Optional, Union
+from header import cogpr, fm, get_token, get_prefix, log, server_prefix
 
 load_dotenv()
-
-from header import cogpr, get_token, get_prefix, log, server_prefix
 
 
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
@@ -58,7 +56,7 @@ async def on_ready():
 	cogpr("Main", bot)
 	await bot.change_presence(
 		activity=discord.Activity(
-			name=f"for {os.environ.get('BOT_PREFIX')} / Voice Levels V3",
+			name=f"for {os.getenv('BOT_PREFIX')} / Voice Levels V3",
 			type=discord.ActivityType.watching,
 		)
 	)
@@ -83,6 +81,24 @@ async def on_guild_join(guild):  # Can be abused and rate limit the bot
 	await bot.tree.sync(guild=guild)
 
 
+@bot.command(name="reload", aliases=["r"])
+async def reload(ctx: Context, cog: str):
+	""" reloads a cog """
+
+	if ctx.author.id not in bot.sudo or not cog:
+		return
+
+	msg = "Reloading cogs."+cog
+
+	try:
+		await bot.reload_extension(name="cogs."+cog)
+	except Exception as e:
+		msg = e
+
+	log.warning(msg)
+	return await ctx.send(msg)
+
+
 @bot.command()
 async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None):
 	"""
@@ -102,17 +118,21 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 
 def deliver(obj: Union[commands.Context, discord.Interaction, Any]):
 	""" returns an async function that will send message """
-	return obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
+	try:
+		return obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
+	except Exception as e:
+		log.error("A command probably took too long to reply! An interaction's lifetime is only 3 seconds")
+		log.error(e)
 
 
 def refresh_conn(self):
-	self.conn = psycopg2.connect(os.environ.get("DATABASE_URL"), sslmode="require")
+	self.conn = psycopg2.connect(os.getenv("DATABASE_URL"), sslmode="require")
 
 
 def main():
 	log.debug("Connecting to database...")
 
-	db_url = os.environ.get("DATABASE_URL")
+	db_url = os.getenv("DATABASE_URL")
 	if not db_url:
 		log.error("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
@@ -127,6 +147,7 @@ def main():
 	bot.prefix_factory_init = False
 	bot.prefix_cache_pop = lambda i: server_prefix.cache.pop(i, None)
 	bot.prefix_cache_size = lambda: server_prefix.cache_size
+	bot.default_prefix = server_prefix.default_prefix
 
 	token = get_token(bot.conn)
 	try:
