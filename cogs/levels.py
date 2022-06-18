@@ -8,7 +8,7 @@ from psycopg2.extras import Json
 from typing import Optional
 from math import modf
 from re import findall
-__main__ import log
+from __main__ import log
 
 
 def get_level_f(seconds: int) -> (int, str):
