@@ -8,7 +8,7 @@ from psycopg2.extras import Json
 from typing import Optional
 from math import modf
 from re import findall
-from __main__ import log
+from __main__ import log, fm
 
 
 def get_level_f(seconds: int) -> (int, str):
@@ -50,12 +50,17 @@ class Levels(commands.Cog):
 			str(i).zfill(2): {} for i in range(100)
 		}
 		# '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
+		
+		class mimic:
+			def __init__(self, **kwargs):
+				for k, v in kwargs.items(): self.__setattr__(k, v)
+		self.mimic = mimic
 
 
 	async def writeInData(self) -> None:
 		""" this function writes the data into the database """
 
-		class user: ...  # looks better lol
+		user = self.mimic
 
 		# Get data
 		try:
@@ -123,12 +128,10 @@ class Levels(commands.Cog):
 		await asyncio.sleep(15)  # Wait a bit for sudo to load in init.py
 
 		# reset when activated, prevents faulty overnight join times?
-		class ctx:
-			async def send(*args, **kwargs): pass
-			class author:
-				id = self.bot.sudo[-1]
+		async def send(*args, **kwargs): pass
+		ctx = self.mimic(send=send, author=self.mimic(id=self.bot.sudo[-1]))
 
-		await self._update(ctx)
+		await self._update(ctx, startup=True)
 
 	async def cog_unload(self):
 		with self.lock:
@@ -202,10 +205,11 @@ class Levels(commands.Cog):
 			return await self.deliver(ctx)(f"<@!{lookup.id}> has no time saved yet.")
 
 		# gets live info and the user times
-		current_user_time = \
+		current_user_time = (
 			user_times[str(lookup.id)] + int(time.time()) - self.user_joins[lookup.id] \
-		if lookup.id in self.user_joins else \
+		if lookup.id in self.user_joins else
 			user_times[str(lookup.id)]
+		)
 
 		return await self.deliver(ctx)(f"{lookup.name} has spent {current_user_time} seconds in voice channels")
 
@@ -269,7 +273,8 @@ class Levels(commands.Cog):
 	async def all(self, ctx: commands.Context, page: Optional[int] = 1):
 		if type(page) != int and not page.isdigit: page = 1
 		if ctx.author.id in self.bot.sudo:
-			async with ctx.channel.typing():
+
+			async def _process():
 				with self.bot.conn.cursor() as cur:
 					cur.execute("SELECT json_contents FROM levels")
 					large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
@@ -277,14 +282,43 @@ class Levels(commands.Cog):
 				total_pages = len(large_dict)//20+1
 				total_members = len(large_dict)
 
-				if page > total_pages: return await self.deliver(ctx)(f"Nothing on page {page}. Total {total_pages} pages")
+				if page > total_pages: return None, await self.deliver(ctx)(f"Nothing on page {page}. Total {total_pages} pages")
 
 				sorted_d = {int(i): j for i, j in sorted(large_dict, key=lambda item: item[1], reverse=True)}
 				dict_nicknames = {}
 				for server in self.bot.guilds:
 					dict_nicknames.update({int(member.id): member.name for member in server.members})
 
-				return await self.deliver(ctx)(self._format_top(sorted_d, dict_nicknames, page))
+				return sorted_d, dict_nicknames
+
+			await ctx.channel.typing()
+			tasks = set()
+
+			process = asyncio.create_task(_process())
+			tasks.add(process)
+			process.add_done_callback(tasks.discard)
+			
+			done, pending = await asyncio.wait({process}, timeout=2)
+
+			msg = lambda: self._format_top(ctx.author.id, sorted_d, dict_nicknames, page, "from users of *all* servers")
+
+			if done:
+				sorted_d, dict_nicknames = done.pop().result()
+				if not sorted_d: return
+				msg=msg()
+			else:
+				need_edit = await self.deliver(ctx)("Loading leaderboard...")
+				await ctx.channel.typing()
+				ctx = self.mimic(author=ctx.author)
+				ctx.send = need_edit.edit
+				try:
+					sorted_d, dict_nicknames = await asyncio.wait_for(process, timeout=10)
+				except asyncio.exceptions.TimeoutError:
+					msg="Took too long loading leaderboard."
+				else:
+					msg=msg()
+
+			return await self.deliver(ctx)(content=msg) if ctx else None
 
 		await self._top(ctx, page)
 
@@ -301,38 +335,84 @@ class Levels(commands.Cog):
 	async def _top(self, ctx, page):
 
 		if type(page) != int and not page.isdigit: page = 1
-		sorted_d = {}
 
-		# Typing in the channel
-		async with ctx.channel.typing():
+		if ctx.guild == None:
+			ctx.guild = discord.Guild
+			ctx.guild.members = [ctx.author, self.bot.user]
+			fmt = "between us"
+		else:
+			fmt = "from users of this server"
 
+		async def _process():
 			with self.bot.conn.cursor() as cur:
 				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(l2(i.id) for i in ctx.guild.members)),))
 				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
-			
+
 			list_of_ids = [i.id for i in ctx.guild.members]
-			for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True):
-				if int(k) in list_of_ids:
-					sorted_d[int(k)] = v
+			sorted_d = {int(k): v for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True) if int(k) in list_of_ids}
 
 			dict_nicknames = {i.id: i.display_name for i in ctx.guild.members}
 			total_pages = len(sorted_d)//20+1
 
-			if page > total_pages: return await self.deliver(ctx)(f"Nothing on page {page}. Total {total_pages} pages")
+			if page > total_pages: return None, await self.deliver(ctx)(f"Nothing on page {page}. Total {total_pages} pages")
+			return sorted_d, dict_nicknames
 
-			await self.deliver(ctx)(self._format_top(sorted_d, dict_nicknames, page))
+		await ctx.channel.typing()
+		tasks = set()
+		process = asyncio.create_task(_process())
+		tasks.add(process)
+		process.add_done_callback(tasks.discard)
 
+		done, pending = await asyncio.wait({process}, timeout=2)
 
-	def _format_top(self, sorted_d, dict_nicknames, page):
-
-		formatted = """Leaderboard of global scores from users of this server\n>>> ```md\n#Rank  Hours   Level    Name\n"""
-		for member_id, member_seconds in list(sorted_d.items())[(page-1)*20:page*20]:
+		if done:
+			sorted_d, dict_nicknames = done.pop().result()
+			if not sorted_d: return
+			ok = True
+		else:
+			need_edit = await self.deliver(ctx)("Loading leaderboard...")
+			await ctx.channel.typing()
+			ctx = self.mimic(author=ctx.author, guild=ctx.guild)
+			ctx.send = need_edit.edit
 			try:
-				nickname = dict_nicknames[member_id]
-			except KeyError:
-				nickname = member_id
-			formatted += f""" {str(cnt := list(sorted_d).index(member_id) + 1)+".":<5}{round(member_seconds/60/60,2):<7} [ {get_level(member_seconds):<4} ]( {nickname} )\n"""
-		return formatted+"```"
+				sorted_d, dict_nicknames = await asyncio.wait_for(process, timeout=10)
+			except asyncio.exceptions.TimeoutError:
+				ok = False
+			else:
+				ok = True
+
+		return await self.deliver(ctx)(content=self._format_top(
+			ctx.author.id,
+			sorted_d,
+			dict_nicknames,
+			page,
+			fmt
+		) if ok else "Took too long loading leaderboard")
+
+
+	def _format_top(
+		self,
+		author_id,
+		sorted_d,
+		dict_nicknames,
+		page,
+		fmt = "from users of this server"
+	):
+		
+		longest_name = max([len(dict_nicknames.get(i, str(i))) for i, j in list(sorted_d.items())[(page-1)*20:page*20]])
+		longest_name = int(modf(((longest_name-1)/2)+1)[1])*2 # +1 if odd number
+
+		name = " Name ".center(longest_name, "-").replace("Name", "\033[0;1;4mName\033[30m")
+		titles = f"\033[30m \033[31mRank\033[30m   \033[36mHours\033[30m   \033[33mLevel\033[30m \033[30m| {name}"
+		fmt = f"Leaderboard of global scores %s\n>>> ```ansi\n{fm[4](fm[1](titles))}\n" % fmt
+		for member_id, member_seconds in list(sorted_d.items())[(page-1)*20:page*20]:
+			caller = lambda default: fm['fg'].w if member_id == author_id else default
+			nickname = dict_nicknames.get(member_id, member_id)
+			rank = fm['fg'].r(f"{str(cnt := list(sorted_d).index(member_id) + 1)+'.':<4}")
+			hours = fm['bg'].k(f"{round(member_seconds/60/60,2):^7}")
+			level = f"{get_level(member_seconds):^5}"
+			fmt += f" {rank}  {hours}  {caller(fm['fg'].y)(level)} {fm['fg'].k('|')} {caller(fm['fg'].b)(nickname)}\n"
+		return fmt+"```"
 
 	@commands.command(pass_context=True)
 	async def update(self, ctx):
@@ -340,7 +420,7 @@ class Levels(commands.Cog):
 		await self._update(ctx)
 
 
-	async def _update(self, ctx):
+	async def _update(self, ctx, startup=False):
 		if ctx.author.id not in self.bot.sudo:
 			return
 
@@ -350,17 +430,18 @@ class Levels(commands.Cog):
 			await self.writeInData()  # Update everyone who is currently in
 
 		for server in self.bot.guilds:  # list of guilds
+			log.debug(server.name)
 			for details in server.channels:  # list of server channels
 				if str(details.type) == "voice":
+					log.debug("\t"+details.name)
 					if details.voice_states:
 						for id in details.voice_states:  # dict { id : info}
 							self.user_joins[id] = int(time.time())
 							self.user_actions.add(id)
+							log.debug(f"found {id}")
 
-		async with self.lock:
-			await self.writeInData()
-
-		log.debug(f"{ctx.author.id} Called an update\n\tUser joins: {self.user_joins}\n\tUser updates: {copy}")
+		if not startup: log.warning(f"{ctx.author.id} Called an update")
+		log.debug(f"\n\tUser joins: {self.user_joins}\n\tUser updates: {copy}")
 
 		return await ctx.send("Updated")
 
