@@ -8,6 +8,7 @@ from psycopg2.extras import Json
 from typing import Optional
 from math import modf
 from re import findall
+ __main__ import log
 
 
 def get_level_f(seconds: int) -> (int, str):
@@ -359,7 +360,7 @@ class Levels(commands.Cog):
 		async with self.lock:
 			await self.writeInData()
 
-		# print("\nCalled an update:",ctx.author.id, "\n\tUser joins:", self.user_joins, "\n\tUser updates:", copy)
+		log.debug(f"{ctx.author.id} Called an update\n\tUser joins: {self.user_joins}\n\tUser updates: {copy}")
 
 		return await ctx.send("Updated")
 

@@ -1,4 +1,6 @@
 import asyncio
+import logging
+import logging.handlers
 import os
 import psycopg2
 import discord
@@ -10,7 +12,8 @@ from typing import Any, Literal, Optional, Union
 
 load_dotenv()
 
-from header import ferror, get_token, get_prefix, server_prefix, cogpr
+from header import cogpr, get_token, get_prefix, log, server_prefix
+
 
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
 bot = commands.Bot(
@@ -37,9 +40,16 @@ bot = commands.Bot(
 
 # 	await bot.process_commands(message)
 
-# @bot.event
-# async def setup_hook():
-# 	# run once
+@bot.event
+async def setup_hook():
+	for ext in ["cogs."+i for i in [
+			"levels",
+			"misc",
+			"help",
+			"snipe",
+		]]:
+		
+		await bot.load_extension(ext)
 
 @bot.event
 async def on_ready():
@@ -51,7 +61,7 @@ async def on_ready():
 		)
 	)
 
-	# INSERT INTO sudo VALUES ('discord id')
+	# INSERT INTO sudo VALUES ("discord id")
 	with bot.conn.cursor() as cur:
 		try:
 			cur.execute("SELECT TRIM(id) FROM sudo")
@@ -85,6 +95,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 
 	await ctx.send("Sycning global...")
 	await ctx.bot.tree.sync()  # this bot only has global commands so this must be run
+	log.warning(f"{ctx.author.id}: {ctx.author.name} synced global slash commands tree")
 
 
 def deliver(obj: Union[commands.Context, discord.Interaction, Any]):
@@ -93,47 +104,39 @@ def deliver(obj: Union[commands.Context, discord.Interaction, Any]):
 
 
 def refresh_conn(self):
-	self.conn = psycopg2.connect(os.environ.get("DATABASE_URL"), sslmode='require')
+	self.conn = psycopg2.connect(os.environ.get("DATABASE_URL"), sslmode="require")
 
 
-async def main():
-	print("Connecting to database...")
+def main():
+	log.debug("Connecting to database...")
 
 	db_url = os.environ.get("DATABASE_URL")
 	if not db_url:
-		ferror("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
+		log.error("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
 
-	bot.conn = psycopg2.connect(db_url, sslmode='require')
+	bot.conn = psycopg2.connect(db_url, sslmode="require")
 
-	print("Connected to database")
-	async with bot:
+	log.debug("Connected to database")
+	# async with bot:
 
-		bot.cogpr = cogpr
-		bot.deliver = deliver
-		bot.refresh_conn = refresh_conn
-		bot.prefix_factory_init = False
-		bot.prefix_cache_pop = lambda i: server_prefix.cache.pop(i, None)
-		bot.prefix_cache_size = lambda: server_prefix.cache_size
+	bot.cogpr = cogpr
+	bot.deliver = deliver
+	bot.refresh_conn = refresh_conn
+	bot.prefix_factory_init = False
+	bot.prefix_cache_pop = lambda i: server_prefix.cache.pop(i, None)
+	bot.prefix_cache_size = lambda: server_prefix.cache_size
 
-		for ext in ["cogs."+i for i in [
-				"levels",
-				"misc",
-				"help",
-				"snipe",
-			]]:
-			
-			await bot.load_extension(ext)
-
-		token = get_token(bot.conn)
-		try:
-			await bot.start(token)
-		except discord.errors.LoginFailure:
-			ferror("Invalid token!")
-			ferror("Please refresh or insert correct token into the database")
-			ferror("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
+	token = get_token(bot.conn)
+	try:
+		bot.run(token, log_handler=None)
+	except discord.errors.LoginFailure:
+		log.error("Invalid token!")
+		log.error("Please refresh or insert correct token into the database")
+		log.error("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
 
 	bot.conn.close()
 
 
 if __name__ == "__main__":
-	asyncio.run(main())
+	# asyncio.run(main())
+	main()

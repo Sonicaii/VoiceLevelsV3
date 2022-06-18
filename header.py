@@ -1,10 +1,44 @@
 """ Voice Levels header"""
+import logging
 import os
 import time
 from collections import OrderedDict
 # from cachetools import cached, cachedmethod, LRUCache, TTLCache, keys
 from psycopg2.extensions import connection
+from re import sub
 from discord.ext import commands
+
+log = logging.getLogger("discord")
+
+logging_level = (
+	{ k: v*10
+	for k,v in zip(
+		["NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+		range(0,6)
+		)
+	}[str(os.environ.get("BOT_LOG_LEVEL")).upper()]
+	if os.environ.get("BOT_LOG_LEVEL") else
+	logging.ERROR
+)
+log = logging.getLogger("discord")
+log.setLevel(logging_level)
+logging.getLogger("discord.http").setLevel(logging_level)
+
+handler = logging.handlers.RotatingFileHandler(
+	filename="discord.log",
+	encoding="utf-8",
+	maxBytes=2 * 1024 * 1024,  # 2 MiB
+	backupCount=2,  # Rotate through 2 files, 2 MiB each
+)
+dt_fmt = "%Y-%m-%d %H:%M:%S"
+formatter = logging.Formatter("{asctime} [{levelname:<8}] {name}: {message}", dt_fmt, style="{")
+handler.setFormatter(formatter)
+log.addHandler(handler)
+
+if os.getenv("BOT_PRINT") and os.getenv("BOT_PRINT").lower() == "yes":
+	printer = logging.StreamHandler()
+	printer.setFormatter(formatter)
+	log.addHandler(printer)
 
 
 # colours.py ------
@@ -98,21 +132,14 @@ def ferror(*text: str):
 
 
 def cogpr(name: str, bot: object, colour: str = "c") -> str:
-	""" format cog start output"""
-	return return printr(
-		fg.d[colour]("\nActivated ")
-		+ fg.d[colour](f"{bot.user.name} ")
-		+ fg.m(name)
-		+ f"\n{time.ctime()}"
-	)
-
-
-def printv(level, *args):
-	""" TODO relace with logging module """
-	if type(level) == int:
-		print(*args)
-	else:
-		print(level, *args)
+	""" format cog start output """
+	log.info(fg.d[colour]("Activated ")+ fg.d[colour](f"{bot.user.name} ")+ fg.m(name))
+	# log.info(sub(r"(\033\[8m\d\d\033\[0m)", "", *printr(
+	# 	fg.d[colour]("\nActivated ")
+	# 	+ fg.d[colour](f"{bot.user.name} ")
+	# 	+ fg.m(name)
+	# 	+ f"\n{time.ctime()}"
+	# )))
 
 
 def get_token_old(conn: connection, recurse: int = 0) -> [str, bool]:
