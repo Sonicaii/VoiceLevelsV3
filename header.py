@@ -152,10 +152,9 @@ def get_token_old(conn: connection, recurse: int = 0) -> [str, bool]:
 		import new_db
 		conn.rollback() # Need to rollback after exception
 
-		ferror(f"NO TOKEN IN DATABASE!")
-		print(e)
-		ferror("Edit new_db.py to insert bot token or run:")
-		ferror("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
+		log.error(f"NO TOKEN IN DATABASE!")
+		log.error("Edit new_db.py to insert bot token or run:")
+		log.error("\t"+"UPDATE token SET token = 'BOT_TOKEN'")
 
 		with conn.cursor() as cur:
 			cur.execute(new_db.create_token)
@@ -163,7 +162,7 @@ def get_token_old(conn: connection, recurse: int = 0) -> [str, bool]:
 			# 	has_tables = cur.fetchone()[0]
 
 			# if not has_tables:
-			# 	ferror("You do not have any tables in your database, setting up now")
+			# 	log.error("You do not have any tables in your database, setting up now")
 			# 	with conn.cursor() as cur:
 			cur.execute(new_db.create_vl)
 		conn.commit()
@@ -174,9 +173,9 @@ def get_token(conn: connection) -> str:
 	""" Returns the bot token from environment variables, and bool for need_setup"""
 	token = os.environ.get("BOT_TOKEN")
 	if not token:
-		ferror(f"NO TOKEN IN ENVIRONMENT VARS!")
-		ferror("Head to your Heroku dashboard->settings and add the config var BOT_TOKEN")
-		ferror("If you're hosting locally, edit .env and update your BOT_TOKEN")
+		log.error(f"NO TOKEN IN ENVIRONMENT VARS!")
+		log.error("Head to your Heroku dashboard->settings and add the config var BOT_TOKEN")
+		log.error("If you're hosting locally, edit .env and update your BOT_TOKEN")
 
 	# Init database if doesn't exist
 	with conn.cursor() as cur:
