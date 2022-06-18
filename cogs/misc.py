@@ -41,10 +41,10 @@ class Misc(commands.Cog):
 		try:
 			msg = fmt.format(snowflake_time=discord.utils.format_dt(
 				snowflake_time(
-					int(thing.id) \
-				if hasattr(thing, "id") else \
+					int(thing.id)
+				if hasattr(thing, "id") else
 					int(
-						findall(r"(?<=[<@#!:a-z])(\d+)", thing)[0] \
+						findall(r"(?<=[<@#!:a-z])(\d+)", thing)[0]
 						if type(thing) is str and not thing.isdigit() else thing
 					)
 				),
