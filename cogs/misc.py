@@ -62,7 +62,8 @@ class Misc(commands.Cog):
 		discord_id="discord-id"
 	)
 	async def id(self, interaction: discord.Interaction, discord_id: str):
-		await self._process_id(interaction, discord_id, f"`{discord_id}` is equivalent to {{snowflake_time}}")
+		_ = "`" if discord_id.isdigit() else ""
+		await self._process_id(interaction, discord_id, f"{_}{discord_id}{_} is equivalent to {{snowflake_time}}")
 
 	@app_commands.command(name="user", description="Get when user account was made")
 	async def user(self, interaction: discord.Interaction, user: Optional[discord.User] = None):
@@ -82,6 +83,8 @@ class Misc(commands.Cog):
 	@commands.hybrid_command(name="prefix", with_app_command=True)
 	@commands.has_permissions(manage_guild=True)
 	async def prefix(self, ctx, prefix: Optional[str]):
+		if not ctx.guild:
+			self.deliver(ctx)("Setting prefixes outside servers unsupported")
 		with self.bot.conn.cursor() as cur:
 			if prefix:
 				if len(prefix) > 16:
@@ -96,7 +99,7 @@ class Misc(commands.Cog):
 					await self.deliver(ctx)(f"New prefix set to: {prefix}")
 			else:
 				cur.execute("DELETE FROM prefixes WHERE id ~ %s", (str(ctx.guild.id),))
-				await self.deliver(ctx)("Reset prefix to `,,`")
+				await self.deliver(ctx)("Reset prefix to %s" % self.bot.default_prefix)
 		self.bot.conn.commit()
 		self.bot.prefix_cache_pop(ctx.guild.id)
 
