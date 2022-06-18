@@ -1,4 +1,6 @@
 # Voice Levels Rewrite Version 3
+[![Discord 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Discord.py](https://img.shields.io/badge/discord.py-%20v2-yellow.svg)](https://github.com/Rapptz/discord.py/)
 
 The new and improved **Voice Levels** discord.py bot with slash commands and Postgres database
 
