@@ -275,7 +275,7 @@ class Levels(commands.Cog):
 		if type(page) != int and not page.isdigit: page = 1
 		if ctx.author.id in self.bot.sudo:
 
-			async def _process():
+			async def process(ctx, page):
 				with self.bot.conn.cursor() as cur:
 					cur.execute("SELECT json_contents FROM levels")
 					large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
@@ -292,34 +292,22 @@ class Levels(commands.Cog):
 
 				return sorted_d, dict_nicknames
 
-			await ctx.channel.typing()
-			tasks = set()
+			sorted_d, dict_nicknames, ctx = await self.predeliver(
+				ctx,
+				"Loading leaderboard",
+				"Took too long loading leaderboard",
+				process,
+				page
+			)
+			if not sorted_d: return
 
-			process = asyncio.create_task(_process())
-			tasks.add(process)
-			process.add_done_callback(tasks.discard)
-			
-			done, pending = await asyncio.wait({process}, timeout=2)
-
-			msg = lambda: self._format_top(ctx.author.id, sorted_d, dict_nicknames, page, "from users of *all* servers")
-
-			if done:
-				sorted_d, dict_nicknames = done.pop().result()
-				if not sorted_d: return
-				msg=msg()
-			else:
-				need_edit = await self.deliver(ctx)("Loading leaderboard...")
-				await ctx.channel.typing()
-				ctx = self.mimic(author=ctx.author)
-				ctx.send = need_edit.edit
-				try:
-					sorted_d, dict_nicknames = await asyncio.wait_for(process, timeout=10)
-				except asyncio.exceptions.TimeoutError:
-					msg="Took too long loading leaderboard."
-				else:
-					msg=msg()
-
-			return await self.deliver(ctx)(content=msg) if ctx else None
+			return await self.deliver(ctx)(content=self._format_top(
+				ctx.author.id,
+				sorted_d,
+				dict_nicknames,
+				page,
+				"from users of *all* servers"
+			))
 
 		await self._top(ctx, page)
 
@@ -344,7 +332,7 @@ class Levels(commands.Cog):
 		else:
 			fmt = "from users of this server"
 
-		async def _process():
+		async def process(ctx, page):
 			with self.bot.conn.cursor() as cur:
 				cur.execute("SELECT json_contents FROM levels WHERE right_two IN %s", (tuple(set(l2(i.id) for i in ctx.guild.members)),))
 				large_dict = {k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()}.items()
@@ -358,29 +346,14 @@ class Levels(commands.Cog):
 			if page > total_pages: return None, await self.deliver(ctx)(f"Nothing on page {page}. Total {total_pages} pages")
 			return sorted_d, dict_nicknames
 
-		await ctx.channel.typing()
-		tasks = set()
-		process = asyncio.create_task(_process())
-		tasks.add(process)
-		process.add_done_callback(tasks.discard)
-
-		done, pending = await asyncio.wait({process}, timeout=2)
-
-		if done:
-			sorted_d, dict_nicknames = done.pop().result()
-			if not sorted_d: return
-			ok = True
-		else:
-			need_edit = await self.deliver(ctx)("Loading leaderboard...")
-			await ctx.channel.typing()
-			ctx = self.mimic(author=ctx.author, guild=ctx.guild)
-			ctx.send = need_edit.edit
-			try:
-				sorted_d, dict_nicknames = await asyncio.wait_for(process, timeout=10)
-			except asyncio.exceptions.TimeoutError:
-				ok = False
-			else:
-				ok = True
+		sorted_d, dict_nicknames, ctx = await self.predeliver(
+			ctx,
+			"Loading leaderboard",
+			"Took too long loading leaderboard",
+			process,
+			page
+		)
+		if not sorted_d: return
 
 		return await self.deliver(ctx)(content=self._format_top(
 			ctx.author.id,
@@ -388,7 +361,36 @@ class Levels(commands.Cog):
 			dict_nicknames,
 			page,
 			fmt
-		) if ok else "Took too long loading leaderboard")
+		))
+
+
+	async def predeliver(self, ctx_main, loading_msg, reply_msg, process, page) -> (dict|None, dict, commands.Context):
+		"""
+		Helper functions for leaderboard
+			delivers a pending message if main content takes too long to process
+			then edits original message to loaded content
+		"""
+		async with ctx_main.channel.typing():
+			running_tasks = set()
+
+			process = asyncio.create_task(process(ctx_main, page))
+			running_tasks.add(process)
+			process.add_done_callback(running_tasks.discard)
+			
+			# Get data within 2 seconds (Interaction TTL is 3 seconds)
+			done, pending = await asyncio.wait({process}, timeout=2)
+
+			if done:
+				return *done.pop().result(), ctx_main
+			else:
+				need_edit = await self.deliver(ctx_main)(loading_msg)
+				await ctx_main.channel.typing()
+				ctx_reply = self.mimic(author=ctx_main.author, guild=ctx_main.guild)
+				ctx_reply.send = need_edit.edit
+				try:
+					return *await asyncio.wait_for(process, timeout=10), ctx_reply
+				except asyncio.exceptions.TimeoutError:
+					return None, await self.deliver(ctx_reply)(content=reply_msg), ctx_reply
 
 
 	def _format_top(
@@ -399,10 +401,12 @@ class Levels(commands.Cog):
 		page,
 		fmt = "from users of this server"
 	):
+		""" Formats leaderboard string to send """
 		page = list(sorted_d.items())[(page-1)*20:page*20]
 		
 		# Longest string length, then +1 if it is odd
 		longest_name = int(modf(((max([len(dict_nicknames.get(i, str(i))) for i, j in page])-1)/2)+1)[1])*2
+		# Used to center and align the colons
 		longest_time = max([len("%d:%02d"%divmod(divmod(j, 60)[0], 60)) for i, j in page])
 
 		name = " Name ".center(longest_name, "-").replace("Name", "\033[0;1;4mName\033[30m")
