@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import json
+import random
 import time
 import discord
 from discord.ext import tasks, commands
@@ -398,21 +399,30 @@ class Levels(commands.Cog):
 		page,
 		fmt = "from users of this server"
 	):
+		page = list(sorted_d.items())[(page-1)*20:page*20]
 		
-		longest_name = max([len(dict_nicknames.get(i, str(i))) for i, j in list(sorted_d.items())[(page-1)*20:page*20]])
-		longest_name = int(modf(((longest_name-1)/2)+1)[1])*2 # +1 if odd number
+		# Longest string length, then +1 if it is odd
+		longest_name = int(modf(((max([len(dict_nicknames.get(i, str(i))) for i, j in page])-1)/2)+1)[1])*2
+		longest_time = max([len("%d:%02d"%divmod(divmod(j, 60)[0], 60)) for i, j in page])
 
 		name = " Name ".center(longest_name, "-").replace("Name", "\033[0;1;4mName\033[30m")
 		titles = f"\033[30m \033[31mRank\033[30m   \033[36mHours\033[30m   \033[33mLevel\033[30m \033[30m| {name}"
 		fmt = f"Leaderboard of global scores %s\n>>> ```ansi\n{fm[4](fm[1](titles))}\n" % fmt
-		for member_id, member_seconds in list(sorted_d.items())[(page-1)*20:page*20]:
-			caller = lambda default: fm['fg'].w if member_id == author_id else default
+		for member_id, member_seconds in page:
+
+			centered = round(member_seconds/60/60,2)
+			cen = "%d:%02d" % divmod(divmod(member_seconds, 60)[0], 60)
+			cen = {4:'0',6:' '}.get(len(str(cen)),'')+cen
+
+			caller = lambda default=lambda _:_: fm['fg'].w if member_id == author_id else default
+
 			nickname = dict_nicknames.get(member_id, member_id)
 			rank = fm['fg'].r(f"{str(cnt := list(sorted_d).index(member_id) + 1)+'.':<4}")
-			hours = fm['bg'].k(f"{round(member_seconds/60/60,2):^7}")
+			hours =  fm['bg'].k(f"{cen:^7}" if longest_time < 6 else f"{cen:>7}")
 			level = f"{get_level(member_seconds):^5}"
-			fmt += f" {rank}  {hours}  {caller(fm['fg'].y)(level)} {fm['fg'].k('|')} {caller(fm['fg'].b)(nickname)}\n"
+			fmt += f" {caller()(rank)}  {caller()(hours)}  {caller(fm['fg'].y)(level)} {fm['fg'].k('|')} {caller(fm['fg'].b)(nickname)}\n"
 		return fmt+"```"
+
 
 	@commands.command(pass_context=True)
 	async def update(self, ctx):
