@@ -74,7 +74,7 @@ class colour_format(dict):
 	class colour:
 		__slots__ = ("str",)
 		def __init__(self, num: int):
-		self.str = "\033[%sm" % num
+			self.str = "\033[%sm" % num
 
 		def __repr__(self): return self.str
 		def __str__(self): return self.str
