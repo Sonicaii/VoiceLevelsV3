@@ -67,7 +67,7 @@ class Levels(commands.Cog):
 		try:
 			cur = self.bot.conn.cursor()
 		except psycopg2.InterfaceError:
-			self.bot.refresh_conn()
+			self.bot.refresh_conn(self.bot)
 			cur = self.bot.conn.cursor()
 
 		occupied = tuple(k for k, v in self.user_updates.items() if v)

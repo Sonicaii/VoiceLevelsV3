@@ -72,18 +72,14 @@ _num = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'seve
 class colour_format(dict):
 	""" Class that sets up formatting """
 	class colour:
-		__slots__ = (
-			# "caps",
-			"str",
-		)
-		def __init__(self, num: int): #, caps: bool):
-			# self.caps = caps
-			self.str = "\033[%sm" % num
+		__slots__ = ("str",)
+		def __init__(self, num: int):
+		self.str = "\033[%sm" % num
 
 		def __repr__(self): return self.str
 		def __str__(self): return self.str
 		def __call__(self, string="", next="") -> str:
-			return str(self) + string + next + "\033[0m" # if self.caps else ""
+			return str(self) + string + next + "\033[0m"
 
 	def __init__(self, offset, doc, *args, **kwargs):
 		super(colour_format, self).__init__(*args, **kwargs)
@@ -128,7 +124,7 @@ bg = colour_format(40, """
 Console background colouriser
 	Usage:
 		bg.color("string")
-		bg.d["colour"]("string")
+		bg["colour"]("string")
 		f"{bg.r}The background of text is now red"
 		bg.R + "Background here is bright red"
 
@@ -175,7 +171,7 @@ Console text formatter
 
 def cogpr(name: str, bot: object, colour: str = "c") -> str:
 	""" format cog start output """
-	log.info(fg.d[colour]("Activated ")+ fg.d[colour](f"{bot.user.name} ")+ fg.m(name))
+	log.info(fg[colour]("Activated ")+ fg[colour](f"{bot.user.name} ")+ fg.m(name))
 
 
 def get_token_old(conn: connection, recurse: int = 0) -> [str, bool]:

@@ -12,7 +12,6 @@ from header import cogpr, fm, get_token, get_prefix, log, server_prefix
 
 load_dotenv()
 
-
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
 bot = commands.Bot(
 	case_insensitive=True,
@@ -46,7 +45,7 @@ async def setup_hook():
 			"help",
 			"snipe",
 		]]:
-		
+
 		await bot.load_extension(ext)
 
 @bot.event
@@ -128,27 +127,28 @@ def deliver(obj: Union[commands.Context, discord.Interaction, Any]) -> Awaitable
 		log.error(e)
 
 
-def refresh_conn(self: commands.Bot) -> None:
-	bot.debug("Refreshing connection to database")
-	if db_url := os.getenv("DATABASE_URL"):
-		return log.error("You do not have Heroku Postgress in Add-ons, or the environment variable was misconfigured")
-	self.conn = psycopg2.connect(db_url, sslmode="require")
-	self.conn.set_session(autocommit=True)
-
+def refresh_conn() -> psycopg2.extensions.connection:
+	log.debug("Refreshing connection to database")
+	if not (db_url := os.getenv("DATABASE_URL", "")):
+		log.error("You do not have Heroku Postgress in Add-ons, or the environment variable was misconfigured")
+	conn = psycopg2.connect(db_url, sslmode="require")
+	conn.set_session(autocommit=True)
+	return conn
 
 def main():
 
-	# bot.conn = psycopg2.connect(db_url, sslmode="require")
 	bot.cogpr = cogpr
 	bot.deliver = deliver
-	bot.refresh_conn = refresh_conn
+
+	# Prefix variables
 	bot.prefix_factory_init = False
 	bot.prefix_cache_pop = lambda i: server_prefix.cache.pop(i, None)
 	bot.prefix_cache_size = lambda: server_prefix.cache_size
 	bot.default_prefix = server_prefix.default_prefix
+	bot.refresh_conn = refresh_conn
 
 	# async with bot:
-	bot.refresh_conn()
+	bot.conn = bot.refresh_conn()
 	token = get_token(bot.conn)
 	try:
 		bot.run(token, log_handler=None)
