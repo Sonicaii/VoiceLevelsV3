@@ -1,5 +1,6 @@
 """ Voice Levels header"""
 import logging
+import logging.handlers
 import os
 import time
 from collections import OrderedDict
@@ -65,81 +66,110 @@ if os.getenv("BOT_PRINT", "").lower() == "yes":
 
 if os.name == "nt": os.system("color")
 
-_letters = ["k", "r", "g", "y", "b", "m", "c", "w", "K", "R", "G", "Y", "B", "M", "C", "W"]
-class fg:
-	"""
-		Console foreground colouriser
-		Usage:
-			fg.color("string")
-		k = black
-		r = red
-		g = green
-		y = yellow
-		b = blue
-		m = magenta
-		c = cyan
-		w = white
+_letters = "krgybmcw"
+_num = {1: 'one', 2: 'two', 3: 'three', 4: 'four', 5: 'five', 6: 'six', 7: 'seven', 8: 'eight', 9: 'nine'}
 
-			fg.d["colour"]("string")
+class colour_format(dict):
+	""" Class that sets up formatting """
+	class colour:
+		__slots__ = (
+			# "caps",
+			"str",
+		)
+		def __init__(self, num: int): #, caps: bool):
+			# self.caps = caps
+			self.str = "\033[%sm" % num
 
+		def __repr__(self): return self.str
+		def __str__(self): return self.str
+		def __call__(self, string="", next="") -> str:
+			return str(self) + string + next + "\033[0m" # if self.caps else ""
 
-		capital = bold (not working)
-	"""
-	d = {}
-	for num, letter in enumerate(_letters[:8]):
-		exec(letter+"= '\033["+str(num+30)+"m{}\033[0m'.format")
-		d[letter] = "\033[{}m{}\033[0m".format(num+30, "{}").format
-	for num, letter in enumerate(_letters[8:]):
-		exec(letter+"= '\033["+str(num+30)+"m{}\033[0m'.format")
-		d[letter] = "\033[{}m;1m{}\033[0m".format(num+38, "{}").format
+	def __init__(self, offset, doc, *args, **kwargs):
+		super(colour_format, self).__init__(*args, **kwargs)
+		for k, v in [
+			(_num.get(k), v)
+			for k, v in self.copy().items()
+			if str(k).isdigit() and 0 < k < 10
+		]:
+			self.__setattr__(k, v)
+			self[k] = v
 
-class bg:
-	"""
-	Console background colouriser
-		Usage:
-			bg.color("string")
-		k = black
-		r = red
-		g = green
-		y = yellow
-		b = blue
-		m = magenta
-		c = cyan
-		w = white
+		self.__class__.__doc__ = doc
+		if offset:
+			for caps in [True, False]:
+				for num, letter in enumerate(list(_letters.upper() if caps else _letters)):
+					self[letter] = self.colour(num + offset + (60 if caps else 0))#, caps)
+					self.__setattr__(letter, self[letter])
 
-			bg.d["colour"]("string")
+	def __repr__(self):
+		return super(colour_format, self).__repr__()+"\033[0m"
 
+fg = colour_format(30, """
+Console foreground colouriser
+	Usage:
+		fg.color("string")
+		fg["colour"]("string")
+		f"{fg.r}This text is now red"
+		fg.R + "This text is bright red"
 
-		capital = bold (not working)
-	"""
-	d = {}
-	for num, letter in enumerate(_letters):
-		exec(letter+"= '\033["+str(num+40)+"m{}\033[0m'.format")
-		d[letter] = "\033[{}m{}\033[0m".format(num+40, "{}").format
+	k = black
+	r = red
+	g = green
+	y = yellow
+	b = blue
+	m = magenta
+	c = cyan
+	w = white
 
-"""
-	Console text formatter
-		Usage:
-			fm[int]("string")
-		0 = reset
-		1 = bold
-		2 = darken
-		3 = italic
-		4 = underlined
-		5 = blinking
-		6 = un-inverse colour
-		7 = inverse colour
-		8 = hide
-		9 = crossthrough
-"""
-fm = {
+	Capital letter = Lighter colour
+""")
+bg = colour_format(40, """
+Console background colouriser
+	Usage:
+		bg.color("string")
+		bg.d["colour"]("string")
+		f"{bg.r}The background of text is now red"
+		bg.R + "Background here is bright red"
+
+	k = black
+	r = red
+	g = green
+	y = yellow
+	b = blue
+	m = magenta
+	c = cyan
+	w = white
+
+	Capital letter = Lighter colour
+""")
+
+fm = colour_format(0, """
+Console text formatter
+	Usage:
+		fm[int]("string")
+		fm.number("string")
+	0 = reset
+	1 = bold
+	2 = darken
+	3 = italic
+	4 = underlined
+	5 = blinking
+	6 = un-inverse colour
+	7 = inverse colour
+	8 = hide
+	9 = crossthrough
+""",
+	{
 	**{i : "\033[{}m{{}}\033[0m".format(i).format for i in range(10)},
 	"c":"\033[0m{}\033[0m".format,
 	"u":"\033[4m{}\033[0m".format,
 	"i":"\033[8m{}\033[0m".format,
 	"bg":bg,
 	"fg":fg,
-}
+	},
+)
+
 # -----------------
 
 
