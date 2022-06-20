@@ -111,8 +111,10 @@ class Misc(commands.Cog):
 
 	@commands.command(name="stop", description="STOP")
 	async def stop(self, interaction: discord.Interaction):
-		await interaction.response.send_message("Killed process (might auto-reload, run another stop after)", ephemeral=True)
-		exit()
+		try:
+			await self.deliver(interaction)("Killed process (might auto-reload, run another stop after)", ephemeral=True)
+		finally:
+			exit()
 
 	@commands.command(pass_context=True, name="cache_size")
 	async def cache_size(self, ctx: commands.Context):

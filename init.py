@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 import asyncio
-import logging
-import logging.handlers
 import os
 import psycopg2
 import discord
@@ -9,7 +7,7 @@ from discord import Object
 from discord.ext import commands
 from discord.ext.commands import Context, Greedy
 from dotenv import load_dotenv
-from typing import Any, Literal, Optional, Union
+from typing import Any, Awaitable, Literal, Optional, Union
 from header import cogpr, fm, get_token, get_prefix, log, server_prefix
 
 load_dotenv()
@@ -56,7 +54,7 @@ async def on_ready():
 	cogpr("Main", bot)
 	await bot.change_presence(
 		activity=discord.Activity(
-			name=f"for {os.getenv('BOT_PREFIX')} / Voice Levels V3",
+			name=f"for {os.getenv('BOT_PREFIX')} | Voice Levels V3",
 			type=discord.ActivityType.watching,
 		)
 	)
@@ -77,7 +75,7 @@ async def on_ready():
 
 
 @bot.event
-async def on_guild_join(guild):  # Can be abused and rate limit the bot
+async def on_guild_join(guild) -> None:  # Can be abused and rate limit the bot
 	await bot.tree.sync(guild=guild)
 
 
@@ -100,7 +98,7 @@ async def reload(ctx: Context, cog: str):
 
 
 @bot.command()
-async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None):
+async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
 	"""
 	https://gist.github.com/AbstractUmbra/a9c188797ae194e592efe05fa129c57f
 		Usage:
@@ -111,12 +109,17 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 	if ctx.author.id not in bot.sudo:
 		return
 
+	if spec == "~" and ctx.guild:
+		log.warning(f"{ctx.author.id}: {ctx.author.name} has requested to sync commands to guild {ctx.guild.id}: {ctx.guild.name}")
+		await ctx.send("Syncing for this guild")
+		return await ctx.bot.tree.sync(guild=ctx.guild)
+
 	await ctx.send("Sycning global...")
 	await ctx.bot.tree.sync()  # this bot only has global commands so this must be run
 	log.warning(f"{ctx.author.id}: {ctx.author.name} synced global slash commands tree")
 
 
-def deliver(obj: Union[commands.Context, discord.Interaction, Any]):
+def deliver(obj: Union[commands.Context, discord.Interaction, Any]) -> Awaitable:
 	""" returns an async function that will send message """
 	try:
 		return obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
@@ -125,22 +128,17 @@ def deliver(obj: Union[commands.Context, discord.Interaction, Any]):
 		log.error(e)
 
 
-def refresh_conn(self):
-	self.conn = psycopg2.connect(os.getenv("DATABASE_URL"), sslmode="require")
+def refresh_conn(self: commands.Bot) -> None:
+	bot.debug("Refreshing connection to database")
+	if db_url := os.getenv("DATABASE_URL"):
+		return log.error("You do not have Heroku Postgress in Add-ons, or the environment variable was misconfigured")
+	self.conn = psycopg2.connect(db_url, sslmode="require")
+	self.conn.set_session(autocommit=True)
 
 
 def main():
-	log.debug("Connecting to database...")
 
-	db_url = os.getenv("DATABASE_URL")
-	if not db_url:
-		log.error("You do not have Heroku Postgress in Add-ons, or it was misconfigured")
-
-	bot.conn = psycopg2.connect(db_url, sslmode="require")
-
-	log.debug("Connected to database")
-	# async with bot:
-
+	# bot.conn = psycopg2.connect(db_url, sslmode="require")
 	bot.cogpr = cogpr
 	bot.deliver = deliver
 	bot.refresh_conn = refresh_conn
@@ -149,6 +147,8 @@ def main():
 	bot.prefix_cache_size = lambda: server_prefix.cache_size
 	bot.default_prefix = server_prefix.default_prefix
 
+	# async with bot:
+	bot.refresh_conn()
 	token = get_token(bot.conn)
 	try:
 		bot.run(token, log_handler=None)

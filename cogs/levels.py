@@ -8,7 +8,7 @@ from discord.ext import tasks, commands
 from psycopg2.extras import Json
 from typing import Optional
 from math import modf
-from re import findall
+from re import findall, sub
 from __main__ import log, fm
 
 
@@ -303,6 +303,7 @@ class Levels(commands.Cog):
 
 			return await self.deliver(ctx)(content=self._format_top(
 				ctx.author.id,
+				ctx.author.is_on_mobile(),
 				sorted_d,
 				dict_nicknames,
 				page,
@@ -357,6 +358,7 @@ class Levels(commands.Cog):
 
 		return await self.deliver(ctx)(content=self._format_top(
 			ctx.author.id,
+			ctx.author.is_on_mobile(),
 			sorted_d,
 			dict_nicknames,
 			page,
@@ -396,6 +398,7 @@ class Levels(commands.Cog):
 	def _format_top(
 		self,
 		author_id,
+		on_mobile,
 		sorted_d,
 		dict_nicknames,
 		page,
@@ -409,8 +412,8 @@ class Levels(commands.Cog):
 		# Used to center and align the colons
 		longest_time = max([len("%d:%02d"%divmod(divmod(j, 60)[0], 60)) for i, j in page])
 
-		name = " Name ".center(longest_name, "-").replace("Name", "\033[0;1;4mName\033[30m")
-		titles = f"\033[30m \033[31mRank\033[30m   \033[36mHours\033[30m   \033[33mLevel\033[30m \033[30m| {name}"
+		name = " Name ".center(longest_name, "-").replace("Name", "\033[0;1;4mName"+fg.k)
+		titles = f"{fg.k} {fg.R}Rank{fg.k}   {fg.c}Hours{fg.k}   {fg.Y}Level{fg.k} | {name}"
 		fmt = f"Leaderboard of global scores %s\n>>> ```ansi\n{fm[4](fm[1](titles))}\n" % fmt
 		for member_id, member_seconds in page:
 
@@ -421,10 +424,17 @@ class Levels(commands.Cog):
 			caller = lambda default=lambda _:_: fm['fg'].w if member_id == author_id else default
 
 			nickname = dict_nicknames.get(member_id, member_id)
-			rank = fm['fg'].r(f"{str(cnt := list(sorted_d).index(member_id) + 1)+'.':<4}")
+			rank = fm['fg'].r(f"{str(list(sorted_d).index(member_id) + 1)+'.':<4}")
 			hours =  fm['bg'].k(f"{cen:^7}" if longest_time < 6 else f"{cen:>7}")
 			level = f"{get_level(member_seconds):^5}"
-			fmt += f" {caller()(rank)}  {caller()(hours)}  {caller(fm['fg'].y)(level)} {fm['fg'].k('|')} {caller(fm['fg'].b)(nickname)}\n"
+			rank, hours, level, nickname = caller()(rank), caller()(hours), caller(fm['g'].y)(level), caller(fm['fg'].b)(nickname)
+			fmt += f" {rank}  {hours}  {level} {caller(fm['fg'].k)('|')} {nickname}\n"
+
+		# Remove colour formatting if user is on mobile
+		# Discord mobile does not support colour rendering in code blocks yet
+		if on_mobile:
+			fmt = sub(r"\033\[(\d*;?)*m", "", fmt)
+
 		return fmt+"```"
 
 
