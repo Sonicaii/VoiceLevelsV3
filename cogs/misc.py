@@ -21,7 +21,7 @@ class Misc(commands.Cog):
 	@commands.command(pass_context=True, name="uptime", description="Get uptime of bot")
 	async def uptime(self, ctx: commands.Context):
 		if ctx.author.id in self.bot.sudo:
-			await self.deliver(ctx)(f"Time since last restart: {timedelta(seconds=(datetime.now()-self.start_time).seconds)}")
+			await self.deliver(ctx)(f"Time since last restart: {timedelta(seconds=(datetime.now()-self.start_time).seconds)}\nOn <t:{datetime.timestamp(self.start_time)}:D>")
 
 	@commands.hybrid_command(name="members", description="Gets the number of members in the server")
 	async def members(self, ctx: commands.Context):
