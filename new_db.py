@@ -2,7 +2,6 @@ from os import environ
 from dotenv import load_dotenv
 load_dotenv()
 
-
 detect = "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE table_schema = current_database()"
 create_vl = """
 --
@@ -30,7 +29,7 @@ INSERT INTO levels (right_two, json_contents) VALUES
 
 CREATE TABLE prefixes (
   id char(19) NOT NULL,
-  prefix char(32) NOT NULL,
+  prefix varchar(32) NOT NULL,
   PRIMARY KEY (id)
 );
 

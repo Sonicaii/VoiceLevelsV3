@@ -2,6 +2,7 @@
 import logging
 import logging.handlers
 import os
+import psycopg2
 import time
 from collections import OrderedDict
 from dotenv import load_dotenv
@@ -48,7 +49,7 @@ logging.getLogger("discord.http").setLevel(logging_level)
 handler = logging.handlers.RotatingFileHandler(
 	filename="discord.log",
 	encoding="utf-8",
-	maxBytes= int(os.getenv("BOT_LOG_FILESIZE", 4)) * 1024 * 1024,
+	maxBytes= int(float(os.getenv("BOT_LOG_FILESIZE", 4)) * 1024 * 1024),
 	backupCount=2,
 )
 dt_fmt = "%Y-%m-%d %H:%M:%S"
@@ -78,15 +79,18 @@ class colour_format(dict):
 
 		def __repr__(self): return self.str
 		def __str__(self): return self.str
+		def __add__(self, x): return self.str + x
+		def __radd__(self, x): return x + self.str
 		def __call__(self, string="", next="") -> str:
-			return str(self) + string + next + "\033[0m"
+			return f"{self}{string}{next}""\033[0m"
+
 
 	def __init__(self, offset, doc, *args, **kwargs):
 		super(colour_format, self).__init__(*args, **kwargs)
 		for k, v in [
-			(_num.get(k), v)
+			(_num.get(k, str(k)), v)
 			for k, v in self.copy().items()
-			if str(k).isdigit() and 0 < k < 10
+			if not str(k).isdigit()
 		]:
 			self.__setattr__(k, v)
 			self[k] = v
@@ -95,7 +99,7 @@ class colour_format(dict):
 		if offset:
 			for caps in [True, False]:
 				for num, letter in enumerate(list(_letters.upper() if caps else _letters)):
-					self[letter] = self.colour(num + offset + (60 if caps else 0))#, caps)
+					self[letter] = self.colour(num + offset + (60 if caps else 0))
 					self.__setattr__(letter, self[letter])
 
 	def __repr__(self):
@@ -157,10 +161,10 @@ Console text formatter
 	9 = crossthrough
 """,
 	{
-	**{i : "\033[{}m{{}}\033[0m".format(i).format for i in range(10)},
-	"c":"\033[0m{}\033[0m".format,
-	"u":"\033[4m{}\033[0m".format,
-	"i":"\033[8m{}\033[0m".format,
+	**{i : colour_format.colour(i) for i in range(10)},
+	"c": colour_format.colour(0),
+	"u": colour_format.colour(4),
+	"i": colour_format.colour(8),
 	"bg":bg,
 	"fg":fg,
 	},
@@ -169,9 +173,18 @@ Console text formatter
 # -----------------
 
 
-def cogpr(name: str, bot: object, colour: str = "c") -> str:
+def cogpr(name: str, bot: object, colour: str = "w") -> str:
 	""" format cog start output """
-	log.info(fg[colour]("Activated ")+ fg[colour](f"{bot.user.name} ")+ fg.m(name))
+	log.info(f"Activated {(fg[colour]+bot.user.name)} {fg.G(name)}")
+
+
+def refresh_conn() -> psycopg2.extensions.connection:
+	log.debug("Refreshing connection to database")
+	if not (db_url := os.getenv("DATABASE_URL", "")):
+		log.error("You do not have Heroku Postgress in Add-ons, or the environment variable was misconfigured")
+	conn = psycopg2.connect(db_url, sslmode="require")
+	conn.set_session(autocommit=True)
+	return conn
 
 
 def get_token_old(conn: connection, recurse: int = 0) -> [str, bool]:
@@ -250,27 +263,41 @@ _prefix_factory_returner = _prefix_factory_returner()
 '''
 
 class _server_prefix:
-	cache_size = 1000
-	cache = OrderedDict()
-	default_prefix = os.getenv("BOT_PREFIX", ",,")
+	__slots__ = ("cache_size", "cache", "default_prefix")
 
-	def __call__(self, conn, server_id: int):
-		if (prefix := self.cache.get(server_id)) is not None:
+	def __init__(self):
+		self.cache_size = 1000
+		self.cache = OrderedDict()
+		self.default_prefix = os.getenv("BOT_PREFIX", ",,")
+
+	def __call__(self, bot, server_id: int):
+		# if bot.conn.closed != 0:
+		try:
+			bot.conn.poll(); bot.conn.poll()
+		except Exception as e:
+			log.warning("Polling database has returned an error.\n" + str(e))
+			log.info("Attempting to reconnect")
+			bot.conn = bot.refresh_conn()
+			log.info("Reconnected")
+
+		base = [f"<@!{bot.user.id}>", f"<@{bot.user.id}>"]
+
+		if (prefix := self.cache.get(server_id)):
 			self.cache.move_to_end(server_id)
-			return prefix
+			base.append(prefix)
+			return base
 
-		with conn.cursor() as cur:
-			cur.execute("SELECT TRIM(prefix) FROM prefixes WHERE id = %s", (str(server_id),))
+		with bot.conn.cursor() as cur:
+			cur.execute("SELECT prefix FROM prefixes WHERE id = %s", (str(server_id),))
 			prefix = cur.fetchone()
 
-		self.cache[server_id] = self.default_prefix if prefix is None else prefix[0]
+		self.cache[server_id] = self.default_prefix if prefix is None else prefix[0].lstrip()
 		while len(self.cache) > self.cache_size:
 			self.cache.popitem(last=False)
-		return self.cache[server_id]
-
+		base.append(self.cache[server_id])
+		return base
 
 server_prefix = _server_prefix()
-
 
 async def get_prefix(bot, message):
 	""" sets the bot's prefix """
@@ -292,5 +319,5 @@ async def get_prefix(bot, message):
 
 	# no prefix needed if not in dm
 	return commands.when_mentioned_or(
-		server_prefix(bot.conn, message.guild.id) if message.guild else ''
+		*server_prefix(bot, message.guild.id) if message.guild else ""
 	)(bot, message)
