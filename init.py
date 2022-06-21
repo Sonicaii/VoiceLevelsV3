@@ -6,9 +6,10 @@ import discord
 from discord import Object
 from discord.ext import commands
 from discord.ext.commands import Context, Greedy
+from datetime import datetime
 from dotenv import load_dotenv
 from typing import Any, Awaitable, Literal, Optional, Union
-from header import cogpr, fm, get_token, get_prefix, log, server_prefix
+from header import cogpr, fm, get_token, get_prefix, log, refresh_conn, server_prefix
 
 load_dotenv()
 
@@ -50,7 +51,7 @@ async def setup_hook():
 
 @bot.event
 async def on_ready():
-	cogpr("Main", bot)
+	cogpr("Main", bot, "Y")
 	await bot.change_presence(
 		activity=discord.Activity(
 			name=f"for {os.getenv('BOT_PREFIX')} | Voice Levels V3",
@@ -120,23 +121,13 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 
 def deliver(obj: Union[commands.Context, discord.Interaction, Any]) -> Awaitable:
 	""" returns an async function that will send message """
-	try:
-		return obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
-	except Exception as e:
-		log.error("A command probably took too long to reply! An interaction's lifetime is only 3 seconds")
-		log.error(e)
+	return obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
 
-
-def refresh_conn() -> psycopg2.extensions.connection:
-	log.debug("Refreshing connection to database")
-	if not (db_url := os.getenv("DATABASE_URL", "")):
-		log.error("You do not have Heroku Postgress in Add-ons, or the environment variable was misconfigured")
-	conn = psycopg2.connect(db_url, sslmode="require")
-	conn.set_session(autocommit=True)
-	return conn
 
 def main():
 
+	bot.fm = fm
+	bot.start_time = datetime.now()
 	bot.cogpr = cogpr
 	bot.deliver = deliver
 
