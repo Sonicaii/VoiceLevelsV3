@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import json
+import psycopg2
 import random
 import time
 import discord
@@ -9,6 +10,7 @@ from psycopg2.extras import Json
 from typing import Optional
 from math import modf
 from re import findall, sub
+from typing import Union
 from __main__ import log, fm
 
 
@@ -51,7 +53,7 @@ class Levels(commands.Cog):
 			str(i).zfill(2): {} for i in range(100)
 		}
 		# '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
-		
+
 		class mimic:
 			def __init__(self, **kwargs):
 				for k, v in kwargs.items(): self.__setattr__(k, v)
@@ -67,7 +69,7 @@ class Levels(commands.Cog):
 		try:
 			cur = self.bot.conn.cursor()
 		except psycopg2.InterfaceError:
-			self.bot.refresh_conn(self.bot)
+			self.bot.conn = self.bot.refresh_conn()
 			cur = self.bot.conn.cursor()
 
 		occupied = tuple(k for k, v in self.user_updates.items() if v)
@@ -200,7 +202,7 @@ class Levels(commands.Cog):
 		with self.bot.conn.cursor() as cur:
 			cur.execute("SELECT json_contents FROM levels WHERE right_two = %s", (l2(lookup.id),))
 			user_times = cur.fetchone()[0]   # wow it already converted from json to py objects!
-			
+
 		if str(lookup.id) not in user_times:
 			# record does not exist
 			return await self.deliver(ctx)(f"<@!{lookup.id}> has no time saved yet.")
@@ -241,7 +243,7 @@ class Levels(commands.Cog):
 				if   lk := fa(ctx.message.content): pass
 				elif lk := fa(user): pass
 				else: lk = False
-				
+
 				if lk:
 					lookup = discord.Object(id=lk[0])
 					lookup.name = user
@@ -302,8 +304,7 @@ class Levels(commands.Cog):
 			if not sorted_d: return
 
 			return await self.deliver(ctx)(content=self._format_top(
-				ctx.author.id,
-				ctx.author.is_on_mobile(),
+				ctx,
 				sorted_d,
 				dict_nicknames,
 				page,
@@ -357,8 +358,7 @@ class Levels(commands.Cog):
 		if not sorted_d: return
 
 		return await self.deliver(ctx)(content=self._format_top(
-			ctx.author.id,
-			ctx.author.is_on_mobile(),
+			ctx,
 			sorted_d,
 			dict_nicknames,
 			page,
@@ -366,7 +366,7 @@ class Levels(commands.Cog):
 		))
 
 
-	async def predeliver(self, ctx_main, loading_msg, reply_msg, process, page) -> (dict|None, dict, commands.Context):
+	async def predeliver(self, ctx_main, loading_msg, reply_msg, process, page) -> (Union[dict, None], dict, commands.Context):
 		"""
 		Helper functions for leaderboard
 			delivers a pending message if main content takes too long to process
@@ -378,7 +378,7 @@ class Levels(commands.Cog):
 			process = asyncio.create_task(process(ctx_main, page))
 			running_tasks.add(process)
 			process.add_done_callback(running_tasks.discard)
-			
+
 			# Get data within 2 seconds (Interaction TTL is 3 seconds)
 			done, pending = await asyncio.wait({process}, timeout=2)
 
@@ -397,7 +397,7 @@ class Levels(commands.Cog):
 
 	def _format_top(
 		self,
-		author_id,
+		ctx,
 		on_mobile,
 		sorted_d,
 		dict_nicknames,
@@ -405,35 +405,42 @@ class Levels(commands.Cog):
 		fmt = "from users of this server"
 	):
 		""" Formats leaderboard string to send """
+		fg = self.bot.fm.fg
+		bg = self.bot.fm.bg
 		page = list(sorted_d.items())[(page-1)*20:page*20]
-		
+
 		# Longest string length, then +1 if it is odd
 		longest_name = int(modf(((max([len(dict_nicknames.get(i, str(i))) for i, j in page])-1)/2)+1)[1])*2
 		# Used to center and align the colons
 		longest_time = max([len("%d:%02d"%divmod(divmod(j, 60)[0], 60)) for i, j in page])
 
 		name = " Name ".center(longest_name, "-").replace("Name", "\033[0;1;4mName"+fg.k)
-		titles = f"{fg.k} {fg.R}Rank{fg.k}   {fg.c}Hours{fg.k}   {fg.Y}Level{fg.k} | {name}"
+		titles = f"{fg.k} {fg.r}Rank{fg.k}   {fg.c}Hours{fg.k}   {fg.y}Level{fg.k} | {name}"
 		fmt = f"Leaderboard of global scores %s\n>>> ```ansi\n{fm[4](fm[1](titles))}\n" % fmt
 		for member_id, member_seconds in page:
 
 			centered = round(member_seconds/60/60,2)
 			cen = "%d:%02d" % divmod(divmod(member_seconds, 60)[0], 60)
-			cen = {4:'0',6:' '}.get(len(str(cen)),'')+cen
+			cen = {4: "0", 6: " "}.get(len(str(cen)),"")+cen
 
-			caller = lambda default=lambda _:_: fm['fg'].w if member_id == author_id else default
+			caller = lambda default=lambda _:_: fg.w if member_id == ctx.author.id else default
 
 			nickname = dict_nicknames.get(member_id, member_id)
-			rank = fm['fg'].r(f"{str(list(sorted_d).index(member_id) + 1)+'.':<4}")
-			hours =  fm['bg'].k(f"{cen:^7}" if longest_time < 6 else f"{cen:>7}")
+			rank = fg.r(f"{str(list(sorted_d).index(member_id) + 1)+'.':<4}")
+			hours =  bg.k(f"{cen:^7}" if longest_time < 6 else f"{cen:>7}")
 			level = f"{get_level(member_seconds):^5}"
-			rank, hours, level, nickname = caller()(rank), caller()(hours), caller(fm['g'].y)(level), caller(fm['fg'].b)(nickname)
-			fmt += f" {rank}  {hours}  {level} {caller(fm['fg'].k)('|')} {nickname}\n"
+			rank, hours, level, nickname = caller()(rank), caller()(hours), caller(fg.y)(level), caller(fg.b)(nickname)
+			fmt += f" {rank}  {hours}  {level} {caller(fg.k)('|')} {nickname}\n"
 
 		# Remove colour formatting if user is on mobile
 		# Discord mobile does not support colour rendering in code blocks yet
-		if on_mobile:
+		if commands.MemberConverter().convert(ctx, ctx.author.id).is_on_mobile(),:
 			fmt = sub(r"\033\[(\d*;?)*m", "", fmt)
+		else:
+			# Removes colour formatting until within message length limit
+			removes = iter([40, 34, 33, 36, 31])
+			while len(fmt) > 1900:
+				fmt = sub(r"\033\[(%i;?)*m" % next(removes), "", fmt)
 
 		return fmt+"```"
 
