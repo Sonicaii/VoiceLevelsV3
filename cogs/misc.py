@@ -1,10 +1,46 @@
 import discord
 from discord import app_commands
 from discord.ext import commands
+from discord.ext.commands import Greedy
 from discord.utils import snowflake_time
 from datetime import datetime, timedelta
-from typing import Union, Optional
-from re import findall
+from os import SEEK_END
+from typing import Literal, Optional, Union
+from re import findall, sub
+
+
+def reverse_readline(filename, buf_size=8192):
+	"""A generator that returns the lines of a file in reverse order"""
+	# https://stackoverflow.com/questions/2301789/how-to-read-a-file-in-reverse-order
+	with open(filename) as fh:
+		segment = None
+		offset = 0
+		fh.seek(0, SEEK_END)
+		file_size = remaining_size = fh.tell()
+		while remaining_size > 0:
+			offset = min(file_size, offset + buf_size)
+			fh.seek(file_size - offset)
+			buffer = fh.read(min(remaining_size, buf_size))
+			remaining_size -= buf_size
+			lines = buffer.split('\n')
+			# The first line of the buffer is probably not a complete line so
+			# we'll save it and append it to the last line of the next buffer
+			# we read
+			if segment is not None:
+				# If the previous chunk starts right from the beginning of line
+				# do not concat the segment to the last line of new chunk.
+				# Instead, yield the segment first
+				if buffer[-1] != '\n':
+					lines[-1] += segment
+				else:
+					yield segment
+			segment = lines[0]
+			for index in range(len(lines) - 1, 0, -1):
+				if lines[index]:
+					yield lines[index]
+		# Don't yield None if the file was empty
+		if segment is not None:
+			yield segment
 
 
 class Misc(commands.Cog):
@@ -12,16 +48,12 @@ class Misc(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 		self.deliver = bot.deliver
-
-	@commands.Cog.listener()
-	async def on_ready(self):
 		self.bot.cogpr("Misc", self.bot)
-		self.start_time = datetime.now()
 
 	@commands.command(pass_context=True, name="uptime", description="Get uptime of bot")
 	async def uptime(self, ctx: commands.Context):
 		if ctx.author.id in self.bot.sudo:
-			await self.deliver(ctx)(f"Time since last restart: {timedelta(seconds=(datetime.now()-self.start_time).seconds)}\nOn <t:{datetime.timestamp(self.start_time)}:D>")
+			await self.deliver(ctx)(f"Time since last restart: {timedelta(seconds=(datetime.now()-self.bot.start_time).seconds)}\nOn <t:{int(datetime.timestamp(self.bot.start_time))}:D>")
 
 	@commands.hybrid_command(name="members", description="Gets the number of members in the server")
 	async def members(self, ctx: commands.Context):
@@ -80,15 +112,29 @@ class Misc(commands.Cog):
 		if thing is None: thing = ctx.author.id
 		await self._process_id(ctx, thing, f"{thing} translates to {{snowflake_time}}")
 
-	@commands.hybrid_command(name="prefix", with_app_command=True)
+	@commands.command(name="prefix")
 	@commands.has_permissions(manage_guild=True)
-	async def prefix(self, ctx, prefix: Optional[str]):
+	async def cmd_prefix(self, ctx):
+		for pre in await self.bot.get_prefix(ctx.message):  # 1-liner possible here
+			if ctx.message.content.startswith(pre):
+				break
+		await self.prefix(ctx, ctx.message.content[len([pre for pre in self.bot.get_prefix(ctx.message) if ctx.message.content.startswith(pre)]+"prefix")+1:].lstrip())
+
+	@app_commands.command(name="prefix")
+	@commands.has_permissions(manage_guild=True)
+	async def app_cmd_prefix(self, ctx, prefix: Optional[str]):
+		await self.prefix(ctx, prefix)
+
+	async def prefix(self, ctx, prefix):
 		if not ctx.guild:
 			self.deliver(ctx)("Setting prefixes outside servers unsupported")
 		with self.bot.conn.cursor() as cur:
+			msg = "Reset prefix to: \"%s\""
 			if prefix:
+				if prefix.endswith(" \\"):
+					prefix = prefix[:-1]
 				if len(prefix) > 16:
-					return await deliver(ctx)("Prefix is too long, maximum 16 characters.", ephemeral=True)
+					return await self.deliver(ctx)("Prefix is too long, maximum 16 characters.", ephemeral=True)
 				async with ctx.channel.typing():
 					cur.execute("""
 						INSERT INTO prefixes (id, prefix)
@@ -96,10 +142,10 @@ class Misc(commands.Cog):
 						ON CONFLICT (id) DO UPDATE
 							SET prefix = EXCLUDED.prefix
 						""", (str(ctx.guild.id), prefix))
-					await self.deliver(ctx)(f"New prefix set to: {prefix}")
+					await self.deliver(ctx)(msg % prefix)
 			else:
 				cur.execute("DELETE FROM prefixes WHERE id ~ %s", (str(ctx.guild.id),))
-				await self.deliver(ctx)("Reset prefix to %s" % self.bot.default_prefix)
+				await self.deliver(ctx)(msg % self.bot.default_prefix)
 		self.bot.conn.commit()
 		self.bot.prefix_cache_pop(ctx.guild.id)
 
@@ -108,6 +154,20 @@ class Misc(commands.Cog):
 	async def stop(self, ctx):
 		await ctx.channel.send("Killed process (might auto-reload, run another stop after)")
 		exit()
+
+	@commands.command(pass_context=True, name="tail")
+	async def tail(self, ctx, lines: Optional[int] = 10):
+		if ctx.author.id not in self.bot.sudo:
+			return
+		gen = reverse_readline("discord.log")
+		txt = ""
+		try:
+			while len((n:=sub(r"(\[[\w\s]*\] discord: )", "", next(gen))) + txt) + 1< 1989:
+				txt = "\n" + n + txt
+		except StopIteration:
+			pass
+
+		await self.deliver(ctx)("```ansi\n"+sub(r"(\033\[(\d*;?)*m)?(```)?", "", txt[11:])+"```")
 
 	@commands.command(name="stop", description="STOP")
 	async def stop(self, interaction: discord.Interaction):
