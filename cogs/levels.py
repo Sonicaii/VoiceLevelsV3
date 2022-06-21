@@ -303,7 +303,7 @@ class Levels(commands.Cog):
 			)
 			if not sorted_d: return
 
-			return await self.deliver(ctx)(content=self._format_top(
+			return await self.deliver(ctx)(content=await self._format_top(
 				ctx,
 				sorted_d,
 				dict_nicknames,
@@ -357,7 +357,7 @@ class Levels(commands.Cog):
 		)
 		if not sorted_d: return
 
-		return await self.deliver(ctx)(content=self._format_top(
+		return await self.deliver(ctx)(content=await self._format_top(
 			ctx,
 			sorted_d,
 			dict_nicknames,
@@ -395,10 +395,9 @@ class Levels(commands.Cog):
 					return None, await self.deliver(ctx_reply)(content=reply_msg), ctx_reply
 
 
-	def _format_top(
+	async def _format_top(
 		self,
 		ctx,
-		on_mobile,
 		sorted_d,
 		dict_nicknames,
 		page,
@@ -434,7 +433,7 @@ class Levels(commands.Cog):
 
 		# Remove colour formatting if user is on mobile
 		# Discord mobile does not support colour rendering in code blocks yet
-		if commands.MemberConverter().convert(ctx, ctx.author.id).is_on_mobile(),:
+		if (await ctx.guild.fetch_member(ctx.author.id)).is_on_mobile():
 			fmt = sub(r"\033\[(\d*;?)*m", "", fmt)
 		else:
 			# Removes colour formatting until within message length limit
