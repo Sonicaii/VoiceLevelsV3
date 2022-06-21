@@ -61,7 +61,10 @@ Putting a number after "snipe" will get you the message that was deleted at the 
 to their date of creation. Discord IDs are linked to their creation time.
 *``Slash commands: user, channel, id``*""",
 			),
-			("``prefix   ``", "Changes prefix of this bot for this server"),
+			("``prefix   ``", """Changes prefix of this bot for this server
+you can set a prefix with spaces in the middle and end by entering:
+>    `%sprefix NEW PREFIX    \\`
+the `\\` signals the end of the prefix""" % (await self.bot.get_prefix(ctx))[-1]),
 		]
 
 		if ctx.author.id in self.bot.sudo and not ctx.guild:
