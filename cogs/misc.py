@@ -117,7 +117,6 @@ class Misc(commands.Cog):
 		for pre in await self.bot.get_prefix(ctx.message):  # 1-liner possible here
 			if ctx.message.content.startswith(pre):
 				break
-		print(pre)
 		await self.prefix(ctx, ctx.message.content[len(pre)+6:].lstrip())
 
 	@app_commands.command(name="prefix")
@@ -142,7 +141,7 @@ class Misc(commands.Cog):
 						ON CONFLICT (id) DO UPDATE
 							SET prefix = EXCLUDED.prefix
 						""", (str(ctx.guild.id), prefix))
-					await self.deliver(ctx)(msg % prefix)
+					await self.deliver(ctx)(msg % self.bot.discord_escape(prefix))
 			else:
 				cur.execute("DELETE FROM prefixes WHERE id ~ %s", (str(ctx.guild.id),))
 				await self.deliver(ctx)(msg % self.bot.default_prefix)
@@ -159,12 +158,11 @@ class Misc(commands.Cog):
 	async def tail(self, ctx, lines: Optional[int] = 10):
 		if ctx.author.id not in self.bot.sudo:
 			return
-		print(f"{lines=}")
 		gen = reverse_readline("discord.log")
 		txt = ""
 		line = 0
 		try:
-			while len((n:=sub(r"\[[\w\s]*\] discord(\.(\w\w*\.?)*)?:", "", next(gen))) + txt) + 1< 1989 or line >= lines:
+			while len((n:=sub(r"\[[\w\s]*\] discord(\.(\w\w*\.?)*)?:", "", next(gen))) + txt) + 1< 1989 and line <= lines:
 				txt = "\n" + n + txt
 				line += 1
 		except StopIteration:

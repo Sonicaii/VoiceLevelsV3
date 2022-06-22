@@ -9,7 +9,7 @@ from discord.ext.commands import Context, Greedy
 from datetime import datetime
 from dotenv import load_dotenv
 from typing import Any, Awaitable, Literal, Optional, Union
-from header import cogpr, fm, get_token, get_prefix, log, refresh_conn, server_prefix
+from header import cogpr, discord_escape, fm, get_token, get_prefix, log, refresh_conn, server_prefix
 
 load_dotenv()
 
@@ -86,10 +86,10 @@ async def reload(ctx: Context, cog: str):
 	if ctx.author.id not in bot.sudo or not cog:
 		return
 
-	msg = "Reloading cogs."+cog
+	msg = "Reloading cogs." + cog
 
 	try:
-		await bot.reload_extension(name="cogs."+cog)
+		await bot.reload_extension(name="cogs." + cog)
 	except Exception as e:
 		msg = e
 
@@ -126,10 +126,11 @@ def deliver(obj: Union[commands.Context, discord.Interaction, Any]) -> Awaitable
 
 def main():
 
-	bot.fm = fm
-	bot.start_time = datetime.now()
 	bot.cogpr = cogpr
 	bot.deliver = deliver
+	bot.discord_escape = discord_escape
+	bot.fm = fm
+	bot.start_time = datetime.now()
 
 	# Prefix variables
 	bot.prefix_factory_init = False
@@ -152,5 +153,4 @@ def main():
 
 
 if __name__ == "__main__":
-	# asyncio.run(main())
 	main()
