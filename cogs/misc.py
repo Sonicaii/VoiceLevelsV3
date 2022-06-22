@@ -48,7 +48,6 @@ class Misc(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 		self.deliver = bot.deliver
-		self.bot.cogpr("Misc", self.bot)
 
 	@commands.command(pass_context=True, name="uptime", description="Get uptime of bot")
 	async def uptime(self, ctx: commands.Context):
@@ -118,7 +117,8 @@ class Misc(commands.Cog):
 		for pre in await self.bot.get_prefix(ctx.message):  # 1-liner possible here
 			if ctx.message.content.startswith(pre):
 				break
-		await self.prefix(ctx, ctx.message.content[len([pre for pre in self.bot.get_prefix(ctx.message) if ctx.message.content.startswith(pre)]+"prefix")+1:].lstrip())
+		print(pre)
+		await self.prefix(ctx, ctx.message.content[len(pre)+6:].lstrip())
 
 	@app_commands.command(name="prefix")
 	@commands.has_permissions(manage_guild=True)
@@ -159,15 +159,18 @@ class Misc(commands.Cog):
 	async def tail(self, ctx, lines: Optional[int] = 10):
 		if ctx.author.id not in self.bot.sudo:
 			return
+		print(f"{lines=}")
 		gen = reverse_readline("discord.log")
 		txt = ""
+		line = 0
 		try:
-			while len((n:=sub(r"(\[[\w\s]*\] discord: )", "", next(gen))) + txt) + 1< 1989:
+			while len((n:=sub(r"\[[\w\s]*\] discord(\.(\w\w*\.?)*)?:", "", next(gen))) + txt) + 1< 1989 or line >= lines:
 				txt = "\n" + n + txt
+				line += 1
 		except StopIteration:
 			pass
 
-		await self.deliver(ctx)("```ansi\n"+sub(r"(\033\[(\d*;?)*m)?(```)?", "", txt[11:])+"```")
+		await self.deliver(ctx)("```ansi\n"+sub(r"(\033\[(\d*;?)*m)?(```)?", "", txt[max(txt.find("\n"), 11):])+"```")
 
 	@commands.command(name="stop", description="STOP")
 	async def stop(self, interaction: discord.Interaction):
