@@ -62,9 +62,7 @@ if os.getenv("BOT_PRINT", "").lower() == "yes":
 	printer.setFormatter(formatter)
 	log.addHandler(printer)
 
-
-# colours.py ------
-
+# Activate colour output in terminal in command prompt
 if os.name == "nt": os.system("color")
 
 _letters = "krgybmcw"
@@ -85,7 +83,7 @@ class colour_format(dict):
 			return f"{self}{string}{next}""\033[0m"
 
 
-	def __init__(self, offset, doc, *args, **kwargs):
+	def __init__(self, offset: int, doc: str, *args, **kwargs):
 		super(colour_format, self).__init__(*args, **kwargs)
 		for k, v in [
 			(_num.get(k, str(k)), v)
@@ -170,12 +168,15 @@ Console text formatter
 	},
 )
 
-# -----------------
-
 
 def cogpr(name: str, bot: object, colour: str = "w") -> str:
 	""" format cog start output """
 	log.info(f"Activated {(fg[colour]+bot.user.name)} {fg.G(name)}")
+
+
+def discord_escape(string) -> str:
+	""" escape discord formatting """
+	return sub(r"(?=\W)", "\\\\", string).replace("\\:", ":").replace("\\ ", " ")
 
 
 def refresh_conn() -> psycopg2.extensions.connection:
@@ -247,11 +248,11 @@ class _prefix_factory:
 	def __init__(self, bot):
 		self.bot = bot
 
-	# @cachedmethod(cache=LRUCache(maxsize=len(bot.guilds)//1.5), key=lambda conn, server_id: keys.hashkey(server_id))
-	@cachedmethod(cache=LRUCache(maxsize=len_bot_guilds//1.5), key=lambda conn, server_id: keys.hashkey(server_id)) # rip
-	def _server_prefix(conn, server_id: int):
+	# @cachedmethod(cache=LRUCache(maxsize=len(bot.guilds)//1.5), key=lambda conn, guild.id: keys.hashkey(guild.id))
+	@cachedmethod(cache=LRUCache(maxsize=len_bot_guilds//1.5), key=lambda conn, guild.id: keys.hashkey(guild.id)) # rip
+	def _server_prefix(conn, guild.id: int):
 		with conn.cursor() as cur:
-			cur.execute("SELECT TRIM(prefix) FROM prefixes WHERE id = %s", (str(server_id),))
+			cur.execute("SELECT TRIM(prefix) FROM prefixes WHERE id = %s", (str(guild.id),))
 			prefix = cur.fetchone()
 		return ',,' if prefix is None else prefix[0]
 
@@ -270,8 +271,10 @@ class _server_prefix:
 		self.cache = OrderedDict()
 		self.default_prefix = os.getenv("BOT_PREFIX", ",,")
 
-	def __call__(self, bot, server_id: int):
-		# if bot.conn.closed != 0:
+	def __call__(self, bot, guild):
+		if not guild:
+			return ""
+
 		try:
 			bot.conn.poll(); bot.conn.poll()
 		except Exception as e:
@@ -280,22 +283,25 @@ class _server_prefix:
 			bot.conn = bot.refresh_conn()
 			log.info("Reconnected")
 
-		base = [f"<@!{bot.user.id}>", f"<@{bot.user.id}>"]
+		base = [
+			f"<@!{bot.user.id}> ",
+			f"<@!{bot.user.id}>",
+			f"<@{bot.user.id}> ",
+			f"<@{bot.user.id}>",
+		]
 
-		if (prefix := self.cache.get(server_id)):
-			self.cache.move_to_end(server_id)
-			base.append(prefix)
-			return base
+		if (prefix := self.cache.get(guild.id)):
+			self.cache.move_to_end(guild.id)
+			return [prefix, *base]
 
 		with bot.conn.cursor() as cur:
-			cur.execute("SELECT prefix FROM prefixes WHERE id = %s", (str(server_id),))
+			cur.execute("SELECT prefix FROM prefixes WHERE id = %s", (str(guild.id),))
 			prefix = cur.fetchone()
 
-		self.cache[server_id] = self.default_prefix if prefix is None else prefix[0].lstrip()
+		self.cache[guild.id] = self.default_prefix if prefix is None else prefix[0].lstrip()
 		while len(self.cache) > self.cache_size:
 			self.cache.popitem(last=False)
-		base.append(self.cache[server_id])
-		return base
+		return [self.cache[guild.id], *base]
 
 server_prefix = _server_prefix()
 
@@ -318,6 +324,4 @@ async def get_prefix(bot, message):
 		bot.prefix_factory_init = True
 
 	# no prefix needed if not in dm
-	return commands.when_mentioned_or(
-		*server_prefix(bot, message.guild.id) if message.guild else ""
-	)(bot, message)
+	return server_prefix(bot, message)
