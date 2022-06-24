@@ -1,6 +1,9 @@
 # Voice Levels Rewrite Version 3
 [![Discord 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Discord.py](https://img.shields.io/badge/discord.py-%20v2-yellow.svg)](https://github.com/Rapptz/discord.py/)
+[![Pull Requests](https://img.shields.io/github/issues-pr/Sonicaii/VoiceLevelsV3)](https://github.com/Sonicaii/VoiceLevelsV3/pulls)
+[![Issues](https://img.shields.io/github/issues/Sonicaii/VoiceLevelsV3)](https://github.com/Sonicaii/VoiceLevelsV3/issues)
+[![Size](https://img.shields.io/github/repo-size/Sonicaii/VoiceLevelsV3)](/)
 
 The new and improved **Voice Levels** discord.py bot with slash commands and Postgres database
 
