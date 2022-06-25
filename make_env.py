@@ -9,7 +9,7 @@ if __name__ == "__main__":
     try:
         print("You can either manually edit .env later or input them now. Quit with ctrl + c")
         txt = txt.replace("BOT_TOKEN=", "BOT_TOKEN=" + input("bot token: "))
-        print("The next options are optional, leave empty for default value")
+        print("The next options are %s, leave empty for default value" % header.fg.y("optional"))
         if i := input("bot prefix: "):
             txt = txt.replace("BOT_PREFIX=,,", "BOT_PREFIX="+i)
         print("Valid levels: debug, info, warning, error, critical")
