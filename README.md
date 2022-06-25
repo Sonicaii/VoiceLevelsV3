@@ -8,14 +8,14 @@
 The new and improved **Voice Levels** discord.py bot with slash commands and Postgres database
 
 ### Requirements
-Run `pipenv`/`pip install -r requirements.txt`
+Run `pip install -r requirements.txt`
+
+<i><code>discord.py</code> v2 is currently in active development, with breaking changes from 1.0 &mdash; 
+    <a href="https://discordpy.readthedocs.io/en/latest/migrating.html">see details here</a><br />Consider using a virtual environment if you are running multiple bots on different discord.py versions</i>
 <details open><summary>&nbsp;<i>Packages:</i></summary>
     <ul>
         <li>
             <code>discord.py</code> <i>version 2.0</i><br />
-            <ul>
-                <li>(Currently in active development, with breaking changes from 1.0, consider using pipenv if you have the original discord.py installed)</li>
-            </ul>
         </li>
         <li><code>psycopg2</code></li>
         <li><code>python-dotenv</code></li>
@@ -48,7 +48,7 @@ These instructions shouldn't be too hard. If you need any help, contact me, deta
 4. Get new bot token from Discord Developer Portal -> Your Application -> Bot -> (Add bot if you don't have one) / get / reset token
 3. Edit .env file or environment variables, setting `DATABASE_URL` to your postgres database (uses ssl connection), `BOT_TOKEN` and `BOT_PREFIX` to your token and preferred default prefix
 4. Enable [privileged intents](https://discord.com/developers/applications/). From Your Application -> Bot -> Privileged Gateway Intents, enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
-5. Run `init.py` to start bot or `pipenv run init.py` (see below for instructions to run as a service in background)
+5. Run `init.py` to start bot (see below for instructions to run as a service in background)
 6. Invite to your server(s) using this link, with your bot id:<br />
 > `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
 
