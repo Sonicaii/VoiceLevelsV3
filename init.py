@@ -28,6 +28,8 @@ from header import (
 try:
     from psycopg2cffi import compat
     compat.register()
+except ImportError:
+    pass
 finally:
     import psycopg2
 

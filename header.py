@@ -10,6 +10,8 @@ from dotenv import load_dotenv
 try:
     from psycopg2cffi import compat
     compat.register()
+except ImportError:
+    pass
 finally:
     import psycopg2
     from psycopg2.extensions import connection
@@ -41,7 +43,7 @@ BOT_LOG_BACKUP_COUNT=2
 # Follow log in bash using `tail discord.log -f -n lines`
 # Follow log in powershell `Get-Content discord.log -Wait -Tail lines`
 """)
-    log.warning(".env was not found, making .env file now, please insert the bot token and other information")
+    print(".env was not found, making .env file now, please insert the bot token and other information")
 
 load_dotenv()
 
