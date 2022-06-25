@@ -48,7 +48,7 @@ log.setLevel(logging_level)
 logging.getLogger("discord.http").setLevel(logging_level)
 
 handler = logging.handlers.RotatingFileHandler(
-    filename="discord.log",
+    filename="./discord.log",
     encoding="utf-8",
     maxBytes=int(float(os.getenv("BOT_LOG_FILESIZE", "4")) * 1024 * 1024),
     backupCount=2,
