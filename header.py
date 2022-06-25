@@ -18,6 +18,30 @@ import new_db
 
 # from cachetools import cached, cachedmethod, LRUCache, TTLCache, keys
 
+if not os.path.isfile("./.env"):
+    with open("./.env", "w") as file:
+        file.write("""
+# Uncomment DATABASE_URL below and paste your own postgresql url (uses ssl connection)
+# If you are on Heroku, they set DATABASE_URL for you. No need to Uncomment
+
+# DATABASE_URL=
+BOT_TOKEN=
+BOT_PREFIX=,,
+
+# Print output as well: yes/no
+BOT_PRINT=yes
+
+# debug, info, warning, error, critical
+BOT_LOG_LEVEL=info
+# Max size of log files, in Mib
+BOT_LOG_FILESIZE=4
+# Max log backup files amount
+BOT_LOG_BACKUP_COUNT=2
+
+# Follow log in bash using `tail discord.log -f -n lines`
+# Follow log in powershell `Get-Content discord.log -Wait -Tail lines`
+""")
+    log.warning(".env was not found, making .env file now, please insert the bot token and other information")
 
 load_dotenv()
 
