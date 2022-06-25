@@ -5,9 +5,15 @@ import os
 from collections import OrderedDict
 from re import sub
 from sys import stdout
-import psycopg2
 from dotenv import load_dotenv
-from psycopg2.extensions import connection
+
+try:
+    from psycopg2cffi import compat
+    compat.register()
+finally:
+    import psycopg2
+    from psycopg2.extensions import connection
+
 import new_db
 
 # from cachetools import cached, cachedmethod, LRUCache, TTLCache, keys

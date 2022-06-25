@@ -9,7 +9,6 @@ init.py
 import os
 from datetime import datetime
 from typing import Any, Awaitable, Literal, Optional, Union
-import psycopg2
 import discord
 from discord import Object
 from discord.ext import commands
@@ -25,6 +24,12 @@ from header import (
     refresh_conn,
     server_prefix,
 )
+
+try:
+    from psycopg2cffi import compat
+    compat.register()
+finally:
+    import psycopg2
 
 load_dotenv()
 
