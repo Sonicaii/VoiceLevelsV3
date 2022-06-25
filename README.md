@@ -46,7 +46,7 @@ These instructions shouldn't be too hard. If you need any help, contact me, deta
 1. Download code
 2. Create a discord application on [Discord Developer Portal](https://discord.com/developers/applications)
 4. Get new bot token from Discord Developer Portal -> Your Application -> Bot -> (Add bot if you don't have one) / get / reset token
-3. Edit .env file or environment variables, setting `DATABASE_URL` to your postgres database (uses ssl connection), `BOT_TOKEN` and `BOT_PREFIX` to your token and preferred default prefix
+3. Use make_env.py to create an .env file or set environment variables, set `DATABASE_URL` to your postgres database (uses ssl connection), `BOT_TOKEN` and `BOT_PREFIX` to your token and preferred default prefix
 4. Enable [privileged intents](https://discord.com/developers/applications/). From Your Application -> Bot -> Privileged Gateway Intents, enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
 5. Run `init.py` to start bot (see below for instructions to run as a service in background)
 6. Invite to your server(s) using this link, with your bot id:<br />
@@ -54,7 +54,7 @@ These instructions shouldn't be too hard. If you need any help, contact me, deta
 
 ### Running as linux service
 > (tested on ubuntu 22.04, some commands may be different depending on your distro)
-1. edit .env, `BOT_PRINT=no` So it does not clog up systemctl output, you can get the logs of the bot from step 5 below.
+1. Edit .env, `BOT_PRINT=no` So it does not clog up systemctl output, you can get the logs of the bot from step 5 below.
 2. Make a new service file.
 > `sudo nano /lib/systemd/system/voicelevels.service`
 > ```ini
