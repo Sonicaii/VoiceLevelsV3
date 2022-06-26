@@ -30,6 +30,9 @@ if not os.path.isfile("./.env"):
 BOT_TOKEN=
 BOT_PREFIX=,,
 
+# Arbitrary value of 35: 3500m furthest sniper kill distance
+BOT_SNIPE_MAX=35
+
 # Print output as well: yes/no
 BOT_PRINT=yes
 
