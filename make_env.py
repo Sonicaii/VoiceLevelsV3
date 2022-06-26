@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """Creates and configures some variables of .env"""
 
 import header
