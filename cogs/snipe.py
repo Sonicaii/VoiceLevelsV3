@@ -1,8 +1,10 @@
 ﻿"""snipe cog enables recovery of deleted messages"""
 
 import asyncio
+from collections import deque
 from dataclasses import dataclass
 from io import BytesIO
+from os import getenv
 from os.path import basename
 from typing import Optional
 from urllib.parse import urlparse
@@ -11,14 +13,15 @@ from discord import app_commands
 from discord.ext import commands
 from aiohttp import ClientSession
 
-
+# Arbitrary value of 35: 3500m furthest sniper kill distance
+maxlen = int(getenv("BOT_SNIPE_MAX", 35))
 snipe_target = {}
 
 
 class View(discord.ui.View):
+    __slots__ = "msg", "sniper", "deliver"
     """A discord view, handling binning of messages"""
     def __init__(self, **kwargs):
-        self.sniper_id = 0
         super().__init__()
         for key, value in kwargs.items():
             self.__setattr__(key, value)
@@ -32,43 +35,28 @@ class View(discord.ui.View):
     ):
         """Callback on button press to remove message and audit message sender"""
 
-        for msg in snipe_target[interaction.channel.id]:
-
-            # locating the message, could rewrite using ordered dict instead
-            if msg.id != self.msg.id:
-                continue
-
-            # the person who clicked the bin button was the original sniper
-            if interaction.user.id == self.sniper_id:
-                await self.deliver(interaction)(
-                    f"<@{interaction.user.id}> denied their own hit."
+        # The person who clicked the bin button was the original sniper
+        if interaction.user.id == self.sniper.id:
+            await self.deliver(interaction)(
+                f"<@{interaction.user.id}> denied their own hit."
+            )
+        else:
+            self.msg.add(self.sniper.id)
+            await self.deliver(interaction)(
+                "<@%i> denied hit and destroyed %s's ammunition." % (
+                    interaction.user.id,
+                    self.sniper.display_name,
                 )
-            else:
-                msg.add(self.sniper_id)
-                await self.deliver(interaction)(
-                    "<@%i> denied hit and destroyed <@%i>'s ammunition." % (
-                        interaction.user.id,
-                        self.sniper_id,
-                    )
-                )
-            await interaction.message.delete()
-            await asyncio.sleep(5)
+            )
+        await interaction.message.delete()
 
-            return await interaction.delete_original_message()
-
-        # This should never send
-        await self.deliver(interaction)(
-            "Something went wrong.\n"
-            "Could obtain information on where the bin was attached to\n"
-            "This should not have happened, "
-            "please contact the bot's developer "
-            "and tell them what you did to get this message",
-            ephemeral=True,
-        )
+        # Delete after ...
+        await asyncio.sleep(5)
+        return await interaction.delete_original_message()
 
 
 class Msg:
-    """contains message attributes"""
+    """Contains message attributes"""
     __slots__ = "denied", "content", "author", "id", "attachments"
 
     def __init__(self, **kwargs):
@@ -86,12 +74,12 @@ class Msg:
         """Check if the given id has been denied to snipe this message"""
         return id_ in self.denied
 
-@dataclass  # dataclass operator useless...
+@dataclass  # Dataclass operator useless...
 class SmolAuthor:
     """Simplified author object"""
-    __slots__ = ("name", "nick", "id")
+    __slots__ = ("name", "display_name", "id")
     def __init__(self, author):
-        for attr in ("name", "nick", "id"):
+        for attr in ("name", "display_name", "id"):
             self.__setattr__(attr, author.__getattribute__(attr))
 
 
@@ -118,7 +106,7 @@ class Snipe(commands.Cog):
             # Don't log itself
             return
 
-        # split deleted message into 1000 char chunks to avoid 2k char limit
+        # Split deleted message into 1000 char chunks to avoid 2k char limit
         string = message.content
         for content in (
                 string[0 + i : 1000 + i] for i in range(0, len(string) + 1, 1000)
@@ -128,76 +116,63 @@ class Snipe(commands.Cog):
 
     def o_m_d(self, message):
         """Process split message in chunks of 1000 chars"""
-        m_c_id = message.channel.id
-
-        author = SmolAuthor(message.author)
-
         msg = self.msg(
-            author=author,
+            author=SmolAuthor(message.author),
             content=message.content,
             id=message.id,
             # embed=message.embeds[0] if message.embeds else False,
             attachments=[i.url for i in message.attachments],
         )
-
-        if m_c_id in snipe_target:
-            temp_append = snipe_target[m_c_id]
-
-            # arbitrary value of 35: 3500m furthest sniper kill distance
-            if len(temp_append) > 35:
-                del temp_append[0]
-            temp_append.append(msg)
-            snipe_target[m_c_id] = temp_append
-
-        else:
+        try:
+            snipe_target[message.channel.id].appendleft(msg)
+        except KeyError:
             # Beginning of list
-            snipe_target[m_c_id] = [msg]
+            snipe_target[message.channel.id] = deque([msg], maxlen=maxlen)
+
 
     @app_commands.command(name="snipe", description="Snipes messages")
     @app_commands.describe(dist="Target distance (how many messages away)")
-    async def app_snipe(self, interaction: discord.Interaction, dist: Optional[int] = 0):
+    async def app_snipe(self, interaction: discord.Interaction, dist: Optional[int] = 1):
         """Snipe command as app command"""
-        return await self._snipe(interaction, dist)
+        return await self._snipe(await commands.Context.from_interaction(interaction), dist)
 
     @commands.command(name="snipe")
-    async def cmd_snipe(self, ctx: commands.Context, dist: Optional[int] = 0):
+    async def cmd_snipe(self, ctx: commands.Context, dist: Optional[int] = 1):
         """Snipe command as classic command"""
         return await self._snipe(ctx, dist)
 
-    async def _snipe(self, interaction, dist):
+    async def _snipe(self, ctx, dist):
         """The snipe command retrieves the latest or specified deleted message"""
-        m_c_id = interaction.channel.id
+        m_c_id = ctx.channel.id
 
         if snipe_target.get(m_c_id) is None:
             # Nothing in list currently
-            return await self.deliver(interaction)(
+            return await self.deliver(ctx)(
                 "Couldn't find target to snipe in this channel.", ephemeral=True
             )
 
-        snipe_range = -dist if dist <= len(snipe_target.get(m_c_id, [])) else -1
+        if dist > len(snipe_target[m_c_id]):
+            return await self.deliver(ctx)(
+                "Couldn't find target to snipe. No targets that far out.", ephemeral=True,
+            )
 
-        if snipe_target[m_c_id][snipe_range].is_denied(interaction.user.id):
-            return await self.deliver(interaction)(
-                "You are unable to snipe this message", ephemeral=True
+        if snipe_target[m_c_id][dist - 1].is_denied(ctx.author.id):
+            return await self.deliver(ctx)(
+                "You are unable to snipe this message", ephemeral=True, delete_after=5
             )
 
         if dist:
-            if dist > len(snipe_target[m_c_id]):
-                return await self.deliver(interaction)(
-                    "Couldn't find target to snipe. No targets that far out.",
-                    ephemeral=True,
-                )
-            msg = snipe_target[m_c_id][-dist]
+            msg = snipe_target[m_c_id][dist - 1]
             range_msg = f"from {dist}00m"
-            if dist > 35:
+            if dist > maxlen:
                 range_msg += " which is further than the world's longest confirmed sniper kill"
         else:
-            msg = snipe_target[m_c_id][-1]
+            msg = snipe_target[m_c_id][0]
             range_msg = "the closest target"
 
         send = "<@%i> hit %s, %s, who said\n%s\n" % (
-            interaction.user.id,
-            msg.author.name,
+            ctx.author.id,
+            "themselves" if msg.author.id == ctx.author.id else msg.author.name,
             range_msg,
             msg.content,
         )
@@ -207,21 +182,22 @@ class Snipe(commands.Cog):
                 async with session.get(msg.attachments[0]) as resp:
                     if resp.status != 200:
                         send += msg.attachments[0]
-                        await self.deliver(interaction)(
+                        await self.deliver(ctx)(
                             "Could not download attachment file", ephemeral=True
                         )
                     file = BytesIO(await resp.read())
         else:
             for url in msg.attachments:
                 send += url + "\n"
-        view = View(msg=msg, sniper_id=interaction.user.id, deliver=self.deliver)
-        await self.deliver(interaction)(
+        view = View(msg=msg, sniper=SmolAuthor(ctx.author), deliver=self.deliver)
+        await self.deliver(ctx)(
             send,
             # embed=discord.Embed().from_dict(msg.embed) if msg.embed else None,
             file=discord.File(file, basename(urlparse(msg.attachments[0]).path))
             if file
             else discord.utils.MISSING,
             view=view,
+            ephemeral=False,
         )
 
 
