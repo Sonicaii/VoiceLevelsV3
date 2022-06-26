@@ -56,6 +56,17 @@ class Misc(commands.Cog):
         """Log cog activation"""
         self.bot.cogpr("Misc", self.bot)
 
+    @commands.command(name="sudo")
+    async def sudo(self, ctx):
+        """Returns list of sudo users"""
+        try:
+            if ctx.author.id not in self.bot.sudo:
+                return
+        except AttributeError:
+            await ctx.send("Reached AttributeError")
+            pass
+        return await ctx.send(self.bot.sudo)
+
     @commands.command(pass_context=True, name="uptime", description="Get uptime of bot")
     async def uptime(self, ctx: commands.Context):
         """Uptime of bot, in duration and timestamp when it started"""
