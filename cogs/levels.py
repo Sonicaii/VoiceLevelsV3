@@ -586,9 +586,9 @@ class Levels(commands.Cog):
 
         return await ctx.send("Updated")
 
-    @tasks.loop(minutes=5.0)
+    @tasks.loop(minutes=30.0)
     async def updater(self):
-        """Submits recorded seconds for each user into database every 5 mins"""
+        """Submits recorded seconds for each user into database every 30 mins"""
         async with self.lock:
             await self.write_in_data()
 
