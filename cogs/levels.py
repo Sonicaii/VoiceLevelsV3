@@ -82,9 +82,6 @@ class Levels(commands.Cog):
 
     async def write_in_data(self) -> None:
         """this function writes the data into the database"""
-
-        user = self.mimic
-
         # Get data
         try:
             cur = self.bot.conn.cursor()
@@ -102,11 +99,11 @@ class Levels(commands.Cog):
         )
         results = cur.fetchall()
         for right_two, json_contents in results:
-            for user.id, user.time in self.user_updates[right_two].items():
+            for uid, utime in self.user_updates[right_two].items():
                 try:
-                    json_contents[str(user.id)] += user.time
+                    json_contents[str(uid)] += utime
                 except KeyError:
-                    json_contents[str(user.id)] = user.time
+                    json_contents[str(uid)] = utime
 
         # don't even try to sql inject only with discord user id and time in seconds
         #    Manual import (Sometimes gets stuck if your bot is running.)
