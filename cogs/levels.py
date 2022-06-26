@@ -17,29 +17,6 @@ def get_level_f(seconds: int) -> (int, str):
     """Function gets the level in (level: int, percentage to next level: str)"""
     decimal, integer = modf((0.75 * ((seconds / 360) ** 0.5) + 0.05 * seconds / 360) / 4)
     return int(integer), decimal
-    # if seconds <= 21600:  # 6 hours
-    #     return (
-    #         int(seconds / 180),
-    #         (str(seconds / 180 - int(seconds / 180)).split(".")[1] + "0")[:2],
-    #     )
-    # elif seconds <= 86400:  # 24 hours
-    #     return (
-    #         120 + int((seconds - 21600) * 80 / 64800),
-    #         (
-    #             str(
-    #                 (seconds - 21600) * 80 / 64800 - int((seconds - 21600) * 80 / 64800)
-    #             ).split(".")[1]
-    #             + "0"
-    #         )[:2],
-    #     )
-    # else:  # seconds <= 604800:  # 7 days
-    #     return (
-    #         200 + int(seconds / 6048),
-    #         (str(seconds / 6048 + 200 - int(seconds / 6048 + 200)).split(".")[1] + "0")[
-    #             :2
-    #         ],
-    #     )
-
 
 def get_level(seconds: int) -> int:
     """Function gets level in int"""
@@ -57,8 +34,11 @@ class Levels(commands.Cog):
     def __init__(self, bot):
         # bot initialisation
         self.bot = bot
+
+        # self.lock = asyncio.Lock()
+
         self.deliver = bot.deliver
-        self.lock = asyncio.Lock()
+        self.startup = True
         self.updater.start()
 
         # list of users who recently disconnected
@@ -80,8 +60,55 @@ class Levels(commands.Cog):
 
         self.mimic = Mimic
 
+    # @commands.command(hidden=True)
+    # async def var(self, ctx, var):
+    #     """Returns an attribute of the cog for debugging"""
+    #     if log.level > 10:
+    #         return
+    #     try:
+    #         if ctx.author.id not in self.bot.sudo:
+    #             return
+    #     except (AttributeError, TypeError, BaseException):
+    #         return
+    #     if hasattr(self, var):
+    #         await ctx.send(eval("self."+var))
+
+    async def cog_unload(self):
+        """Final data upload"""
+        log.warning("Levels cog was unloaded, attempting to write_in_data()")
+        # Force write in by making everyone disconnect
+        for i in self.user_actions:
+            await self._on_voice_state_update(
+                self.mimic(id=i),
+                self.mimic(channel=1),
+                self.mimic(channel=None),
+            )
+        await self.write_in_data()
+        log.warning("Reached end of levels unload!")
+
     async def write_in_data(self) -> None:
-        """this function writes the data into the database"""
+        """This function writes the data into the database
+
+        don't even try to sql inject only with discord user id and time in seconds
+           Manual import (Sometimes gets stuck if your self.bot is running.)
+           >>> import psycopg2, json
+           >>> var = {"id": time, "id": time ... }
+           >>> results = [(str(i).zfill(2), {},) for i in range(100)]
+           >>> for k, v in var.items(): results[int(str(k)[-2:])][1][k] = v
+           >>> conn = psycopg2.connect( 'YOUR_DATABASE_URL', sslmode='require')
+           >>> cur = conn.cursor()
+           >>> cur.execute('''
+                UPDATE levels SET
+                    json_contents = c.json_contents
+                FROM (values
+                    %s
+                ) AS c(right_two, json_contents)
+                WHERE levels.right_two::bpchar = c.right_two::bpchar;
+                ''' % ", ".join(
+                    [f"('{r_t}'::bpchar, '{json.dumps(v)}'::json)" for r_t, v in results]
+                ))
+           >>> conn.commit()
+        """
         # Get data
         try:
             cur = self.bot.conn.cursor()
@@ -89,8 +116,9 @@ class Levels(commands.Cog):
             self.bot.conn = self.bot.refresh_conn()
             cur = self.bot.conn.cursor()
 
-        occupied = tuple(k for k, v in self.user_updates.items() if v)
+        occupied = tuple(key for key, value in self.user_updates.items() if value)
         if not occupied:
+            cur.close()
             return
 
         cur.execute(
@@ -105,25 +133,9 @@ class Levels(commands.Cog):
                 except KeyError:
                     json_contents[str(uid)] = utime
 
-        # don't even try to sql inject only with discord user id and time in seconds
-        #    Manual import (Sometimes gets stuck if your bot is running.)
-        #    >>> import psycopg2, json
-        #    >>> var = {"id": time, "id": time ... }
-        #    >>> results = [(str(i).zfill(2), {},) for i in range(100)]
-        #    >>> for k, v in var.items(): results[int(str(k)[-2:])][1][k] = v
-        #    >>> conn = psycopg2.connect( 'YOUR_DATABASE_URL', sslmode='require')
-        #    >>> cur = conn.cursor()
-        #    >>> # cur.execute("""THE COMMAND UNDER THIS COMMENT
-        #    >>> conn.commit()
+        # Lets perform python -OO optimisation malfunctions! Documentation above all??
         cur.execute(
-            """
-                UPDATE levels SET
-                    json_contents = c.json_contents
-                FROM (values
-                    %s
-                ) AS c(right_two, json_contents)
-                WHERE levels.right_two::bpchar = c.right_two::bpchar;
-            """
+            self.write_in_data.__doc__.split("'''")[1]
             % ", ".join(
                 [f"('{r_t}'::bpchar, '{json.dumps(v)}'::json)" for r_t, v in results]
             )
@@ -140,25 +152,12 @@ class Levels(commands.Cog):
         # '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
 
         self.user_actions.clear()
-
         self.bot.conn.commit()
 
     @commands.Cog.listener()
     async def on_ready(self):
         """Log cog activation"""
         self.bot.cogpr("Levels", self.bot)
-
-        await asyncio.sleep(5)  # Wait a bit for sudo to load in init.py
-
-        # reset when activated, prevents faulty overnight join times?
-        async def send(*args, **kwargs):
-            pass
-        ctx = self.mimic(send=send, author=self.mimic(id=self.bot.sudo[-1]))
-        await self._update(ctx, startup=True)
-
-    async def cog_unload(self):
-        with self.lock:
-            self.write_in_data()
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
@@ -557,14 +556,15 @@ class Levels(commands.Cog):
         """Manually run through all channels and update into data.json"""
         await self._update(ctx)
 
-    async def _update(self, ctx, startup=False):
+    async def _update(self, ctx, automated=False):
         if ctx.author.id not in self.bot.sudo:
             return
 
         copy = self.user_updates.copy()
 
-        async with self.lock:
-            await self.write_in_data()  # Update everyone who is currently in
+        # async with self.lock(): used to be here
+        # Hopefully no catastrophic errors occur while it's gone.
+        await self.write_in_data()  # Update everyone who is currently in
 
         for server in self.bot.guilds:  # List of guilds
             log.debug(server.name)
@@ -573,21 +573,47 @@ class Levels(commands.Cog):
                     log.debug("\t" + details.name)
                     if details.voice_states:
                         for id_ in details.voice_states:  # dict { id : info}
-                            self.user_joins[id_] = int(time.time())
-                            self.user_actions.add(id_)
-                            log.debug(f"\t\tfound {id_}")
+                            if id_ not in self.user_actions:
+                                self.user_joins[id_] = int(time.time())
+                                self.user_actions.add(id_)
+                            log.debug(
+                                f"\t\tfound {id_}%s",
+                                ", but was already in user_actions"
+                                if id_ in self.user_actions else
+                                ""
+                            )
 
-        if not startup:
+        if not automated:
             log.warning(f"{ctx.author.id} Called an update")
-        log.debug(f"\n\tUser joins: {self.user_joins}\n\tUser updates: {copy}")
+            log.debug(f"\n\tUser joins: {self.user_joins}\n\tUser updates: {copy}")
 
         return await ctx.send("Updated")
 
     @tasks.loop(minutes=30.0)
     async def updater(self):
         """Submits recorded seconds for each user into database every 30 mins"""
-        async with self.lock:
-            await self.write_in_data()
+        if self.startup:
+            # Check if bot has been up for at least 15 secs
+            if (datetime.datetime.now()-self.bot.start_time).seconds < 15:
+                i = 0  # Wait for sudo to load in init.py
+                while not hasattr(self.bot, "sudo"):
+                    await asyncio.sleep(i := i + 10)
+            # Reset when activated, prevents faulty join times due to downtime
+            async def send(*args, **kwargs):
+                pass
+            await self._update(
+                self.mimic(
+                    send=send,
+                    author=self.mimic(id=self.bot.sudo[-1])
+                ),
+                automated=True,
+            )
+
+        # async with self.lock:
+        await self.write_in_data()
+
+        if self.startup:
+            self.startup = False
 
 
 # cog setup
