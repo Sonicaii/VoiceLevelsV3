@@ -112,7 +112,7 @@ async def on_guild_join(guild) -> None:
     await bot.tree.sync(guild=guild)
 
 
-@bot.command(name="reload", aliases=["r"])
+@bot.command(name="reload", aliases=["r"], hidden=True)
 async def reload(ctx: Context, cog: str = ""):
     """reloads a cog"""
 
@@ -133,7 +133,7 @@ async def reload(ctx: Context, cog: str = ""):
     return await ctx.send(msg)
 
 
-@bot.command()
+@bot.command(name="sync", hidden=True)
 async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
     """Sync slash commands
     https://gist.github.com/AbstractUmbra/a9c188797ae194e592efe05fa129c57f
