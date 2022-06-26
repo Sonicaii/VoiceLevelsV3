@@ -148,23 +148,23 @@ class Snipe(commands.Cog):
         if snipe_target.get(m_c_id) is None:
             # Nothing in list currently
             return await self.deliver(ctx)(
-                "Couldn't find target to snipe in this channel.", ephemeral=True
+                "Couldn't find target to snipe in this channel.", ephemeral=True, delete_after=5
             )
 
         if dist > len(snipe_target[m_c_id]):
             return await self.deliver(ctx)(
-                "Couldn't find target to snipe. No targets that far out.", ephemeral=True,
+                "Couldn't find target to snipe. No targets that far out.", ephemeral=True, delete_after=5
             )
 
         if snipe_target[m_c_id][dist - 1].is_denied(ctx.author.id):
             return await self.deliver(ctx)(
-                "You are unable to snipe this message", ephemeral=True, delete_after=5
+                "You are unable to snipe this message", ephemeral=True
             )
 
         if dist:
             msg = snipe_target[m_c_id][dist - 1]
             range_msg = f"from {dist}00m"
-            if dist > maxlen:
+            if dist > 35:  # Hard coded 35
                 range_msg += " which is further than the world's longest confirmed sniper kill"
         else:
             msg = snipe_target[m_c_id][0]
