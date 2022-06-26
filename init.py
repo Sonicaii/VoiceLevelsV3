@@ -66,7 +66,7 @@ bot = commands.Bot(
 
 @bot.event
 async def setup_hook():
-    """" Bot setup_hook, loads all cogs """
+    """Bot setup_hook, loads all cogs"""
     for ext in [
             "cogs." + i
             for i in [
@@ -82,7 +82,7 @@ async def setup_hook():
 
 @bot.event
 async def on_ready():
-    """ Bot on_ready, changes status and loads sudo users from database """
+    """Bot on_ready, changes status and loads sudo users from database"""
     cogpr("Main", bot, "Y")
     await bot.change_presence(
         activity=discord.Activity(
@@ -108,7 +108,7 @@ async def on_ready():
 
 @bot.event
 async def on_guild_join(guild) -> None:
-    """ Syncs command tree for guild. Can be abused and rate limit the bot """
+    """Syncs command tree for guild. Can be abused and rate limit the bot"""
     await bot.tree.sync(guild=guild)
 
 
@@ -135,7 +135,7 @@ async def reload(ctx: Context, cog: str = ""):
 
 @bot.command()
 async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
-    """
+    """Sync slash commands
     https://gist.github.com/AbstractUmbra/a9c188797ae194e592efe05fa129c57f
         Usage:
             `!sync` -> globally sync all commands (WARNING)
@@ -182,7 +182,7 @@ def deliver(obj: Union[commands.Context, discord.Interaction, Any]) -> Awaitable
 
 
 def main():
-    """ Main function, load variables as attributes into bot, start bot """
+    """Main function, load variables as attributes into bot, start bot"""
     bot.cogpr = cogpr
     bot.deliver = deliver
     bot.discord_escape = discord_escape
