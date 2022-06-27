@@ -626,7 +626,7 @@ class Levels(commands.Cog):
             await self._update(
                 self.mimic(
                     send=send,
-                    author=self.mimic(id=self.bot.sudo[-1])
+                    author=self.mimic(id=next(iter(self.bot.sudo)))
                 ),
                 automated=True,
             )
