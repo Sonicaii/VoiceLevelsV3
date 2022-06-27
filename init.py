@@ -86,7 +86,7 @@ async def on_ready():
     cogpr("Main", bot, "Y")
     await bot.change_presence(
         activity=discord.Activity(
-            name=f"for {os.getenv('BOT_PREFIX')} | Voice Levels V3",
+            name=f"for {os.getenv('BOT_PREFIX', '@'+bot.user.name)} | Voice Levels V3",
             type=discord.ActivityType.watching,
         )
     )
@@ -95,14 +95,14 @@ async def on_ready():
     with bot.conn.cursor() as cur:
         try:
             cur.execute("SELECT TRIM(id) FROM sudo")
-            bot.sudo = [int(i[0]) for i in cur.fetchall()]
+            bot.sudo = {int(i[0]) for i in cur.fetchall()}
             if not bot.sudo:
-                raise psycopg2.errors.UndefinedTable
+                raise psycopg2.DatabaseError
 
-        except psycopg2.errors.UndefinedTable:
+        except psycopg2.DatabaseError:
             owner_id = (await bot.application_info()).owner.id
             cur.execute("INSERT INTO sudo VALUES %s", ((str(owner_id),),))
-            bot.sudo = [int(owner_id)]
+            bot.sudo = {int(owner_id)}
             bot.conn.commit()
 
 
@@ -112,9 +112,9 @@ async def on_guild_join(guild) -> None:
     await bot.tree.sync(guild=guild)
 
 
-@bot.command(name="reload", aliases=["r"], hidden=True)
+@bot.command(aliases=("r",), hidden=True)
 async def reload(ctx: Context, cog: str = ""):
-    """reloads a cog"""
+    """Reloads a cog"""
 
     if ctx.author.id not in bot.sudo or not cog:
         return
@@ -133,7 +133,7 @@ async def reload(ctx: Context, cog: str = ""):
     return await ctx.send(msg)
 
 
-@bot.command(name="sync", hidden=True)
+@bot.command(hidden=True)
 async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
     """Sync slash commands
     https://gist.github.com/AbstractUmbra/a9c188797ae194e592efe05fa129c57f
@@ -175,7 +175,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
 
 
 def deliver(obj: Union[commands.Context, discord.Interaction, Any]) -> Awaitable:
-    """returns an async function that will send message"""
+    """Returns an async function that will send message"""
     return (
         obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
     )
@@ -191,7 +191,7 @@ def main():
 
     # Prefix variables
     bot.prefix_factory_init = False
-    bot.prefix_cache_pop = lambda i: server_prefix.cache.pop(i, None)
+    bot.prefix_cache_pop = server_prefix.prefix_cache_pop
     bot.prefix_cache_size = lambda: server_prefix.cache_size
     bot.default_prefix = server_prefix.default_prefix
     bot.refresh_conn = refresh_conn
@@ -203,10 +203,9 @@ def main():
         bot.run(token, log_handler=None)
     except discord.errors.LoginFailure:
         log.error("Invalid token!")
-        log.error("Please refresh or insert correct token into the database")
-        log.error("\tUPDATE token SET token = 'BOT_TOKEN'")
 
-    bot.conn.close()
+    if bot.conn is not None:
+        bot.conn.close()
 
 
 if __name__ == "__main__":

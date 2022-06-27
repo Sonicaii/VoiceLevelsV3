@@ -3,6 +3,7 @@ import asyncio
 from dataclasses import dataclass
 import datetime
 import json
+import logging
 import time
 from typing import Optional, Union
 from math import modf
@@ -10,8 +11,8 @@ from re import findall, sub
 import psycopg2
 import discord
 from discord.ext import tasks, commands
-from __main__ import log
 
+log = logging.getLogger("discord")
 
 def get_level_f(seconds: int) -> (int, str):
     """Function gets the level in (level: int, percentage to next level: str)"""
@@ -77,9 +78,9 @@ class Levels(commands.Cog):
         """Final data upload"""
         log.warning("Levels cog was unloaded, attempting to write_in_data()")
         # Force write in by making everyone disconnect
-        for i in self.user_actions:
+        for uid in self.user_actions:
             await self._on_voice_state_update(
-                self.mimic(id=i),
+                self.mimic(id=uid),
                 self.mimic(channel=1),
                 self.mimic(channel=None),
             )
@@ -355,19 +356,19 @@ class Levels(commands.Cog):
                         f"Nothing on page {page}. Total {total_pages} pages"
                     )
 
-                sorted_d = {
-                    int(i): j
-                    for i, j in sorted(
-                        large_dict, key=lambda item: item[1], reverse=True
-                    )
-                }
-                dict_nicknames = {}
-                for server in self.bot.guilds:
-                    dict_nicknames.update(
-                        {int(member.id): member.name for member in server.members}
-                    )
-
-                return sorted_d, dict_nicknames
+                return (
+                    {
+                        int(i): j
+                        for i, j in sorted(
+                            large_dict, key=lambda item: item[1], reverse=True
+                        )
+                    },
+                    {
+                        member.id: member.name
+                        for server in self.bot.guilds
+                        for member in server.members
+                    },
+                )
 
             sorted_d, dict_nicknames, ctx = await self.predeliver(
                 ctx,
@@ -380,7 +381,7 @@ class Levels(commands.Cog):
 
             return await self.deliver(ctx)(
                 content=await self._format_top(
-                    ctx, sorted_d, dict_nicknames, page, "from users of *all* servers"
+                    ctx, (sorted_d, dict_nicknames), page, "from users of *all* servers"
                 )
             )
 
@@ -426,15 +427,13 @@ class Levels(commands.Cog):
                 for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True)
                 if int(k) in list_of_ids
             }
-
-            dict_nicknames = {i.id: i.display_name for i in ctx.guild.members}
             total_pages = len(sorted_d) // 20 + 1
 
             if page > total_pages:
                 return None, await self.deliver(ctx)(
                     f"Nothing on page {page}. Total {total_pages} pages"
                 )
-            return sorted_d, dict_nicknames
+            return sorted_d, {i.id: i.display_name for i in ctx.guild.members}
 
         sorted_d, dict_nicknames, ctx = await self.predeliver(
             ctx,
@@ -446,7 +445,7 @@ class Levels(commands.Cog):
             return
 
         return await self.deliver(ctx)(
-            content=await self._format_top(ctx, sorted_d, dict_nicknames, page, fmt)
+            content=await self._format_top(ctx, (sorted_d, dict_nicknames), page, fmt)
         )
 
     async def predeliver(
@@ -487,9 +486,10 @@ class Levels(commands.Cog):
                 )
 
     async def _format_top(
-            self, ctx, sorted_d, dict_nicknames, page, fmt="from users of this server"
+            self, ctx, dicts, page, fmt="from users of this server"
     ):
         """Formats leaderboard string to send"""
+        sorted_d, dict_nicknames = dicts
         fg = self.bot.fm.fg
         bg = self.bot.fm.bg
         page = list(sorted_d.items())[(page - 1) * 20 : page * 20]
@@ -566,22 +566,46 @@ class Levels(commands.Cog):
         # Hopefully no catastrophic errors occur while it's gone.
         await self.write_in_data()  # Update everyone who is currently in
 
-        for server in self.bot.guilds:  # List of guilds
-            log.debug(server.name)
-            for details in server.channels:  # List of server channels
-                if str(details.type) == "voice":
-                    log.debug("\t" + details.name)
-                    if details.voice_states:
-                        for id_ in details.voice_states:  # dict { id : info}
-                            if id_ not in self.user_actions:
-                                self.user_joins[id_] = int(time.time())
-                                self.user_actions.add(id_)
-                            log.debug(
-                                f"\t\tfound {id_}%s",
-                                ", but was already in user_actions"
-                                if id_ in self.user_actions else
-                                ""
-                            )
+        for uid in (
+                uid for ids in (
+                    channel.voice_states for channel in (
+                        channel for channels in (
+                            server.channels for server in self.bot.guilds.copy()
+                        ) for channel in channels
+                    ) if hasattr(channel, "voice_states")
+                ) for uid in ids
+        ):
+            if uid not in self.user_actions:
+                self.user_joins[uid] = int(time.time())
+                self.user_actions.add(uid)
+            log.debug(
+                f"\t\tfound {uid}%s",
+                ", but was already in user_actions"
+                if uid in self.user_actions else
+                ""
+            )
+        # for server in self.bot.guilds.copy():  # List of guilds
+        #     for details in server.channels:  # List of server channels
+        #         if hasattr(details, "voice_states"):
+        #             if details.voice_states:
+        #                 for uid in details.voice_states:  # dict { id : info}
+        #                     if uid not in self.user_actions:
+        #                         self.user_joins[uid] = int(time.time())
+        #                         self.user_actions.add(uid)
+        #                     log.debug(
+        #                         f"\t\tfound {uid}%s",
+        #                         ", but was already in user_actions"
+        #                         if uid in self.user_actions else
+        #                         ""
+        #                     )
+        # channels = [channel for channels in [
+        # server.channels for server in self.bot.guilds] for channel in channels]
+        # selected_channels_voice_states = [
+        # channel.voice_states for channel in channels if hasattr(channel, "voice_states")]
+        # ids = [uid for ids in selected_channels_voice_states for uid in ids]
+        # ids = [uid for ids in [channel.voice_states for channel in [channel for channels in [
+        # server.channels for server in self.bot.guilds] for channel in channels] if hasattr(
+        # channel, "voice_states")] for uid in ids]
 
         if not automated:
             log.warning(f"{ctx.author.id} Called an update")

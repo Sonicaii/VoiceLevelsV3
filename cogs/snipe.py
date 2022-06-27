@@ -14,13 +14,13 @@ from discord.ext import commands
 from aiohttp import ClientSession
 
 # Arbitrary value of 35: 3500m furthest sniper kill distance
-maxlen = int(getenv("BOT_SNIPE_MAX", 35))
+maxlen = int(getenv("BOT_SNIPE_MAX", "35"))
 snipe_target = {}
 
 
 class View(discord.ui.View):
-    __slots__ = "msg", "sniper", "deliver"
     """A discord view, handling binning of messages"""
+    __slots__ = "msg", "sniper", "deliver"
     def __init__(self, **kwargs):
         super().__init__()
         for key, value in kwargs.items():
@@ -148,12 +148,16 @@ class Snipe(commands.Cog):
         if snipe_target.get(m_c_id) is None:
             # Nothing in list currently
             return await self.deliver(ctx)(
-                "Couldn't find target to snipe in this channel.", ephemeral=True, delete_after=5
+                "Couldn't find target to snipe in this channel.",
+                ephemeral=True,
+                delete_after=5,
             )
 
         if dist > len(snipe_target[m_c_id]):
             return await self.deliver(ctx)(
-                "Couldn't find target to snipe. No targets that far out.", ephemeral=True, delete_after=5
+                "Couldn't find target to snipe. No targets that far out.",
+                ephemeral=True,
+                delete_after=5,
             )
 
         if snipe_target[m_c_id][dist - 1].is_denied(ctx.author.id):

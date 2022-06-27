@@ -2,6 +2,7 @@
 import logging
 import logging.handlers
 import os
+from typing import Union
 from collections import OrderedDict
 from re import sub
 from sys import stdout
@@ -22,7 +23,7 @@ import new_db
 
 if not os.path.isfile("./.env"):
     with open("./.env", "w") as file:
-        file.write("""
+        file.write("""# Voice Levels .env
 # Uncomment DATABASE_URL below and paste your own postgresql url (uses ssl connection)
 # If you are on Heroku, they set DATABASE_URL for you. No need to Uncomment
 
@@ -46,7 +47,11 @@ BOT_LOG_BACKUP_COUNT=2
 # Follow log in bash using `tail discord.log -f -n lines`
 # Follow log in powershell `Get-Content discord.log -Wait -Tail lines`
 """)
-    print(".env was not found, making .env file now, please insert the bot token and other information")
+    print(
+        ".env was not found, "
+        "making .env file now, "
+        "please insert the bot token and other information"
+    )
 
 load_dotenv()
 
@@ -65,20 +70,10 @@ load_dotenv()
 #   with open("discord.log", "w"):
 #       pass
 
+logging_level = logging.getLevelName(os.getenv("BOT_LOG_LEVEL", "INFO").upper())
 
 log = logging.getLogger("discord")
 
-logging_level = (
-    {
-        k: v * 10
-        for k, v in zip(
-            ["NOTSET", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"], range(0, 6)
-        )
-    }[os.getenv("BOT_LOG_LEVEL").upper()]
-    if os.getenv("BOT_LOG_LEVEL")
-    else logging.ERROR
-)
-log = logging.getLogger("discord")
 log.setLevel(logging_level)
 logging.getLogger("discord.http").setLevel(logging_level)
 
@@ -124,25 +119,25 @@ class ColourFormat(dict):
         """Like a string, but with colour"""
         __slots__ = ("str",)
 
-        def __init__(self, num: int):
+        def __init__(self, num: int) -> None:
             self.str = "\033[%sm" % num
 
-        def __repr__(self):
+        def __repr__(self) -> str:
             return self.str
 
-        def __str__(self):
+        def __str__(self) -> str:
             return self.str
 
-        def __add__(self, other):
+        def __add__(self, other) -> str:
             return self.str + other
 
-        def __radd__(self, other):
+        def __radd__(self, other) -> str:
             return other + self.str
 
         def __call__(self, string="", after="") -> str:
-            return f"{self}{string}{after}" "\033[0m"
+            return "%s%s%s\033[0m" % (self, string, after)
 
-    def __init__(self, offset: int, doc: str, *args, **kwargs):
+    def __init__(self, offset: int, doc: str, *args, **kwargs) -> None:
         super(ColourFormat, self).__init__(*args, **kwargs)
         for key, value in [
                 (self._num.get(key, str(key)), value)
@@ -154,14 +149,14 @@ class ColourFormat(dict):
 
         self.__class__.__doc__ = doc
         if offset:
-            for caps in [True, False]:
+            for caps in True, False:
                 for num, letter in enumerate(
                         list(self._letters.upper() if caps else self._letters)
                 ):
                     self[letter] = self.Colour(num + offset + (60 if caps else 0))
                     self.__setattr__(letter, self[letter])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return super(ColourFormat, self).__repr__() + "\033[0m"
 
 
@@ -240,84 +235,58 @@ Console text formatter
 
 
 def cogpr(name: str, bot: object, colour: str = "w") -> str:
-    """format cog start output"""
+    """Format cog start output"""
     log.info("Activated %s %s", fg[colour]+bot.user.name, fg.G(name))
 
 
 def discord_escape(string) -> str:
-    """escape discord formatting"""
+    """Escape discord formatting"""
     return sub(r"(?=\W)", "\\\\", string).replace("\\:", ":").replace("\\ ", " ")
 
 
-def refresh_conn() -> psycopg2.extensions.connection:
+def refresh_conn() -> Union[psycopg2.extensions.connection, None]:
     """Returns a new connection object"""
     log.debug("Refreshing connection to database")
-    if not (db_url := os.getenv("DATABASE_URL", "")):
+    db_url = os.getenv("DATABASE_URL", "")
+    conn = None
+    try:
+        conn = psycopg2.connect(db_url, sslmode="require")
+        conn.set_session(autocommit=True)
+    except psycopg2.OperationalError:
         log.error(
             "You do not have Heroku Postgress in Add-ons, "
             "or the environment variable was misconfigured"
         )
-    conn = psycopg2.connect(db_url, sslmode="require")
-    conn.set_session(autocommit=True)
     return conn
-
-
-def get_token_old(conn: connection, recurse: int = 0) -> [str, bool]:
-    """Static method? Gets token from database for run()"""
-    try:
-        with conn.cursor() as cur:
-            cur.execute("SELECT token FROM token")
-            return [cur.fetchone()[0], False]
-    except psycopg2.errors.UndefinedTable:
-        conn.rollback()  # Need to rollback after exception
-
-        log.error("NO TOKEN IN DATABASE!")
-        log.error("Edit new_db.py to insert bot token or run:")
-        log.error("\tUPDATE token SET token = 'BOT_TOKEN'")
-
-        with conn.cursor() as cur:
-            cur.execute(new_db.create_token)
-            #   cur.execute(new_db.detect)
-            #   has_tables = cur.fetchone()[0]
-
-            # if not has_tables:
-            #   log.error("You do not have any tables in your database, setting up now")
-            #   with conn.cursor() as cur:
-            cur.execute(new_db.create_vl)
-        conn.commit()
-
-    # MAKE SURE TO REFRACTOR THIS LINE DOWN HERE
-    return [get_token_old(conn, recurse + 1)[0] if recurse < 1 else "", True]
 
 
 def get_token(conn: connection) -> str:
     """Returns the bot token from environment variables, and bool for need_setup"""
-    if not (token := os.getenv("BOT_TOKEN")):
+    if token := os.getenv("BOT_TOKEN"):
+        # Init database if doesn't exist
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT EXISTS (
+                    SELECT FROM
+                        information_schema.tables
+                    WHERE
+                        table_schema LIKE 'public' AND
+                        table_type LIKE 'BASE TABLE' AND
+                        table_name = 'levels'
+                    );
+                """
+            )
+            if not cur.fetchone()[0]:
+                cur.execute(new_db.create_vl)
+                conn.commit()
+    else:
         log.error("NO TOKEN IN ENVIRONMENT VARS!")
         log.error(
             "Head to your Heroku dashboard->settings and add the config var BOT_TOKEN"
         )
         log.error("If you're hosting locally, edit .env and update your BOT_TOKEN")
-
-    # Init database if doesn't exist
-    with conn.cursor() as cur:
-        cur.execute(
-            """
-            SELECT EXISTS (
-                SELECT FROM
-                    information_schema.tables
-                WHERE
-                    table_schema LIKE 'public' AND
-                    table_type LIKE 'BASE TABLE' AND
-                    table_name = 'levels'
-                );
-            """
-        )
-        if not cur.fetchone()[0]:
-            cur.execute(new_db.create_vl)
-            conn.commit()
     return token
-
 
 # class _prefix_factory:
 #   global len_bot_guilds  # rip
@@ -393,12 +362,15 @@ class ServerPrefix:
             self.cache.popitem(last=False)
         return [self.cache[guild.id], *base]
 
+    def prefix_cache_pop(self, gid: int) -> None:
+        """Pops the requested guild id from cache, forcing a prefix refresh next time"""
+        self.cache.pop(gid, None)
 
 server_prefix = ServerPrefix()
 
 
 async def get_prefix(bot, message):
-    """sets the bot's prefix"""
+    """Sets the bot's prefix"""
 
 
     # if not bot._prefix_factory_init:
