@@ -607,7 +607,6 @@ class Levels(commands.Cog):
 
         if not automated:
             log.warning(f"{ctx.author.id} Called an update")
-            log.debug(f"\n\tUser joins: {self.user_joins}\n\tUser updates: {copy}")
 
         return await ctx.send("Updated")
 
