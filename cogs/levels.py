@@ -573,7 +573,7 @@ class Levels(commands.Cog):
                     ) if hasattr(channel, "voice_states")
                 ) for uid in ids
         ):
-            if uid not in self.user_actions:
+            if uid not in self.user_actions.copy():
                 self.user_joins[uid] = int(time.time())
                 self.user_actions.add(uid)
             log.debug(
