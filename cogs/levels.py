@@ -152,7 +152,9 @@ class Levels(commands.Cog):
         self.user_updates = {str(i).zfill(2): {} for i in range(100)}
         # '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
 
-        self.user_actions.clear()
+        for uid in self.user_actions:
+            if uid not in self.user_joins:
+                self.user_actions.remove(uid)
         self.bot.conn.commit()
 
     @commands.Cog.listener()
@@ -164,12 +166,12 @@ class Levels(commands.Cog):
     async def on_voice_state_update(self, member, before, after):
         """Voice Updates
 
-            1. check if it was a disconnect/ reconnect/ move
-            2. check if they have a previous join time ( make one if not )
-            3. check if they have an update time ( make on if not )
-            4. add their time.now - time.previous join to their update
-            5. delete their join time if their action was leave ( after.channel == None )
-            6. update their join time to current time
+            1. Check if it was a disconnect/ reconnect/ move
+            2. Check if they have a previous join time ( make one if not )
+            3. Check if they have an update time ( make on if not )
+            4. Add their time.now - time.previous join to their update
+            5. Delete their join time if their action was leave ( after.channel == None )
+            6. Update their join time to current time
         """
         await self._on_voice_state_update(member, before, after)
 
@@ -178,35 +180,32 @@ class Levels(commands.Cog):
         if before.channel == after.channel or (
                 member.id not in self.user_joins and after.channel is None
         ):
-            # name of the channel unchanged: not a disconnect or move
-            # disconnected while no record of inital connection
+            # Name of the channel unchanged: not a disconnect or move
+            # Disconnected while no record of inital connection
             return
 
         self.user_actions.add(member.id)
 
-        # add if not exist
+        # Add if not exist and return as it was only a join
         if member.id not in self.user_joins:
-            self.user_joins[member.id]: int = int(time.time())
+            self.user_joins[member.id] = int(time.time())
             return
 
-        # add if not exist
-        if member.id not in self.user_updates[to2(member.id)]:
-            self.user_updates[to2(member.id)][member.id]: int = 0
+        # Add duration, and add to dict if doesn't exist
+        try:
+            self.user_updates[to2(member.id)][member.id] += (
+                int(time.time()) - self.user_joins[member.id]
+            )
+        except KeyError:
+            self.user_updates[to2(member.id)][member.id] = 0
 
-        # add duration
-        self.user_updates[to2(member.id)][member.id] += (
-            int(time.time()) - self.user_joins[member.id]
-        )
-
-        # if it was not a leave: restart the count
-        # starts the count if it was a first time join
+        # If it was not a leave: restart the count
+        # Starts the count if it was a first time join
         self.user_joins[member.id] = int(time.time())
 
-        # removes from needing updates
+        # Removes from needing updates
         if after.channel is None:
             del self.user_joins[member.id]
-
-        return
 
     @commands.hybrid_command(name="total", description="Shows total time in seconds")
     async def total(self, ctx: commands.Context, user: Optional[discord.User] = None):
@@ -554,13 +553,12 @@ class Levels(commands.Cog):
     @commands.command(pass_context=True)
     async def update(self, ctx):
         """Manually run through all channels and update into data.json"""
-        await self._update(ctx)
+        if ctx.author.id in self.bot.sudo:
+            await self._update(ctx)
 
     async def _update(self, ctx, automated=False):
         if ctx.author.id not in self.bot.sudo:
             return
-
-        copy = self.user_updates.copy()
 
         # async with self.lock(): used to be here
         # Hopefully no catastrophic errors occur while it's gone.
@@ -570,7 +568,7 @@ class Levels(commands.Cog):
                 uid for ids in (
                     channel.voice_states for channel in (
                         channel for channels in (
-                            server.channels for server in self.bot.guilds.copy()
+                            server.channels for server in self.bot.guilds
                         ) for channel in channels
                     ) if hasattr(channel, "voice_states")
                 ) for uid in ids
@@ -584,7 +582,7 @@ class Levels(commands.Cog):
                 if uid in self.user_actions else
                 ""
             )
-        # for server in self.bot.guilds.copy():  # List of guilds
+        # for server in self.bot.guilds:  # List of guilds
         #     for details in server.channels:  # List of server channels
         #         if hasattr(details, "voice_states"):
         #             if details.voice_states:
