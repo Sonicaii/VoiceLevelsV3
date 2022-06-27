@@ -90,7 +90,10 @@ async def on_ready():
             type=discord.ActivityType.watching,
         )
     )
+    await refresh_sudo()
 
+
+async def refresh_sudo():
     # INSERT INTO sudo VALUES ("discord id")
     with bot.conn.cursor() as cur:
         try:
@@ -195,6 +198,7 @@ def main():
     bot.prefix_cache_size = lambda: server_prefix.cache_size
     bot.default_prefix = server_prefix.default_prefix
     bot.refresh_conn = refresh_conn
+    bot.refresh_sudo = refresh_sudo
 
     # async with bot:
     bot.conn = bot.refresh_conn()
