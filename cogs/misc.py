@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 from os import SEEK_END
 from sys import exit as exit_
-from typing import Optional, Union
+from typing import Literal, Optional, Union
 from re import findall, sub
 import discord
 from discord import app_commands
@@ -56,18 +56,7 @@ class Misc(commands.Cog):
         """Log cog activation"""
         self.bot.cogpr("Misc", self.bot)
 
-    @commands.command(name="sudo")
-    async def sudo(self, ctx):
-        """Returns list of sudo users"""
-        try:
-            if ctx.author.id not in self.bot.sudo:
-                return
-        except AttributeError:
-            await ctx.send("Reached AttributeError")
-            pass
-        return await ctx.send(self.bot.sudo)
-
-    @commands.command(pass_context=True, name="uptime", description="Get uptime of bot")
+    @commands.command(pass_context=True, description="Get uptime of bot")
     async def uptime(self, ctx: commands.Context):
         """Uptime of bot, in duration and timestamp when it started"""
         if ctx.author.id in self.bot.sudo:
@@ -78,23 +67,21 @@ class Misc(commands.Cog):
                 )
             )
 
-    @commands.hybrid_command(
-        name="members", description="Gets the number of members in the server"
-    )
+    @commands.hybrid_command(description="Gets the number of members in the server")
     async def members(self, ctx: commands.Context):
         """Get total number of members in server"""
         await self.deliver(ctx)(
             f"Number of members in this server: {ctx.guild.member_count}"
         )
 
-    @commands.hybrid_command(name="latency", description="current latency of bot")
+    @commands.hybrid_command(description="current latency of bot")
     async def latency(self, ctx: commands.Context):
         """Returns the bot ping"""
         await self.deliver(ctx)(
             f"Current latency is {round(self.bot.latency * 1000)}ms"
         )
 
-    @commands.hybrid_command(name="ping", description="current latency of bot")
+    @commands.hybrid_command(description="current latency of bot")
     async def ping(self, ctx: commands.Context):
         """Returns the bot ping"""
         # if ctx.interaction:
@@ -146,7 +133,7 @@ class Misc(commands.Cog):
             f"{_}{discord_id}{_} is equivalent to {{snowflake_time}}",
         )
 
-    @app_commands.command(name="user", description="Get when user account was made")
+    @app_commands.command(description="Get when user account was made")
     async def user(
             self, interaction: discord.Interaction, user: Optional[discord.User] = None
     ):
@@ -163,7 +150,7 @@ class Misc(commands.Cog):
             ),
         )
 
-    @app_commands.command(name="channel", description="Get when channel was made")
+    @app_commands.command(description="Get when channel was made")
     async def channel(
             self,
             interaction: discord.Interaction,
@@ -181,7 +168,7 @@ class Misc(commands.Cog):
             ),
         )
 
-    @commands.hybrid_command(name="lookup", with_app_command=True)
+    @commands.hybrid_command(with_app_command=True)
     async def lookup(self, ctx: commands.Context, thing: Optional[str] = None):
         """Attempt to extract ID from anything the user puts in
 
@@ -246,7 +233,7 @@ class Misc(commands.Cog):
         self.bot.prefix_cache_pop(ctx.guild.id)
 
 
-    @commands.command(pass_context=True, name="tail")
+    @commands.command
     async def tail(self, ctx, lines: Optional[int] = 10):
         """Print out tail of discord.log"""
         if ctx.author.id not in self.bot.sudo:
@@ -276,7 +263,7 @@ class Misc(commands.Cog):
             + "```"
         )
 
-    @commands.command(name="stop", description="STOP")
+    @commands.command(description="STOP")
     async def stop(self, ctx: discord.Interaction):
         """Stop bot"""
         try:
@@ -289,12 +276,44 @@ class Misc(commands.Cog):
         finally:
             exit_(1)
 
-    @commands.command(pass_context=True, name="cache_size")
+    @commands.command
     async def cache_size(self, ctx: commands.Context):
         """Check bot prefix cache size"""
         if ctx.author.id not in self.bot.sudo:
             return
         await self.deliver(ctx)(f"Cache size is: {self.bot.prefix_cache_size()}")
+
+    @commands.command(hidden=True)
+    async def sudo(
+            self,
+            ctx,
+            mode: Optional[Literal["add", "new", "+", "remove", "rm", "-", "del", "get"]],
+            user: str = ""
+    ):
+        """Manages sudo users"""
+        try:
+            if ctx.author.id not in self.bot.sudo:
+                return
+        except AttributeError:
+            return await ctx.send("Reached AttributeError")
+
+        # We can use match statement! But don't because of compatibility
+        if mode in ("get", None):
+            return await ctx.send(self.bot.sudo)
+        if not user.isdigit():
+            return await ctx.send("Input was not a discord id")
+        with self.bot.conn.cursor() as cur:
+            if mode in ("add", "new", "+"):
+                cur.execute("INSERT INTO sudo VALUES (%i)", (int(user),))
+                self.bot.sudo.add(int(user))
+                await ctx.send("Added %s to sudo" % user)
+            elif mode in ("del", "remove", "rm", "-") and int(user) in self.bot.sudo:
+                cur.execute("DELETE FROM sudo WHERE id = %i", (int(user),))
+                self.bot.sudo.remove(int(user))
+                await ctx.send("Removed %s from sudo" % user)
+            else:
+                await ctx.send("%s was not in sudo" % user)
+        self.bot.conn.commit()
 
 
 async def setup(bot):
