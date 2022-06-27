@@ -1,6 +1,7 @@
 """misc cog with miscellaneous commands"""
 
 from datetime import datetime, timedelta
+import logging
 from os import SEEK_END
 from sys import exit as exit_
 from typing import Literal, Optional, Union
@@ -9,6 +10,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.utils import snowflake_time
+
+
+log = logging.getLogger("discord")
 
 
 def reverse_readline(filename, buf_size=8192):
@@ -277,7 +281,7 @@ class Misc(commands.Cog):
             exit_(1)
 
     @commands.command
-    async def cache_size(self, ctx: commands.Context):
+    async def cache(self, ctx: commands.Context):
         """Check bot prefix cache size"""
         if ctx.author.id not in self.bot.sudo:
             return
@@ -287,10 +291,13 @@ class Misc(commands.Cog):
     async def sudo(
             self,
             ctx,
-            mode: Optional[Literal["add", "new", "+", "remove", "rm", "-", "del", "get"]],
+            mode: Optional[
+                Literal["add", "new", "+", "remove", "rm", "-", "del", "get", "refresh"]
+            ],
             user: str = ""
     ):
         """Manages sudo users"""
+        log.warning(f"{ctx.message.content=}\n{mode=}\n{user=}")
         try:
             if ctx.author.id not in self.bot.sudo:
                 return
@@ -300,16 +307,23 @@ class Misc(commands.Cog):
         # We can use match statement! But don't because of compatibility
         if mode in ("get", None):
             return await ctx.send(self.bot.sudo)
+        elif mode == "refresh":
+            return await self.bot.refresh_sudo()
         if not user.isdigit():
             return await ctx.send("Input was not a discord id")
+        log.warning("%s has attempted to %s user %s to sudo" % (ctx.author.id, mode, user))
         with self.bot.conn.cursor() as cur:
             if mode in ("add", "new", "+"):
-                cur.execute("INSERT INTO sudo VALUES (%i)", (int(user),))
+                if int(user) in self.bot.sudo:
+                    return await ctx.send("User already has sudo access")
+                cur.execute("INSERT INTO sudo VALUES (%s)", (str(user),))
                 self.bot.sudo.add(int(user))
+                log.warning("Successfully added")
                 await ctx.send("Added %s to sudo" % user)
             elif mode in ("del", "remove", "rm", "-") and int(user) in self.bot.sudo:
-                cur.execute("DELETE FROM sudo WHERE id = %i", (int(user),))
+                cur.execute("DELETE FROM sudo WHERE id = %s", (str(user),))
                 self.bot.sudo.remove(int(user))
+                log.warning("Successfully removed")
                 await ctx.send("Removed %s from sudo" % user)
             else:
                 await ctx.send("%s was not in sudo" % user)
