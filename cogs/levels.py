@@ -614,11 +614,9 @@ class Levels(commands.Cog):
     async def updater(self):
         """Submits recorded seconds for each user into database every 30 mins"""
         if self.startup:
-            # Check if bot has been up for at least 15 secs
-            if (datetime.datetime.now()-self.bot.start_time).seconds < 15:
-                i = 0  # Wait for sudo to load in init.py
-                while not hasattr(self.bot, "sudo"):
-                    await asyncio.sleep(i := i + 10)
+            i = 0  # Wait for sudo to load in init.py
+            while not hasattr(self.bot, "sudo"):
+                await asyncio.sleep(i := i + 10)
             # Reset when activated, prevents faulty join times due to downtime
             async def send(*args, **kwargs):
                 pass
