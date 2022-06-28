@@ -14,6 +14,25 @@ from discord.ext import tasks, commands
 
 log = logging.getLogger("discord")
 
+
+class Timer():
+    """Quick timer class for debugging"""
+    __slots__ = "start_time", "end", "stop"
+
+    def __init__(self):
+        self.start()
+        self.end = self.elapsed
+        self.stop = self.elapsed
+
+    def start(self):
+        """Starts timer"""
+        self.start_time = time.time_ns()
+
+    def elapsed(self):
+        """Returns time since object creation or timer start"""
+        return time.time_ns() - self.start_time
+
+
 def get_level_f(seconds: int) -> (int, str):
     """Function gets the level in (level: int, percentage to next level: str)"""
     decimal, integer = modf((0.75 * ((seconds / 360) ** 0.5) + 0.05 * seconds / 360) / 4)
@@ -337,16 +356,24 @@ class Levels(commands.Cog):
         """
         if not isinstance(page, int) and not page.isdigit():
             page = 1
-        if ctx.author.id in self.bot.sudo:
 
+        log.debug("All command was called")
+        total_time = Timer()
+
+        if ctx.author.id in self.bot.sudo:
             async def process(ctx, page):
+
+                sql_time = Timer()
                 with self.bot.conn.cursor() as cur:
                     cur.execute("SELECT json_contents FROM levels")
-                    large_dict = {
-                        k: v
-                        for d in [i[0] for i in cur.fetchall()]
-                        for k, v in d.items()
-                    }.items()
+                    results = cur.fetchall()
+                log.debug("sql_time: %i", sql_time.stop())
+                organise_time = Timer()
+                large_dict = {
+                    k: v
+                    for d in [i[0] for i in results]
+                    for k, v in d.items()
+                }.items()
 
                 total_pages = len(large_dict) // 20 + 1
 
@@ -355,7 +382,7 @@ class Levels(commands.Cog):
                         f"Nothing on page {page}. Total {total_pages} pages"
                     )
 
-                return (
+                ret = (
                     {
                         int(i): j
                         for i, j in sorted(
@@ -368,21 +395,26 @@ class Levels(commands.Cog):
                         for member in server.members
                     },
                 )
-
+                log.debug("organise_time: %i", organise_time.stop())
+                return ret
+            predeliver_time = Timer()
             sorted_d, dict_nicknames, ctx = await self.predeliver(
                 ctx,
                 "Took too long loading leaderboard",
                 process,
                 page,
             )
+            log.debug("predeliver_time: %i", predeliver_time.stop())
             if not sorted_d:
                 return
 
-            return await self.deliver(ctx)(
+            await self.deliver(ctx)(
                 content=await self._format_top(
                     ctx, (sorted_d, dict_nicknames), page, "from users of *all* servers"
                 )
             )
+            log.debug("total time: %i", total_time.stop())
+            return
 
         await self._top(ctx, page)
 
@@ -488,6 +520,8 @@ class Levels(commands.Cog):
             self, ctx, dicts, page, fmt="from users of this server"
     ):
         """Formats leaderboard string to send"""
+        format_time = Timer()
+
         sorted_d, dict_nicknames = dicts
         fg = self.bot.fm.fg
         bg = self.bot.fm.bg
@@ -548,6 +582,7 @@ class Levels(commands.Cog):
             while len(fmt) > 1900:
                 fmt = sub(r"\033\[(%i;?)*m" % next(removes), "", fmt)
 
+        log.debug("format time: %i", format_time.stop())
         return fmt + "```"
 
     @commands.command(pass_context=True)
