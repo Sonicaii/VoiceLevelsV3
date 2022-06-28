@@ -297,7 +297,6 @@ class Misc(commands.Cog):
             user: str = ""
     ):
         """Manages sudo users"""
-        log.warning(f"{ctx.message.content=}\n{mode=}\n{user=}")
         try:
             if ctx.author.id not in self.bot.sudo:
                 return
@@ -311,7 +310,14 @@ class Misc(commands.Cog):
             return await self.bot.refresh_sudo()
         if not user.isdigit():
             return await ctx.send("Input was not a discord id")
-        log.warning("%s has attempted to %s user %s to sudo" % (ctx.author.id, mode, user))
+        log.warning(
+            "%i has attempted to %s user %s to sudo in guild %i: %s",
+            ctx.author.id,
+            mode,
+            user,
+            ctx.guild.id,
+            ctx.guild.name,
+        )
         with self.bot.conn.cursor() as cur:
             if mode in ("add", "new", "+"):
                 if int(user) in self.bot.sudo:
