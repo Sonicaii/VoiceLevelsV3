@@ -78,7 +78,7 @@ class Levels(commands.Cog):
         """Final data upload"""
         log.warning("Levels cog was unloaded, attempting to write_in_data()")
         # Force write in by making everyone disconnect
-        for uid in self.user_actions:
+        for uid in self.user_actions.copy():
             await self._on_voice_state_update(
                 self.mimic(id=uid),
                 self.mimic(channel=1),
@@ -152,7 +152,7 @@ class Levels(commands.Cog):
         self.user_updates = {str(i).zfill(2): {} for i in range(100)}
         # '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
 
-        for uid in self.user_actions:
+        for uid in self.user_actions.copy():
             if uid not in self.user_joins:
                 self.user_actions.remove(uid)
         self.bot.conn.commit()
@@ -577,7 +577,7 @@ class Levels(commands.Cog):
                 self.user_joins[uid] = int(time.time())
                 self.user_actions.add(uid)
             log.debug(
-                f"\t\tfound {uid}%s",
+                f"\t\tfound {uid}"
                 ", but was already in user_actions"
                 if uid in self.user_actions else
                 ""
