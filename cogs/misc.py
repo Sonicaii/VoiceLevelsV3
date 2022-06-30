@@ -12,7 +12,7 @@ from discord.ext import commands
 from discord.utils import snowflake_time
 
 
-log = logging.getLogger("discord")
+log = logging.getLogger("vl")
 
 
 def reverse_readline(filename, buf_size=8192):

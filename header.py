@@ -39,6 +39,7 @@ BOT_PRINT=yes
 
 # debug, info, warning, error, critical
 BOT_LOG_LEVEL=info
+DISCORD_LOG_LEVEL=info
 # Max size of log files, in Mib
 BOT_LOG_FILESIZE=4
 # Max log backup files amount
@@ -70,12 +71,14 @@ load_dotenv()
 #   with open("discord.log", "w"):
 #       pass
 
-logging_level = logging.getLevelName(os.getenv("BOT_LOG_LEVEL", "INFO").upper())
+logging_level = logging.getLevelName(os.getenv("DISCORD_LOG_LEVEL", "INFO").upper())
 
-log = logging.getLogger("discord")
+log = logging.getLogger("vl")
 
-log.setLevel(logging_level)
+log.setLevel(logging.getLevelName(os.getenv("BOT_LOG_LEVEL", "INFO").upper()))
+
 logging.getLogger("discord.http").setLevel(logging_level)
+logging.getLogger("discord").setLevel(logging_level)
 
 handler = logging.handlers.RotatingFileHandler(
     filename="./discord.log",
