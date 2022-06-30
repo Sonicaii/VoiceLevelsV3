@@ -5,14 +5,14 @@ import datetime
 import json
 import logging
 import time
-from typing import Optional, Union
+from typing import Any, Optional, Tuple, Union
 from math import modf
 from re import findall, sub
 import psycopg2
 import discord
 from discord.ext import tasks, commands
 
-log = logging.getLogger("discord")
+log = logging.getLogger("vl")
 
 
 class Timer():
@@ -84,7 +84,7 @@ class Levels(commands.Cog):
     # async def var(self, ctx, var):
     #     """Returns an attribute of the cog for debugging"""
     #     if log.level > 10:
-    #         return
+    #        return
     #     try:
     #         if ctx.author.id not in self.bot.sudo:
     #             return
@@ -93,23 +93,26 @@ class Levels(commands.Cog):
     #     if hasattr(self, var):
     #         await ctx.send(eval("self."+var))
 
-    async def cog_unload(self):
-        """Final data upload"""
-        log.warning("Levels cog was unloaded, attempting to write_in_data()")
+    async def disconnect_all(self):
         # Force write in by making everyone disconnect
         for uid in self.user_actions.copy():
             await self._on_voice_state_update(
-                self.mimic(id=uid),
+                self.mimic(id=uid, name="mimic"),
                 self.mimic(channel=1),
                 self.mimic(channel=None),
             )
+
+    async def cog_unload(self):
+        """Final data upload"""
+        log.warning("Levels cog was unloaded, attempting to write_in_data()")
+        await self.disconnect_all()
         await self.write_in_data()
         log.warning("Reached end of levels unload!")
 
     async def write_in_data(self) -> None:
         """This function writes the data into the database
 
-        don't even try to sql inject only with discord user id and time in seconds
+        Don't even try to sql inject only with discord user id and time in seconds
            Manual import (Sometimes gets stuck if your self.bot is running.)
            >>> import psycopg2, json
            >>> var = {"id": time, "id": time ... }
@@ -129,6 +132,7 @@ class Levels(commands.Cog):
                 ))
            >>> conn.commit()
         """
+        log.debug("NOW WRITING IN DATA")
         # Get data
         try:
             cur = self.bot.conn.cursor()
@@ -138,8 +142,8 @@ class Levels(commands.Cog):
 
         occupied = tuple(key for key, value in self.user_updates.items() if value)
         if not occupied:
-            cur.close()
-            return
+            log.debug("NOT OCCUPIED")
+            return cur.close()
 
         cur.execute(
             "SELECT right_two, json_contents FROM levels WHERE right_two IN %s",
@@ -152,7 +156,8 @@ class Levels(commands.Cog):
                     json_contents[str(uid)] += utime
                 except KeyError:
                     json_contents[str(uid)] = utime
-
+        log.debug("Current updates = %s", str(self.user_updates))
+        log.debug("Results = %s", str(results))
         # Lets perform python -OO optimisation malfunctions! Documentation above all??
         cur.execute(
             self.write_in_data.__doc__.split("'''")[1]
@@ -174,6 +179,7 @@ class Levels(commands.Cog):
         for uid in self.user_actions.copy():
             if uid not in self.user_joins:
                 self.user_actions.remove(uid)
+
         self.bot.conn.commit()
 
     @commands.Cog.listener()
@@ -195,7 +201,7 @@ class Levels(commands.Cog):
         await self._on_voice_state_update(member, before, after)
 
     async def _on_voice_state_update(self, member, before, after):
-
+        log.debug("%s --> %s", before.channel, after.channel)
         if before.channel == after.channel or (
                 member.id not in self.user_joins and after.channel is None
         ):
@@ -207,6 +213,7 @@ class Levels(commands.Cog):
 
         # Add if not exist and return as it was only a join
         if member.id not in self.user_joins:
+            log.debug("was just a join, now in user_joins")
             self.user_joins[member.id] = int(time.time())
             return
 
@@ -215,7 +222,13 @@ class Levels(commands.Cog):
             self.user_updates[to2(member.id)][member.id] += (
                 int(time.time()) - self.user_joins[member.id]
             )
+            log.debug(
+                "added %i seconds to %i",
+                int(time.time()) - self.user_joins[member.id],
+                member.id,
+            )
         except KeyError:
+            log.debug("new entry for %i", member.id)
             self.user_updates[to2(member.id)][member.id] = 0
 
         # If it was not a leave: restart the count
@@ -396,22 +409,22 @@ class Levels(commands.Cog):
                     },
                 )
                 log.debug("organise_time: %i", organise_time.stop())
-                return ret
+                return await self._format_top(
+                    ctx, ret, page, "from users of *all* servers"
+                ), True
             predeliver_time = Timer()
-            sorted_d, dict_nicknames, ctx = await self.predeliver(
+            formatted, _, ctx = await self.predeliver(
                 ctx,
-                "Took too long loading leaderboard",
+                ("Loading leaderboard...", "Took too long loading leaderboard"),
                 process,
                 page,
             )
             log.debug("predeliver_time: %i", predeliver_time.stop())
-            if not sorted_d:
+            if not formatted:
                 return
 
             await self.deliver(ctx)(
-                content=await self._format_top(
-                    ctx, (sorted_d, dict_nicknames), page, "from users of *all* servers"
-                )
+                content=formatted
             )
             log.debug("total time: %i", total_time.stop())
             return
@@ -442,7 +455,7 @@ class Levels(commands.Cog):
         else:
             fmt = "from users of this server"
 
-        async def process(ctx, page):
+        async def process(ctx, page, fmt):
             with self.bot.conn.cursor() as cur:
                 cur.execute(
                     "SELECT json_contents FROM levels WHERE right_two IN %s",
@@ -464,24 +477,32 @@ class Levels(commands.Cog):
                 return None, await self.deliver(ctx)(
                     f"Nothing on page {page}. Total {total_pages} pages"
                 )
-            return sorted_d, {i.id: i.display_name for i in ctx.guild.members}
 
-        sorted_d, dict_nicknames, ctx = await self.predeliver(
+            formatted = await self._format_top(
+                ctx,
+                (sorted_d, {i.id: i.display_name for i in ctx.guild.members}),
+                page,
+                fmt
+            )
+            return formatted, True
+
+        formatted, _, ctx = await self.predeliver(
             ctx,
-            "Took too long loading leaderboard",
+            ("Loading leaderboard...", "Took too long loading leaderboard"),
             process,
             page,
+            fmt
         )
-        if not sorted_d:
+        if not formatted:
             return
 
         return await self.deliver(ctx)(
-            content=await self._format_top(ctx, (sorted_d, dict_nicknames), page, fmt)
+            content=formatted
         )
 
     async def predeliver(
-            self, ctx_main, reply_msg, process, page
-    ) -> (Union[dict, None], dict, commands.Context):
+            self, ctx_main, reply_msg: Tuple[str, str], process, *args
+    ) -> (Any, commands.Context):
         """Helper functions for leaderboard
 
         delivers a pending message if main content takes too long to process
@@ -490,7 +511,7 @@ class Levels(commands.Cog):
         async with ctx_main.channel.typing():
             running_tasks = set()
 
-            process = asyncio.create_task(process(ctx_main, page))
+            process = asyncio.create_task(process(ctx_main, *args))
             running_tasks.add(process)
             process.add_done_callback(running_tasks.discard)
 
@@ -498,9 +519,9 @@ class Levels(commands.Cog):
             done, _ = await asyncio.wait({process}, timeout=2)
 
             if done:
-                return *done.pop().result(), ctx_main
+                return *tuple(done.pop().result()), ctx_main
 
-            need_edit = await self.deliver(ctx_main)("Loading leaderboard...")
+            need_edit = await self.deliver(ctx_main)(reply_msg[0])
             await ctx_main.channel.typing()
             ctx_reply = self.mimic(
                 author=ctx_main.author,
@@ -508,11 +529,11 @@ class Levels(commands.Cog):
                 send=need_edit.edit
             )
             try:
-                return *await asyncio.wait_for(process, timeout=10), ctx_reply
+                return *tuple(await asyncio.wait_for(process, timeout=10)), ctx_reply
             except asyncio.exceptions.TimeoutError:
                 return (
                     None,
-                    await self.deliver(ctx_reply)(content=reply_msg),
+                    await self.deliver(ctx_reply)(content=reply_msg[1]),
                     ctx_reply,
                 )
 
@@ -549,7 +570,7 @@ class Levels(commands.Cog):
         titles = self.bot.fm[4](self.bot.fm[1]((
             f"{fg.k} {fg.r}Rank{fg.k}   {fg.c}Hours{fg.k}   {fg.y}Level{fg.k} | {name}"
         )))
-        fmt = f"Leaderboard of global scores {fmt}\n>>> ```ansi\n{titles}\n"
+        fmt = [f"Leaderboard of global scores {fmt}\n>>> ```ansi\n{titles}\n"]
         for member_id, member_seconds in page:
             cen = "%d:%02d" % divmod(divmod(member_seconds, 60)[0], 60)
             cen = {4: "0", 6: " "}.get(len(str(cen)), "") + cen
@@ -570,7 +591,10 @@ class Levels(commands.Cog):
                 caller(fg.y)(level),
                 caller(fg.b)(nickname),
             )
-            fmt += f" {rank}  {hours}  {level} {caller(fg.k)('|')} {nickname}\n"
+            fmt.append(f" {rank}  {hours}  {level} {caller(fg.k)('|')} {nickname}\n")
+
+        fmt.append("```")
+        fmt = "".join(fmt)
 
         # Remove colour formatting if user is on mobile
         # Discord mobile does not support colour rendering in code blocks yet
@@ -581,9 +605,9 @@ class Levels(commands.Cog):
             removes = iter([40, 34, 33, 36, 31])
             while len(fmt) > 1900:
                 fmt = sub(r"\033\[(%i;?)*m" % next(removes), "", fmt)
-
+        log.debug(fmt)
         log.debug("format time: %i", format_time.stop())
-        return fmt + "```"
+        return fmt
 
     @commands.command(pass_context=True)
     async def update(self, ctx):
@@ -597,6 +621,8 @@ class Levels(commands.Cog):
 
         # async with self.lock(): used to be here
         # Hopefully no catastrophic errors occur while it's gone.
+        if not automated:
+            await self.disconnect_all()
         await self.write_in_data()  # Update everyone who is currently in
 
         for uid in (
@@ -608,21 +634,21 @@ class Levels(commands.Cog):
                     ) if hasattr(channel, "voice_states")
                 ) for uid in ids
         ):
-            if uid not in self.user_actions.copy():
+            msg = f"\tfound {uid}%s"
+            if uid not in self.user_actions:
+                self.user_updates[to2(uid)][uid] = 0
                 self.user_joins[uid] = int(time.time())
                 self.user_actions.add(uid)
-            log.debug(
-                f"\t\tfound {uid}"
-                ", but was already in user_actions"
-                if uid in self.user_actions else
-                ""
-            )
+                log.debug(msg, "")
+            else:
+                log.debug(msg, ", but was already in user actions")
         # for server in self.bot.guilds:  # List of guilds
         #     for details in server.channels:  # List of server channels
         #         if hasattr(details, "voice_states"):
         #             if details.voice_states:
         #                 for uid in details.voice_states:  # dict { id : info}
         #                     if uid not in self.user_actions:
+        #                         self.user_updates[to2(uid)][uid] = 0
         #                         self.user_joins[uid] = int(time.time())
         #                         self.user_actions.add(uid)
         #                     log.debug(
@@ -662,12 +688,10 @@ class Levels(commands.Cog):
                 ),
                 automated=True,
             )
-
-        # async with self.lock:
-        await self.write_in_data()
-
-        if self.startup:
             self.startup = False
+        else:
+            # async with self.lock:
+            await self.write_in_data()
 
 
 # cog setup
