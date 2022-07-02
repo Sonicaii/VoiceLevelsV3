@@ -328,7 +328,7 @@ class ServerPrefix:
     def __init__(self):
         self.cache_size = 1000
         self.cache = OrderedDict()
-        self.default_prefix = os.getenv("BOT_PREFIX", ",,")
+        self.default_prefix = os.getenv("BOT_PREFIX", ",,")  # Hard coded default
 
     def __call__(self, bot, guild):
         if not guild:
@@ -352,7 +352,10 @@ class ServerPrefix:
 
         if prefix := self.cache.get(guild.id):
             self.cache.move_to_end(guild.id)
+            log.debug("Prefix in cache, using that")
             return [prefix, *base]
+
+        log.debug("Requesting prefix for %s", guild.name)
 
         with bot.conn.cursor() as cur:
             cur.execute("SELECT prefix FROM prefixes WHERE id = %s", (str(guild.id),))

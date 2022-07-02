@@ -192,7 +192,7 @@ class Misc(commands.Cog):
         for pre in await self.bot.get_prefix(ctx.message):  # 1-liner possible here
             if ctx.message.content.startswith(pre):
                 break
-        await self.prefix(ctx, ctx.message.content[len(pre) + 6 :].lstrip())
+        await self.prefix(ctx, ctx.message.content[len(pre) + 6 :])
 
     @app_commands.command(name="prefix")
     @commands.has_permissions(manage_guild=True)
