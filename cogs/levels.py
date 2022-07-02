@@ -132,7 +132,6 @@ class Levels(commands.Cog):
                 ))
            >>> conn.commit()
         """
-        log.debug("NOW WRITING IN DATA")
         # Get data
         try:
             cur = self.bot.conn.cursor()
@@ -141,6 +140,7 @@ class Levels(commands.Cog):
             cur = self.bot.conn.cursor()
 
         occupied = tuple(key for key, value in self.user_updates.items() if value)
+        log.debug("NOW WRITING IN DATA FOR %s", str(self.user_updates))
         if not occupied:
             log.debug("NOT OCCUPIED")
             return cur.close()
@@ -229,15 +229,14 @@ class Levels(commands.Cog):
             )
         except KeyError:
             log.debug("new entry for %i", member.id)
-            self.user_updates[to2(member.id)][member.id] = 0
-
-        # If it was not a leave: restart the count
-        # Starts the count if it was a first time join
-        self.user_joins[member.id] = int(time.time())
+            self.user_updates[to2(member.id)][member.id] = int(time.time()) - self.user_joins[member.id]
 
         # Removes from needing updates
         if after.channel is None:
             del self.user_joins[member.id]
+        else:
+            # If it was not a leave: refresh the count
+            self.user_joins[member.id] = int(time.time())
 
     @commands.hybrid_command(name="total", description="Shows total time in seconds")
     async def total(self, ctx: commands.Context, user: Optional[discord.User] = None):
@@ -567,31 +566,48 @@ class Levels(commands.Cog):
         name = " Name ".center(longest_name, "-").replace(
             "Name", "\033[0;1;4mName" + fg.k
         )
+
         titles = self.bot.fm[4](self.bot.fm[1]((
             f"{fg.k} {fg.r}Rank{fg.k}   {fg.c}Hours{fg.k}   {fg.y}Level{fg.k} | {name}"
         )))
-        fmt = [f"Leaderboard of global scores {fmt}\n>>> ```ansi\n{titles}\n"]
-        for member_id, member_seconds in page:
-            cen = "%d:%02d" % divmod(divmod(member_seconds, 60)[0], 60)
-            cen = {4: "0", 6: " "}.get(len(str(cen)), "") + cen
 
-            caller = (
-                lambda default=lambda _: _: fg.w
-                if member_id == ctx.author.id
-                else default
-            )
+        fmt = [f"Leaderboard of global scores {fmt}\n>>> ```ansi\n{titles}\n"]
+
+        highlighter = (
+            lambda id_:
+                (lambda *_: fg.w)
+            if id_ == ctx.author.id else
+                (lambda default = lambda _:_: default)
+        )
+
+        aligners = {4: "0", 6: " "}
+
+        for member_id, member_seconds in page:
+
+            highlight = highlighter(member_id)
+
+            # Add current time
+            if member_id in self.user_actions:
+                member_seconds += self.user_updates[to2(member_id)][member_id]
+                if member_id in self.user_joins:
+                    member_seconds += int(time.time()) - self.user_joins[member_id]
+
+            cen = "%d:%02d" % divmod(divmod(member_seconds, 60)[0], 60)
+            cen = aligners.get(len(str(cen)), "") + cen
 
             nickname = dict_nicknames.get(member_id, member_id)
             rank = fg.r(f"{str(list(sorted_d).index(member_id) + 1)+'.':<4}")
             hours = bg.k(f"{cen:^7}" if longest_time < 6 else f"{cen:>7}")
             level = f"{get_level(member_seconds):^5}"
+
             rank, hours, level, nickname = (
-                caller()(rank),
-                caller()(hours),
-                caller(fg.y)(level),
-                caller(fg.b)(nickname),
+                highlight()(rank),
+                highlight()(hours),
+                highlight(fg.y)(level),
+                highlight(fg.b)(nickname),
             )
-            fmt.append(f" {rank}  {hours}  {level} {caller(fg.k)('|')} {nickname}\n")
+
+            fmt.append(f" {rank}  {hours}  {level} {highlight(fg.k)('|')} {nickname}\n")
 
         fmt.append("```")
         fmt = "".join(fmt)
