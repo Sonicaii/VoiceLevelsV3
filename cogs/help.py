@@ -29,9 +29,9 @@ class Help(commands.Cog):
         msg = ""
         embed = discord.Embed(description="_ _\n_ _", colour=0xAEFFAE)
 
-        desc: list = ["" for i in range(4)]
+        desc = ["" for i in range(4)]
 
-        modules: list = [
+        modules = [
             (
                 "``top     ``",
                 "This command lists the server's members by voice level rank."
