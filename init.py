@@ -94,6 +94,7 @@ async def on_ready():
 
 
 async def refresh_sudo():
+    """Gets sudo users from database"""
     # INSERT INTO sudo VALUES ("discord id")
     with bot.conn.cursor() as cur:
         try:
