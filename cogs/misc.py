@@ -306,7 +306,7 @@ class Misc(commands.Cog):
         # We can use match statement! But don't because of compatibility
         if mode in ("get", None):
             return await ctx.send(self.bot.sudo)
-        elif mode == "refresh":
+        if mode == "refresh":
             return await self.bot.refresh_sudo()
         if not user.isdigit():
             return await ctx.send("Input was not a discord id")
