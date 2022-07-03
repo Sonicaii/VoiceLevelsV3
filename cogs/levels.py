@@ -693,7 +693,8 @@ class Levels(commands.Cog):
             while not hasattr(self.bot, "sudo"):
                 await asyncio.sleep(sleep := sleep + 10)
             # Reset when activated, prevents faulty join times due to downtime
-            send = lambda *args, **kwargs: None
+            async def send(*args, **kwargs):
+                pass
             await self._update(
                 self.mimic(
                     send=send,
@@ -707,7 +708,6 @@ class Levels(commands.Cog):
             await self.write_in_data()
 
 
-# cog setup
 async def setup(bot):
     """Setup"""
     await bot.add_cog(Levels(bot))
