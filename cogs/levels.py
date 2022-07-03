@@ -85,18 +85,21 @@ class Levels(commands.Cog):
 
         self.mimic = Mimic
 
-    # @commands.command(hidden=True)
-    # async def var(self, ctx, var):
-    #     """Returns an attribute of the cog for debugging"""
-    #     if log.level > 10:
-    #        return
-    #     try:
-    #         if ctx.author.id not in self.bot.sudo:
-    #             return
-    #     except (AttributeError, TypeError, BaseException):
-    #         return
-    #     if hasattr(self, var):
-    #         await ctx.send(eval("self."+var))
+    @commands.command(hidden=True)
+    async def var(self, ctx, var):
+        """Returns an attribute of the cog for debugging
+
+        Usage: `[prefix]var user_updates` returns self.user_updates
+        """
+        if log.level > 10:
+           return
+        try:
+            if ctx.author.id not in self.bot.sudo:
+                return
+        except (AttributeError, TypeError, BaseException):
+            return
+        if hasattr(self, var):
+            await ctx.send(eval("self."+var))
 
     async def disconnect_all(self):
         """Force write in by making everyone disconnect"""
@@ -113,6 +116,54 @@ class Levels(commands.Cog):
         await self.disconnect_all()
         await self.write_in_data()
         log.warning("Reached end of levels unload!")
+
+    @commands.command(pass_context=True)
+    async def update(self, ctx):
+        """Manually run through all channels and update into data.json"""
+        if ctx.author.id in self.bot.sudo:
+            await self.disconnect_all()
+            await self._update()
+            log.warning("%i Called an update", ctx.author.id)
+            return await ctx.send("Updated")
+
+    @tasks.loop(minutes=30.0)
+    async def updater(self):
+        """Submits recorded seconds for each user into database every 30 mins"""
+        if self.startup:
+            sleep = 0  # Wait for sudo to load in init.py
+            while not hasattr(self.bot, "sudo"):
+                await asyncio.sleep(sleep := sleep + 10)
+            # Reset when activated, prevents faulty join times due to downtime
+            async def send(*args, **kwargs):
+                pass
+            await self._update()
+            self.startup = False
+        else:
+            # async with self.lock:
+            await self.write_in_data()
+
+    async def _update(self):
+        # async with self.lock(): used to be here
+        # Hopefully no catastrophic errors occur while it's gone.
+        await self.write_in_data()  # Update everyone who is currently in
+
+        for uid in (
+                uid for ids in (
+                    channel.voice_states for channel in (
+                        channel for channels in (
+                            server.channels for server in self.bot.guilds
+                        ) for channel in channels
+                    ) if hasattr(channel, "voice_states")
+                ) for uid in ids
+        ):
+            msg = f"\tfound {uid}%s"
+            if uid not in self.user_actions:
+                self.user_updates[to2(uid)][uid] = 0
+                self.user_joins[uid] = int(time.time())
+                self.user_actions.add(uid)
+                log.debug(msg, "")
+            else:
+                log.debug(msg, ", but was already in user actions")
 
     async def write_in_data(self) -> None:
         """This function writes the data into the database
@@ -406,7 +457,7 @@ class Levels(commands.Cog):
                     },
                 )
                 log.debug("organise_time: %i", organise_time.stop())
-                return await self._format_top(
+                return self._format_top(
                     ctx, ret, page, "from users of *all* servers"
                 ), True
             predeliver_time = Timer()
@@ -475,7 +526,7 @@ class Levels(commands.Cog):
                     f"Nothing on page {page}. Total {total_pages} pages"
                 )
 
-            formatted = await self._format_top(
+            formatted = self._format_top(
                 ctx,
                 (sorted_d, {i.id: i.display_name for i in ctx.guild.members}),
                 page,
@@ -534,7 +585,7 @@ class Levels(commands.Cog):
                     ctx_reply,
                 )
 
-    async def _format_top(
+    def _format_top(
             self, ctx, dicts, page, fmt="from users of this server"
     ):
         """Formats leaderboard string to send"""
@@ -612,7 +663,7 @@ class Levels(commands.Cog):
 
         # Remove colour formatting if user is on mobile
         # Discord mobile does not support colour rendering in code blocks yet
-        if (await ctx.guild.fetch_member(ctx.author.id)).is_on_mobile():
+        if ctx.author.is_on_mobile():
             fmt = sub(r"\033\[(\d*;?)*m", "", fmt)
         else:
             # Removes colour formatting until within message length limit
@@ -622,90 +673,6 @@ class Levels(commands.Cog):
         log.debug(fmt)
         log.debug("format time: %i", format_time.stop())
         return fmt
-
-    @commands.command(pass_context=True)
-    async def update(self, ctx):
-        """Manually run through all channels and update into data.json"""
-        if ctx.author.id in self.bot.sudo:
-            await self._update(ctx)
-
-    async def _update(self, ctx, automated=False):
-        if ctx.author.id not in self.bot.sudo:
-            return
-
-        # async with self.lock(): used to be here
-        # Hopefully no catastrophic errors occur while it's gone.
-        if not automated:
-            await self.disconnect_all()
-        await self.write_in_data()  # Update everyone who is currently in
-
-        for uid in (
-                uid for ids in (
-                    channel.voice_states for channel in (
-                        channel for channels in (
-                            server.channels for server in self.bot.guilds
-                        ) for channel in channels
-                    ) if hasattr(channel, "voice_states")
-                ) for uid in ids
-        ):
-            msg = f"\tfound {uid}%s"
-            if uid not in self.user_actions:
-                self.user_updates[to2(uid)][uid] = 0
-                self.user_joins[uid] = int(time.time())
-                self.user_actions.add(uid)
-                log.debug(msg, "")
-            else:
-                log.debug(msg, ", but was already in user actions")
-        # for server in self.bot.guilds:  # List of guilds
-        #     for details in server.channels:  # List of server channels
-        #         if hasattr(details, "voice_states"):
-        #             if details.voice_states:
-        #                 for uid in details.voice_states:  # dict { id : info}
-        #                     if uid not in self.user_actions:
-        #                         self.user_updates[to2(uid)][uid] = 0
-        #                         self.user_joins[uid] = int(time.time())
-        #                         self.user_actions.add(uid)
-        #                     log.debug(
-        #                         f"\t\tfound {uid}%s",
-        #                         ", but was already in user_actions"
-        #                         if uid in self.user_actions else
-        #                         ""
-        #                     )
-        # channels = [channel for channels in [
-        # server.channels for server in self.bot.guilds] for channel in channels]
-        # selected_channels_voice_states = [
-        # channel.voice_states for channel in channels if hasattr(channel, "voice_states")]
-        # ids = [uid for ids in selected_channels_voice_states for uid in ids]
-        # ids = [uid for ids in [channel.voice_states for channel in [channel for channels in [
-        # server.channels for server in self.bot.guilds] for channel in channels] if hasattr(
-        # channel, "voice_states")] for uid in ids]
-
-        if not automated:
-            log.warning("%i Called an update", ctx.author.id)
-
-        return await ctx.send("Updated")
-
-    @tasks.loop(minutes=30.0)
-    async def updater(self):
-        """Submits recorded seconds for each user into database every 30 mins"""
-        if self.startup:
-            sleep = 0  # Wait for sudo to load in init.py
-            while not hasattr(self.bot, "sudo"):
-                await asyncio.sleep(sleep := sleep + 10)
-            # Reset when activated, prevents faulty join times due to downtime
-            async def send(*args, **kwargs):
-                pass
-            await self._update(
-                self.mimic(
-                    send=send,
-                    author=self.mimic(id=next(iter(self.bot.sudo)))
-                ),
-                automated=True,
-            )
-            self.startup = False
-        else:
-            # async with self.lock:
-            await self.write_in_data()
 
 
 async def setup(bot):
