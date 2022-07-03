@@ -1,16 +1,18 @@
 """levels cog handles commands related to the main levelling system"""
 import asyncio
+from collections import defaultdict
 from dataclasses import dataclass
 import datetime
 import json
 import logging
 import time
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Tuple
 from math import modf
 from re import findall, sub
 import psycopg2
 import discord
 from discord.ext import tasks, commands
+
 
 log = logging.getLogger("vl")
 
@@ -64,7 +66,10 @@ class Levels(commands.Cog):
         # list of users who recently disconnected
         self.user_actions = set()
         self.user_joins = {}
-        self.user_updates = {str(i).zfill(2): {} for i in range(100)}
+        self.user_updates = defaultdict(
+            lambda: 0,
+            {str(i).zfill(2): {} for i in range(100)},
+        )
         # '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
 
         @dataclass
@@ -94,7 +99,7 @@ class Levels(commands.Cog):
     #         await ctx.send(eval("self."+var))
 
     async def disconnect_all(self):
-        # Force write in by making everyone disconnect
+        """Force write in by making everyone disconnect"""
         for uid in self.user_actions.copy():
             await self._on_voice_state_update(
                 self.mimic(id=uid, name="mimic"),
@@ -173,8 +178,10 @@ class Levels(commands.Cog):
 
         cur.close()
 
-        self.user_updates = {str(i).zfill(2): {} for i in range(100)}
-        # '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
+        self.user_updates = defaultdict(
+            lambda: 0,
+            {str(i).zfill(2): {} for i in range(100)},
+        )
 
         for uid in self.user_actions.copy():
             if uid not in self.user_joins:
@@ -217,19 +224,10 @@ class Levels(commands.Cog):
             self.user_joins[member.id] = int(time.time())
             return
 
-        # Add duration, and add to dict if doesn't exist
-        try:
-            self.user_updates[to2(member.id)][member.id] += (
-                int(time.time()) - self.user_joins[member.id]
-            )
-            log.debug(
-                "added %i seconds to %i",
-                int(time.time()) - self.user_joins[member.id],
-                member.id,
-            )
-        except KeyError:
-            log.debug("new entry for %i", member.id)
-            self.user_updates[to2(member.id)][member.id] = int(time.time()) - self.user_joins[member.id]
+        # Add duration
+        self.user_updates[to2(member.id)][member.id] += (
+            int(time.time()) - self.user_joins[member.id]
+        )
 
         # Removes from needing updates
         if after.channel is None:
@@ -575,9 +573,9 @@ class Levels(commands.Cog):
 
         highlighter = (
             lambda id_:
-                (lambda *_: fg.w)
+            (lambda *_: fg.w)
             if id_ == ctx.author.id else
-                (lambda default = lambda _:_: default)
+            (lambda default=lambda _: _: default)
         )
 
         aligners = {4: "0", 6: " "}
@@ -683,7 +681,7 @@ class Levels(commands.Cog):
         # channel, "voice_states")] for uid in ids]
 
         if not automated:
-            log.warning(f"{ctx.author.id} Called an update")
+            log.warning("%i Called an update", ctx.author.id)
 
         return await ctx.send("Updated")
 
@@ -691,12 +689,11 @@ class Levels(commands.Cog):
     async def updater(self):
         """Submits recorded seconds for each user into database every 30 mins"""
         if self.startup:
-            i = 0  # Wait for sudo to load in init.py
+            sleep = 0  # Wait for sudo to load in init.py
             while not hasattr(self.bot, "sudo"):
-                await asyncio.sleep(i := i + 10)
+                await asyncio.sleep(sleep := sleep + 10)
             # Reset when activated, prevents faulty join times due to downtime
-            async def send(*args, **kwargs):
-                pass
+            send = lambda *args, **kwargs: None
             await self._update(
                 self.mimic(
                     send=send,
