@@ -4,6 +4,7 @@ import asyncio
 from collections import deque
 from dataclasses import dataclass
 from io import BytesIO
+import logging
 from os import getenv
 from os.path import basename
 from typing import Optional
@@ -16,6 +17,7 @@ from aiohttp import ClientSession
 # Arbitrary value of 35: 3500m furthest sniper kill distance
 maxlen = int(getenv("BOT_SNIPE_MAX", "35"))
 snipe_target = {}
+log = logging.getLogger("vl")
 
 
 class View(discord.ui.View):
@@ -133,8 +135,12 @@ class Snipe(commands.Cog):
     @app_commands.command(name="snipe", description="Snipes messages")
     @app_commands.describe(dist="Target distance (how many messages away)")
     async def app_snipe(self, interaction: discord.Interaction, dist: Optional[int] = 1):
-        """Snipe command as app command"""
-        return await self._snipe(await commands.Context.from_interaction(interaction), dist)
+        """Snipe command as app command
+
+        If dist is not having the correct input, sync slash commands!
+        """
+        ctx = await commands.Context.from_interaction(interaction)
+        return await self._snipe(ctx, dist)
 
     @commands.command(name="snipe")
     async def cmd_snipe(self, ctx: commands.Context, dist: Optional[int] = 1):
@@ -152,19 +158,22 @@ class Snipe(commands.Cog):
                 ephemeral=True,
                 delete_after=5,
             )
-
+        if dist > maxlen:
+            return await self.deliver(ctx)(
+                "Distance is beyond maximum sniping distance",
+                ephemeral=True,
+                delete_after=5,
+            )
         if dist > len(snipe_target[m_c_id]):
             return await self.deliver(ctx)(
                 "Couldn't find target to snipe. No targets that far out.",
                 ephemeral=True,
                 delete_after=5,
             )
-
         if snipe_target[m_c_id][dist - 1].is_denied(ctx.author.id):
             return await self.deliver(ctx)(
                 "You are unable to snipe this message", ephemeral=True
             )
-
         if dist:
             msg = snipe_target[m_c_id][dist - 1]
             range_msg = f"from {dist}00m"
