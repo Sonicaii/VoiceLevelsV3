@@ -15,6 +15,7 @@ from discord.ext import tasks, commands
 
 
 log = logging.getLogger("vl")
+refresh_min = 30.0
 
 
 class Timer():
@@ -59,17 +60,10 @@ class Levels(commands.Cog):
 
         # self.lock = asyncio.Lock()
 
-        self.deliver = bot.deliver
-        self.startup = True
-        self.updater.start()
-
         # list of users who recently disconnected
         self.user_actions = set()
-        self.user_joins = {}
-        self.user_updates = defaultdict(
-            lambda: 0,
-            {str(i).zfill(2): {} for i in range(100)},
-        )
+        self.user_joins = defaultdict(lambda: int(time.time()))
+        self.user_updates = {str(i).zfill(2): defaultdict(lambda: 0) for i in range(100)}
         # '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
 
         @dataclass
@@ -84,6 +78,10 @@ class Levels(commands.Cog):
                     self.__setattr__(key, value)
 
         self.mimic = Mimic
+
+        self.deliver = bot.deliver
+        self.startup = True
+        self.updater.start()
 
     @commands.command(hidden=True)
     async def var(self, ctx, var):
@@ -102,7 +100,7 @@ class Levels(commands.Cog):
             await ctx.send(eval("self."+var))
 
     async def disconnect_all(self):
-        """Force write in by making everyone disconnect"""
+        """Force write in by simulating everyone disconnect"""
         for uid in self.user_actions.copy():
             await self._on_voice_state_update(
                 self.mimic(id=uid, name="mimic"),
@@ -126,7 +124,7 @@ class Levels(commands.Cog):
             log.warning("%i Called an update", ctx.author.id)
             return await ctx.send("Updated")
 
-    @tasks.loop(minutes=30.0)
+    @tasks.loop(minutes=refresh_min)
     async def updater(self):
         """Submits recorded seconds for each user into database every 30 mins"""
         if self.startup:
@@ -205,13 +203,13 @@ class Levels(commands.Cog):
             "SELECT right_two, json_contents FROM levels WHERE right_two IN %s",
             (occupied,),
         )
-        results = cur.fetchall()
-        for right_two, json_contents in results:
-            for uid, utime in self.user_updates[right_two].items():
-                try:
-                    json_contents[str(uid)] += utime
-                except KeyError:
-                    json_contents[str(uid)] = utime
+        results = cur.fetchall()  # List[Tuple(last_two: str, times: dict),]
+        for i in range(len(results)):
+            json_contents = defaultdict(lambda: 0, results[i][1])
+            for uid, utime in self.user_updates[results[i][0]].items():
+                json_contents[str(uid)] += utime
+            results[i] = (results[i][0], dict(json_contents))
+
         log.debug("Current updates = %s", str(self.user_updates))
         log.debug("Results = %s", str(results))
         # Lets perform python -OO optimisation malfunctions! Documentation above all??
@@ -229,10 +227,7 @@ class Levels(commands.Cog):
 
         cur.close()
 
-        self.user_updates = defaultdict(
-            lambda: 0,
-            {str(i).zfill(2): {} for i in range(100)},
-        )
+        self.user_updates = {str(i).zfill(2): defaultdict(lambda: 0) for i in range(100)}
 
         for uid in self.user_actions.copy():
             if uid not in self.user_joins:
@@ -266,8 +261,6 @@ class Levels(commands.Cog):
             # Name of the channel unchanged: not a disconnect or move
             # Disconnected while no record of inital connection
             return
-
-        self.user_actions.add(member.id)
 
         # Add if not exist and return as it was only a join
         if member.id not in self.user_joins:
@@ -403,8 +396,8 @@ class Levels(commands.Cog):
                 lookup.name,
                 cut.days,
                 hours,
-                minutes.lstrip('0'),
-                seconds.lstrip('0'),
+                minutes.replace("0", "", 1),
+                seconds.replace("0", "", 1),
                 get_level(total_seconds),
             )
         )
@@ -636,10 +629,10 @@ class Levels(commands.Cog):
             highlight = highlighter(member_id)
 
             # Add current time
-            if member_id in self.user_actions:
+            if member_id in self.user_joins:
+                member_seconds += int(time.time()) - self.user_joins[member_id]
+            if member_id in self.user_updates[to2(member_id)].keys():
                 member_seconds += self.user_updates[to2(member_id)][member_id]
-                if member_id in self.user_joins:
-                    member_seconds += int(time.time()) - self.user_joins[member_id]
 
             cen = "%d:%02d" % divmod(divmod(member_seconds, 60)[0], 60)
             cen = aligners.get(len(str(cen)), "") + cen
