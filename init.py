@@ -51,10 +51,15 @@ bot = commands.Bot(
                 "webhooks",
                 "guilds",
                 "messages",
+                "presences",
             ]
         }
     ),
     description="""User levels based on time spent in voice channels.""",
+    activity=discord.Activity(
+        name=f"for {os.getenv('BOT_PREFIX', '@'+bot.user.name)} | Voice Levels V3",
+        type=discord.ActivityType.watching,
+    ),
 )
 
 # @bot.event
@@ -84,12 +89,6 @@ async def setup_hook():
 async def on_ready():
     """Bot on_ready, changes status and loads sudo users from database"""
     cogpr("Main", bot, "Y")
-    await bot.change_presence(
-        activity=discord.Activity(
-            name=f"for {os.getenv('BOT_PREFIX', '@'+bot.user.name)} | Voice Levels V3",
-            type=discord.ActivityType.watching,
-        )
-    )
     await refresh_sudo()
 
 
