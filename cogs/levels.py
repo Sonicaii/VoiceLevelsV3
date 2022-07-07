@@ -8,7 +8,7 @@ import logging
 import time
 from typing import Any, Optional, Tuple
 from math import modf
-from re import findall, sub
+import re
 import psycopg2
 import discord
 from discord.ext import tasks, commands
@@ -352,7 +352,7 @@ class Levels(commands.Cog):
                 lookup = discord.Object(id=int(user))
                 lookup.name = user
             else:
-                fmt = lambda string: findall(r"(?<=[<@#!:a-z])(\d+)", string)
+                fmt = lambda string: re.findall(r"(?<=[<@#!:a-z])(\d+)", string)
                 if found_id := fmt(ctx.message.content):
                     pass
                 elif found_id := fmt(user):
@@ -582,6 +582,9 @@ class Levels(commands.Cog):
             self, ctx, dicts, page, fmt="from users of this server"
     ):
         """Formats leaderboard string to send"""
+        if page < 1:
+            return "Page number cannot be less than 1."  # Very buggy
+
         format_time = Timer()
 
         sorted_d, dict_nicknames = dicts
@@ -657,12 +660,13 @@ class Levels(commands.Cog):
         # Remove colour formatting if user is on mobile
         # Discord mobile does not support colour rendering in code blocks yet
         if ctx.author.is_on_mobile():
-            fmt = sub(r"\033\[(\d*;?)*m", "", fmt)
+            fmt = re.sub(r"(?<=^.{14} ).{6}", "", re.sub(r"\033\[(\d*;?)*m", "", fmt), flags=re.MULTILINE)
+            fmt = re.sub(r"-* Name -*", "Name", fmt, count=1)
         else:
             # Removes colour formatting until within message length limit
             removes = iter([40, 34, 33, 36, 31])
             while len(fmt) > 1900:
-                fmt = sub(r"\033\[(%i;?)*m" % next(removes), "", fmt)
+                fmt = re.sub(r"\033\[(%i;?)*m" % next(removes), "", fmt)
         log.debug(fmt)
         log.debug("format time: %i", format_time.stop())
         return fmt
