@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import datetime
 import json
 import logging
+from os import getenv
 import time
 from typing import Any, Optional, Tuple
 from math import modf
@@ -12,10 +13,15 @@ import re
 import psycopg2
 import discord
 from discord.ext import tasks, commands
+from dotenv import load_dotenv
 
+load_dotenv()
 
 log = logging.getLogger("vl")
-refresh_min = 30.0
+try:
+    INTERVAL = float(getenv("BOT_SAVE_TIME", "30.0"))
+except ValueError:
+    INTERVAL = 30.0
 
 
 class Timer():
@@ -90,19 +96,19 @@ class Levels(commands.Cog):
         Usage: `[prefix]var user_updates` returns self.user_updates
         """
         if log.level > 10:
-           return
+            return
         try:
             if ctx.author.id not in self.bot.sudo:
                 return
         except (AttributeError, TypeError, BaseException):
             return
         if hasattr(self, var):
-            await ctx.send(eval("self."+var))
+            await ctx.send(self.__getattribute__(var))
 
     async def disconnect_all(self):
         """Force write in by simulating everyone disconnect"""
         for uid in self.user_actions.copy():
-            await self._on_voice_state_update(
+            self._on_voice_state_update(
                 self.mimic(id=uid, name="mimic"),
                 self.mimic(channel=1),
                 self.mimic(channel=None),
@@ -112,19 +118,19 @@ class Levels(commands.Cog):
         """Final data upload"""
         log.warning("Levels cog was unloaded, attempting to write_in_data()")
         await self.disconnect_all()
-        await self.write_in_data()
+        self.write_in_data()
         log.warning("Reached end of levels unload!")
 
-    @commands.command(pass_context=True)
+    @commands.command
     async def update(self, ctx):
         """Manually run through all channels and update into data.json"""
         if ctx.author.id in self.bot.sudo:
             await self.disconnect_all()
-            await self._update()
+            self._update()
             log.warning("%i Called an update", ctx.author.id)
             return await ctx.send("Updated")
 
-    @tasks.loop(minutes=refresh_min)
+    @tasks.loop(minutes=INTERVAL)
     async def updater(self):
         """Submits recorded seconds for each user into database every 30 mins"""
         if self.startup:
@@ -134,17 +140,18 @@ class Levels(commands.Cog):
             # Reset when activated, prevents faulty join times due to downtime
             async def send(*args, **kwargs):
                 pass
-            await self._update()
+            self._update()
             self.startup = False
         else:
             # async with self.lock:
-            await self.write_in_data()
+            self.write_in_data()
 
-    async def _update(self):
+    def _update(self):
         # async with self.lock(): used to be here
         # Hopefully no catastrophic errors occur while it's gone.
-        await self.write_in_data()  # Update everyone who is currently in
+        self.write_in_data()  # Update everyone who is currently in
 
+        # Rejoin everyone
         for uid in (
                 uid for ids in (
                     channel.voice_states for channel in (
@@ -156,14 +163,16 @@ class Levels(commands.Cog):
         ):
             msg = f"\tfound {uid}%s"
             if uid not in self.user_actions:
-                self.user_updates[to2(uid)][uid] = 0
-                self.user_joins[uid] = int(time.time())
-                self.user_actions.add(uid)
+                self._on_voice_state_update(
+                    self.mimic(id=uid, name="mimic"),
+                    self.mimic(channel=None),
+                    self.mimic(channel=1),
+                )
                 log.debug(msg, "")
             else:
                 log.debug(msg, ", but was already in user actions")
 
-    async def write_in_data(self) -> None:
+    def write_in_data(self) -> None:
         """This function writes the data into the database
 
         Don't even try to sql inject only with discord user id and time in seconds
@@ -195,20 +204,21 @@ class Levels(commands.Cog):
 
         occupied = tuple(key for key, value in self.user_updates.items() if value)
         log.debug("NOW WRITING IN DATA FOR %s", str(self.user_updates))
-        if not occupied:
+        if len(occupied) == 0:
             log.debug("NOT OCCUPIED")
-            return cur.close()
+            cur.close()
+            return
 
         cur.execute(
             "SELECT right_two, json_contents FROM levels WHERE right_two IN %s",
             (occupied,),
         )
         results = cur.fetchall()  # List[Tuple(last_two: str, times: dict),]
-        for i in range(len(results)):
-            json_contents = defaultdict(lambda: 0, results[i][1])
-            for uid, utime in self.user_updates[results[i][0]].items():
+        for index, value in enumerate(results):
+            json_contents = defaultdict(lambda: 0, value[1])
+            for uid, utime in self.user_updates[value[0]].items():
                 json_contents[str(uid)] += utime
-            results[i] = (results[i][0], dict(json_contents))
+            results[index] = (value[0], dict(json_contents))
 
         log.debug("Current updates = %s", str(self.user_updates))
         log.debug("Results = %s", str(results))
@@ -229,9 +239,8 @@ class Levels(commands.Cog):
 
         self.user_updates = {str(i).zfill(2): defaultdict(lambda: 0) for i in range(100)}
 
-        for uid in self.user_actions.copy():
-            if uid not in self.user_joins:
-                self.user_actions.remove(uid)
+        for uid in self.user_actions.difference(self.user_joins).copy():
+            self.user_actions.discard(uid)
 
         self.bot.conn.commit()
 
@@ -251,15 +260,16 @@ class Levels(commands.Cog):
             5. Delete their join time if their action was leave ( after.channel == None )
             6. Update their join time to current time
         """
-        await self._on_voice_state_update(member, before, after)
+        self._on_voice_state_update(member, before, after)
 
-    async def _on_voice_state_update(self, member, before, after):
+    def _on_voice_state_update(self, member, before, after):
         log.debug("%s --> %s", before.channel, after.channel)
         if before.channel == after.channel or (
                 member.id not in self.user_joins and after.channel is None
         ):
             # Name of the channel unchanged: not a disconnect or move
             # Disconnected while no record of inital connection
+            log.debug("No channel diff or was not found in user joins")
             return
 
         # Add if not exist and return as it was only a join

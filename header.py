@@ -33,8 +33,11 @@ BOT_PREFIX=,,
 
 # Arbitrary value of 35: 3500m furthest sniper kill distance
 BOT_SNIPE_MAX=35
+# The interval of each automatic save to database in minutes
+BOT_SAVE_TIME=30
 
 # Print output as well: yes/no
+# This must be yes for a Heroku deployment if you want to view logs
 BOT_PRINT=yes
 
 # debug, info, warning, error, critical
