@@ -121,13 +121,14 @@ class Levels(commands.Cog):
         self.write_in_data()
         log.warning("Reached end of levels unload!")
 
-    @commands.command
+    @commands.command()
     async def update(self, ctx):
         """Manually run through all channels and update into data.json"""
         if ctx.author.id in self.bot.sudo:
+            log.warning("%i Called an update", ctx.author.id)
             await self.disconnect_all()
             self._update()
-            log.warning("%i Called an update", ctx.author.id)
+            log.warning("Successfully executed disconnect_all and _update")
             return await ctx.send("Updated")
 
     @tasks.loop(minutes=INTERVAL)
