@@ -117,6 +117,13 @@ async def on_guild_join(guild) -> None:
     await bot.tree.sync(guild=guild)
 
 
+@bot.event
+async def on_command_error(ctx, error):
+    log.error(error)
+    if log.level <= 10 and ctx.author.id in bot.sudo:
+        await ctx.send(str(error)[:2000])
+
+
 @bot.command(aliases=("r",), hidden=True)
 async def reload(ctx: Context, cog: str = ""):
     """Reloads a cog"""
