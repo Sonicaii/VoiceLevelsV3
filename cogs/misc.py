@@ -236,36 +236,28 @@ class Misc(commands.Cog):
         self.bot.conn.commit()
         self.bot.prefix_cache_pop(ctx.guild.id)
 
-
     @commands.command()
     async def tail(self, ctx, lines: Optional[int] = 10):
         """Print out tail of discord.log"""
         if ctx.author.id not in self.bot.sudo:
             return
         gen = reverse_readline("discord.log")
-        txt = ""
-        line = 0
+        txt = []
+        length = line = 0
         try:
-            while (
-                    len(
-                        (next_line := sub(
-                            r"\[[\w\s]*\] discord(\.(\w\w*\.?)*)?:",
-                            "",
-                            next(gen)
-                        )) + txt
-                    ) + 1 < 1989
-                    and line <= lines
-            ):
-                txt = "\n" + next_line + txt
-                line += 1
+            while next_line := next(gen):
+                length += len(next_line := sub(  # Add `(\033\[(\d*;?)*m)?` no colour
+                    r"(\[[\w\s]*\] discord(\.(\w\w*\.?)*)?:)?(```)?",
+                    "",
+                    next_line,
+                ).replace("[", "", 1).replace("]", "", 1)) + 1
+                if length >= 1989 or (line := line + 1) > lines:
+                    break
+                txt.append(next_line)
         except StopIteration:
             pass
 
-        await self.deliver(ctx)(
-            "```ansi\n"
-            + sub(r"(\033\[(\d*;?)*m)?(```)?", "", txt[max(txt.find("\n"), 11) :])
-            + "```"
-        )
+        await self.deliver(ctx)("```ansi\n" + "\n".join(txt[::-1]) + "```")
 
     @commands.command(description="STOP")
     async def stop(self, ctx: discord.Interaction):
