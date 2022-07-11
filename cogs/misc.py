@@ -237,7 +237,7 @@ class Misc(commands.Cog):
         self.bot.prefix_cache_pop(ctx.guild.id)
 
 
-    @commands.command
+    @commands.command()
     async def tail(self, ctx, lines: Optional[int] = 10):
         """Print out tail of discord.log"""
         if ctx.author.id not in self.bot.sudo:
