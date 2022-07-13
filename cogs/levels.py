@@ -22,6 +22,7 @@ try:
     INTERVAL = float(getenv("BOT_SAVE_TIME", "30.0"))
 except ValueError:
     INTERVAL = 30.0
+GLOBAL_ALL_ACCESS = getenv("BOT_GLOBAL_ALL_LEADERBOARD_ACCESS") == "yes"
 
 
 class Timer():
@@ -414,18 +415,34 @@ class Levels(commands.Cog):
         )
 
     @commands.hybrid_command(name="all", description="Leaderboard for this server")
-    async def all(self, ctx: commands.Context, page: Optional[int] = 1):
+    async def all(self, ctx: commands.Context, page = None):
         """Acts as a normal leaderboard command
 
         Can get users of all servers if requested by a sudo user
+        Sudo users can also add raw to the page to send
+        the message with raw formatting (without ```ansi)
+            [prefix]all 2raw
+                gives page 2, raw.
         """
-        if not isinstance(page, int) and not page.isdigit():
-            page = 1
+        def returns(page):
+            if page is None: return
+            if not page.isdigit():
+                if not (digits := re.search(r"\d", page)):
+                    return
+                if not (raw := re.search(r"\D{3}", page)):
+                    return int(digits), False
+                if (digits := digits.group(0)).isdigit() and raw.group(0) == "raw":
+                    return int(digits), True
+            else:
+                return int(page), False
+
+        ret = returns(page)
+        page, raw = (1, False) if ret is None else ret
 
         log.debug("All command was called")
         total_time = Timer()
 
-        if ctx.author.id in self.bot.sudo:
+        if GLOBAL_ALL_ACCESS or ctx.author.id in self.bot.sudo:
             async def process(ctx, page):
 
                 sql_time = Timer()
@@ -474,6 +491,9 @@ class Levels(commands.Cog):
             log.debug("predeliver_time: %i", predeliver_time.stop())
             if not formatted:
                 return
+
+            if raw:
+                formatted = re.sub(r"```", "\\`\\`\\`", formatted).replace(">>>", "", 1)
 
             await self.deliver(ctx)(
                 content=formatted

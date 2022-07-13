@@ -36,6 +36,9 @@ BOT_SNIPE_MAX=35
 # The interval of each automatic save to database in minutes
 BOT_SAVE_TIME=30
 
+# Allows everyone to use the `all` command fully (yes/no)
+BOT_GLOBAL_ALL_LEADERBOARD_ACCESS=no
+
 # Print output as well: yes/no
 # This must be yes for a Heroku deployment if you want to view logs
 BOT_PRINT=yes
