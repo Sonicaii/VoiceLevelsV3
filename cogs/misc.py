@@ -272,7 +272,7 @@ class Misc(commands.Cog):
         finally:
             exit_(1)
 
-    @commands.command
+    @commands.command()
     async def cache(self, ctx: commands.Context):
         """Check bot prefix cache size"""
         if ctx.author.id not in self.bot.sudo:
