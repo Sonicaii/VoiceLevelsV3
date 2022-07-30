@@ -405,5 +405,5 @@ async def get_prefix(bot, message):
         )
         bot.prefix_factory_init = True
 
-    # no prefix needed if not in dm
+    # No prefix needed if not in dm
     return server_prefix(bot, message.guild)
