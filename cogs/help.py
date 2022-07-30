@@ -77,7 +77,7 @@ class Help(commands.Cog):
                     "Changes prefix of this bot for this server\n"
                     "you can set a prefix with spaces in the middle and end by entering:"
                     "\n>    `%sprefix NEW PREFIX    \\`"
-                    "\nthe `\\` signals the end of the prefix"
+                    "\nthe `\\` indicates the end of the prefix"
                 ) % message_prefix,
             ),
         ]
@@ -99,8 +99,13 @@ class Help(commands.Cog):
         embed.add_field(name="_ _\nMiscellaneous", value=desc[1], inline=False)
         embed.set_author(name="Help Panel")
 
-        await self.bot.deliver(ctx)(msg, embed=embed)
-
+        try:
+            await self.bot.deliver(ctx)(msg, embed=embed)
+        except discord.Forbidden:
+            await self.bot.deliver(ctx)(
+                "Cannot send help embed, dm me `help` to view commands"
+                "or enable the `embed links` permission"
+            )
 
 async def setup(bot):
     """Setup"""
