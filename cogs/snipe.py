@@ -65,7 +65,7 @@ class Msg:
         for key, value in kwargs.items():
             self.__setattr__(key, value)
 
-        # set of ids of people who cannot snipe this message
+        # Set of ids of people who cannot snipe this message
         self.denied = set()
 
     def add(self, deny_id: int) -> None:
@@ -150,6 +150,7 @@ class Snipe(commands.Cog):
     async def _snipe(self, ctx, dist):
         """The snipe command retrieves the latest or specified deleted message"""
         m_c_id = ctx.channel.id
+        dist = abs(dist)
 
         if snipe_target.get(m_c_id) is None:
             # Nothing in list currently
