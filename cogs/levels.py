@@ -25,6 +25,13 @@ except ValueError:
 GLOBAL_ALL_ACCESS = getenv("BOT_GLOBAL_ALL_LEADERBOARD_ACCESS") == "yes"
 
 
+class defaultdict(defaultdict):
+    def __repr__(self):
+        return dict(self).__repr__()
+    def __str__(self):
+        return self.__repr__()
+
+
 class Timer():
     """Quick timer class for debugging"""
     __slots__ = "start_time", "end", "stop"
@@ -44,12 +51,12 @@ class Timer():
 
 
 def get_level_f(seconds: int) -> (int, str):
-    """Function gets the level in (level: int, percentage to next level: str)"""
+    """Function gets the level as (level: int, percentage to next level: str)"""
     decimal, integer = modf((0.75 * ((seconds / 360) ** 0.5) + 0.05 * seconds / 360) / 4)
     return int(integer), decimal
 
 def get_level(seconds: int) -> int:
-    """Function gets level in int"""
+    """Function gets level as int"""
     return get_level_f(seconds)[0]
 
 
@@ -62,13 +69,13 @@ class Levels(commands.Cog):
     """Main cog that handles detecting, processing and displaying levels"""
 
     def __init__(self, bot):
-        # bot initialisation
+        # Bot initialisation
         self.bot = bot
 
         # self.lock = asyncio.Lock()
 
-        # list of users who recently disconnected
-        self.user_actions = set()
+        # List of users who recently disconnected
+        self.user_actions = set()  # Any joins / leaves, no remove on leave
         self.user_joins = defaultdict(lambda: int(time.time()))
         self.user_updates = {str(i).zfill(2): defaultdict(lambda: 0) for i in range(100)}
         # '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
@@ -108,16 +115,19 @@ class Levels(commands.Cog):
 
     async def disconnect_all(self):
         """Force write in by simulating everyone disconnect"""
+        log.debug("Disconnecting all")
         for uid in self.user_actions.copy():
+            log.debug("%i --> None", uid)
             self._on_voice_state_update(
                 self.mimic(id=uid, name="mimic"),
                 self.mimic(channel=1),
                 self.mimic(channel=None),
             )
+        log.debug("Disconnecting all finished")
 
     async def cog_unload(self):
         """Final data upload"""
-        log.warning("Levels cog was unloaded, attempting to write_in_data()")
+        log.warning("Levels cog was unloaded, attempting to write_in_data() ---")
         await self.disconnect_all()
         self.write_in_data()
         log.warning("Reached end of levels unload!")
@@ -126,7 +136,7 @@ class Levels(commands.Cog):
     async def update(self, ctx):
         """Manually run through all channels and update into data.json"""
         if ctx.author.id in self.bot.sudo:
-            log.warning("%i Called an update", ctx.author.id)
+            log.warning("\t--- %i Called an update ---", ctx.author.id)
             await self.disconnect_all()
             self._update()
             log.warning("Successfully executed disconnect_all and _update")
@@ -222,9 +232,9 @@ class Levels(commands.Cog):
                 json_contents[str(uid)] += utime
             results[index] = (value[0], dict(json_contents))
 
-        log.debug("Current updates = %s", str(self.user_updates))
         log.debug("Results = %s", str(results))
-        # Lets perform python -OO optimisation malfunctions! Documentation above all??
+
+        # This doesn't work under python -OO, as __doc__s are removed
         cur.execute(
             self.write_in_data.__doc__.split("'''")[1]
             % ", ".join(
@@ -274,15 +284,18 @@ class Levels(commands.Cog):
             log.debug("No channel diff or was not found in user joins")
             return
 
+        self.user_actions.add(member.id)
+
         # Add if not exist and return as it was only a join
         if member.id not in self.user_joins:
-            log.debug("was just a join, now in user_joins")
+            log.debug("^ this was just a join, now in user_joins")
             self.user_joins[member.id] = int(time.time())
             return
 
         # Add duration
+        duration = int(time.time()) - self.user_joins[member.id]
         self.user_updates[to2(member.id)][member.id] += (
-            int(time.time()) - self.user_joins[member.id]
+            duration
         )
 
         # Removes from needing updates
@@ -291,6 +304,8 @@ class Levels(commands.Cog):
         else:
             # If it was not a leave: refresh the count
             self.user_joins[member.id] = int(time.time())
+
+        log.debug("^ Added duration of %i seconds", duration)
 
     @commands.hybrid_command(name="total", description="Shows total time in seconds")
     async def total(self, ctx: commands.Context, user: Optional[discord.User] = None):
@@ -306,7 +321,7 @@ class Levels(commands.Cog):
         """Gets total time of user in seconds"""
         lookup = ctx.author if user is None else user
 
-        # opens the corresponding file
+        # Opens the corresponding file
         with self.bot.conn.cursor() as cur:
             cur.execute(
                 "SELECT json_contents FROM levels WHERE right_two = %s",
@@ -378,7 +393,7 @@ class Levels(commands.Cog):
                 else:
                     return await self.deliver(ctx)("Invalid input")
 
-        # opens the corresponding part
+        # Opens the corresponding part
         with self.bot.conn.cursor() as cur:
             cur.execute(
                 "SELECT json_contents FROM levels WHERE right_two = %s",
@@ -389,11 +404,10 @@ class Levels(commands.Cog):
             ]  # wow it already converted from json to py objects!
 
         if str(lookup.id) not in user_times:
-            # record does not exist
+            # Record does not exist
             return await self.deliver(ctx)(f"{lookup.name} has no time saved yet.")
 
-        # gets live info and the user times
-        # current_user_times
+        # Gets live info and the user times
         total_seconds = user_times[str(lookup.id)]
         if lookup.id in self.user_joins:
             total_seconds += int(time.time()) - self.user_joins[lookup.id]
@@ -408,8 +422,8 @@ class Levels(commands.Cog):
                 lookup.name,
                 cut.days,
                 hours,
-                minutes.replace("0", "", 1),
-                seconds.replace("0", "", 1),
+                minutes[-1] if minutes.startswith("0") else minutes,
+                seconds[-1] if seconds.startswith("0") else seconds,
                 get_level(total_seconds),
             )
         )
@@ -425,18 +439,15 @@ class Levels(commands.Cog):
                 gives page 2, raw.
         """
         def returns(page):
-            if page is None: return
-            if not page.isdigit():
-                if not (digits := re.search(r"\d", page)):
-                    return
-                if not (raw := re.search(r"\D{3}", page)):
-                    return int(digits), False
-                if (digits := digits.group(0)).isdigit() and raw.group(0) == "raw":
-                    return int(digits), True
-            else:
+            if not page.isdigit() and page.endswith("raw"):
+                if len(page) == 3:
+                    return 1, True
+                else:
+                    return int(re.sub(r"\D", "", page)), True
+            elif page.isdigit():
                 return int(page), False
 
-        ret = returns(page)
+        ret = returns(page) if page else None
         page, raw = (1, False) if ret is None else ret
 
         log.debug("All command was called")
@@ -444,8 +455,8 @@ class Levels(commands.Cog):
 
         if GLOBAL_ALL_ACCESS or ctx.author.id in self.bot.sudo:
             async def process(ctx, page):
-
                 sql_time = Timer()
+
                 with self.bot.conn.cursor() as cur:
                     cur.execute("SELECT json_contents FROM levels")
                     results = cur.fetchall()
