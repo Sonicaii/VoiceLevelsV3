@@ -126,22 +126,26 @@ class ColourFormat(dict):
 
     class Colour:
         """Like a string, but with colour"""
-        __slots__ = ("str",)
+        __slots__ = ("_str", "_int")
 
         def __init__(self, num: int) -> None:
-            self.str = "\033[%sm" % num
+            self._int = int(num)
+            self._str = "\033[%sm" % num
 
         def __repr__(self) -> str:
-            return self.str
+            return self._str
 
         def __str__(self) -> str:
-            return self.str
+            return self._str
+
+        def __int__(self) -> int:
+            return self._int
 
         def __add__(self, other) -> str:
-            return self.str + other
+            return self._str + other
 
         def __radd__(self, other) -> str:
-            return other + self.str
+            return other + self._str
 
         def __call__(self, string="", after="") -> str:
             return "%s%s%s\033[0m" % (self, string, after)
