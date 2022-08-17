@@ -8,6 +8,8 @@
 The new and improved **Voice Levels** discord.py bot with slash commands and Postgres database
 
 ### Requirements
+Python Version 3.8+
+
 Run `pip install -r requirements.txt`
 
 <i><code>discord.py</code> v2 is currently in active development, with breaking changes from 1.0 &mdash; 
