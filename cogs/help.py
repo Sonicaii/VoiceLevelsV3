@@ -76,9 +76,9 @@ class Help(commands.Cog):
                 (
                     "Changes prefix of this bot for this server\n"
                     "you can set a prefix with spaces in the middle and end by entering:"
-                    "\n>    `%sprefix NEW PREFIX    \\`"
+                    f"\n>    `{message_prefix}prefix NEW PREFIX    \\`"
                     "\nthe `\\` indicates the end of the prefix"
-                ) % message_prefix,
+                )
             ),
         ]
 

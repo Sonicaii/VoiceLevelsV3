@@ -6,8 +6,7 @@ import header
 if __name__ == "__main__":
     with open(".env", "r") as file:
         txt = file.read()
-    file = open(".env", "w")
-    try:
+    with open(".env", "w") as file:
         print("You can either manually edit .env later or input them now. Quit with ctrl + c")
         txt = txt.replace("BOT_TOKEN=", "BOT_TOKEN=" + input("bot token: "))
         print("The next options are %s, leave empty for default value" % header.fg.y("optional"))
@@ -20,7 +19,3 @@ if __name__ == "__main__":
             txt = txt.replace("# DATABASE_URL=", "DATABASE_URL="+i)
         file.write(txt)
         input(header.fg.G(".env has been successfully updated!\n"))
-    except KeyboardInterrupt:
-        pass
-    finally:
-        file.close()

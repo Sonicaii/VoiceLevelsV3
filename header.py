@@ -150,7 +150,7 @@ class ColourFormat(dict):
             return "%s%s%s\033[0m" % (self, string, after)
 
     def __init__(self, offset: int, doc: str, *args, **kwargs) -> None:
-        super(ColourFormat, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         for key, value in [
                 (self._num.get(key, str(key)), value)
                 for key, value in self.copy().items()
@@ -169,7 +169,7 @@ class ColourFormat(dict):
                     self.__setattr__(letter, self[letter])
 
     def __repr__(self) -> str:
-        return super(ColourFormat, self).__repr__() + "\033[0m"
+        return super().__repr__() + "\033[0m"
 
 
 fg = ColourFormat(
@@ -342,7 +342,7 @@ class ServerPrefix:
             bot.conn.poll()
             bot.conn.poll()
         except Exception as error:
-            log.warning("Polling database has returned an error.\n%s", str(error))
+            log.warning("Polling database has returned an error.\n%s", str(error.with_traceback))
             log.info("Attempting to reconnect")
             bot.conn = bot.refresh_conn()
             log.info("Reconnected")

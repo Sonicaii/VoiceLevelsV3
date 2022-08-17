@@ -113,7 +113,7 @@ class Levels(commands.Cog):
         except BaseException:  # pylint: disable=broad-except
             return
         if hasattr(self, var):
-            await ctx.send(self.__getattribute__(var))
+            await ctx.send(getattr(self, var))
 
     async def disconnect_all(self):
         """Force write in by simulating everyone disconnect"""
@@ -379,7 +379,8 @@ class Levels(commands.Cog):
                 lookup = discord.Object(id=int(user))
                 lookup.name = user
             else:
-                fmt = lambda string: re.findall(r"(?<=[<@#!:a-z])(\d+)", string)
+                def fmt(string):
+                    return re.findall(r"(?<=[<@#!:a-z])(\d+)", string)
                 if found_id := fmt(ctx.message.content):
                     pass
                 elif found_id := fmt(user):
@@ -638,7 +639,7 @@ class Levels(commands.Cog):
             int(
                 modf(
                     (
-                        (max([len(dict_nicknames.get(i, str(i))) for i, j in page]) - 1)
+                        (max(len(dict_nicknames.get(i, str(i))) for i, j in page) - 1)
                         / 2
                     ) + 1
                 )[1]
@@ -646,7 +647,7 @@ class Levels(commands.Cog):
         )
         # Used to center and align the colons
         longest_time = max(
-            [len("%d:%02d" % divmod(divmod(j, 60)[0], 60)) for i, j in page]
+            len("%d:%02d" % divmod(divmod(j, 60)[0], 60)) for i, j in page
         )
 
         name = " Name ".center(longest_name, "-").replace(
