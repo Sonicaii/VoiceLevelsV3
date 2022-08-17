@@ -4,7 +4,6 @@ import logging.handlers
 import os
 from typing import Union
 from collections import OrderedDict
-from re import sub
 from sys import stdout
 from dotenv import load_dotenv
 
@@ -286,7 +285,7 @@ def get_token(conn: connection) -> str:
                 """
             )
             if not cur.fetchone()[0]:
-                cur.execute(new_db.create_vl)
+                cur.execute(new_db.CREATE_VL)
                 conn.commit()
     else:
         log.error("NO TOKEN IN ENVIRONMENT VARS!")

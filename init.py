@@ -20,17 +20,10 @@ from header import (
     get_token,
     get_prefix,
     log,
+    psycopg2,
     refresh_conn,
     server_prefix,
 )
-
-try:
-    from psycopg2cffi import compat
-    compat.register()
-except ImportError:
-    pass
-finally:
-    import psycopg2
 
 load_dotenv()
 

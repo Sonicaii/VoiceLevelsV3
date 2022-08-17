@@ -1,10 +1,16 @@
+"""Database creation constants"""
 from os import environ
 from dotenv import load_dotenv
 
 load_dotenv()
 
-detect = "SELECT COUNT(DISTINCT table_name) FROM information_schema.columns WHERE table_schema = current_database()"
-create_vl = """
+DETECT = """
+SELECT COUNT(DISTINCT table_name)
+FROM information_schema.columns
+WHERE table_schema = current_database()
+"""
+
+CREATE_VL = """
 --
 -- Database: voice_levels
 --
@@ -17,7 +23,7 @@ create_vl = """
 
 CREATE TABLE levels (
   right_two char(2) NOT NULL,
-  json_contents json NOT NULL DEFAULT '{{}}',
+  json_contents json NOT NULL DEFAULT '{}',
   PRIMARY KEY (right_two)
 );
 
@@ -26,7 +32,7 @@ CREATE TABLE levels (
 --
 
 INSERT INTO levels (right_two, json_contents) VALUES
-{};
+%s;
 
 CREATE TABLE prefixes (
   id char(19) NOT NULL,
@@ -42,12 +48,13 @@ CREATE TABLE sudo (
 );
 
 COMMIT;
-""".format(
-    f"\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(",")
+""" % (
+    "\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(","),
+    environ.get("BOT_PREFIX"),  # Default bot prefix
 )
 
 # Create token now unused
-create_token = """
+CREATE_TOKEN = """
 --
 -- Database: voice_levels
 --
@@ -73,6 +80,3 @@ COMMIT;
 """ % environ.get(
     "BOT_TOKEN"
 )
-
-# Default bot prefix
-create_vl = create_vl % environ.get("BOT_PREFIX")

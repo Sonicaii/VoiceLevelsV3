@@ -33,7 +33,7 @@ class View(discord.ui.View):
         # style=discord.ButtonStyle.danger,
     )
     async def callback(
-            self, interaction: discord.Interaction, select: discord.ui.button
+            self, interaction: discord.Interaction, _: discord.ui.button
     ):
         """Callback on button press to remove message and audit message sender"""
 

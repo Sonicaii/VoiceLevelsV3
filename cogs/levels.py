@@ -25,7 +25,8 @@ except ValueError:
 GLOBAL_ALL_ACCESS = getenv("BOT_GLOBAL_ALL_LEADERBOARD_ACCESS") == "yes"
 
 
-class defaultdict(defaultdict):
+class DefaultDict(defaultdict):
+    """Cleaner representation"""
     def __repr__(self):
         return dict(self).__repr__()
     def __str__(self):
@@ -76,8 +77,8 @@ class Levels(commands.Cog):
 
         # List of users who recently disconnected
         self.user_actions = set()  # Any joins / leaves, no remove on leave
-        self.user_joins = defaultdict(lambda: int(time.time()))
-        self.user_updates = {str(i).zfill(2): defaultdict(lambda: 0) for i in range(100)}
+        self.user_joins = DefaultDict(lambda: int(time.time()))
+        self.user_updates = {str(i).zfill(2): DefaultDict(lambda: 0) for i in range(100)}
         # '00': {}, '01': {}, '02': {}, ... , '97': {}, '98': {}, 99': {}
 
         @dataclass
@@ -103,12 +104,13 @@ class Levels(commands.Cog):
 
         Usage: `[prefix]var user_updates` returns self.user_updates
         """
+        # This is all very dangerous
         if log.level > 10:
             return
         try:
             if ctx.author.id not in self.bot.sudo:
                 return
-        except (AttributeError, TypeError, BaseException):
+        except BaseException:  # pylint: disable=broad-except
             return
         if hasattr(self, var):
             await ctx.send(self.__getattribute__(var))
@@ -150,8 +152,6 @@ class Levels(commands.Cog):
             while not hasattr(self.bot, "sudo"):
                 await asyncio.sleep(sleep := sleep + 10)
             # Reset when activated, prevents faulty join times due to downtime
-            async def send(*args, **kwargs):
-                pass
             self._update()
             self.startup = False
         else:
@@ -227,7 +227,7 @@ class Levels(commands.Cog):
         )
         results = cur.fetchall()  # List[Tuple(last_two: str, times: dict),]
         for index, value in enumerate(results):
-            json_contents = defaultdict(lambda: 0, value[1])
+            json_contents = DefaultDict(lambda: 0, value[1])
             for uid, utime in self.user_updates[value[0]].items():
                 json_contents[str(uid)] += utime
             results[index] = (value[0], dict(json_contents))
@@ -249,7 +249,7 @@ class Levels(commands.Cog):
 
         cur.close()
 
-        self.user_updates = {str(i).zfill(2): defaultdict(lambda: 0) for i in range(100)}
+        self.user_updates = {str(i).zfill(2): DefaultDict(lambda: 0) for i in range(100)}
 
         for uid in self.user_actions.difference(self.user_joins).copy():
             self.user_actions.discard(uid)
@@ -429,7 +429,7 @@ class Levels(commands.Cog):
         )
 
     @commands.hybrid_command(name="all", description="Leaderboard for this server")
-    async def all(self, ctx: commands.Context, page = None):
+    async def all(self, ctx: commands.Context, page=None):
         """Acts as a normal leaderboard command
 
         Can get users of all servers if requested by a sudo user
@@ -442,10 +442,10 @@ class Levels(commands.Cog):
             if not page.isdigit() and page.endswith("raw"):
                 if len(page) == 3:
                     return 1, True
-                else:
-                    return int(re.sub(r"\D", "", page)), True
-            elif page.isdigit():
+                return int(re.sub(r"\D", "", page)), True
+            if page.isdigit():
                 return int(page), False
+            return None
 
         ret = returns(page) if page else None
         page, raw = (1, False) if ret is None else ret
@@ -501,7 +501,7 @@ class Levels(commands.Cog):
             )
             log.debug("predeliver_time: %i", predeliver_time.stop())
             if not formatted:
-                return
+                return None
 
             if raw:
                 formatted = re.sub(r"```", "\\`\\`\\`", formatted).replace(">>>", "", 1)
@@ -510,7 +510,7 @@ class Levels(commands.Cog):
                 content=formatted
             )
             log.debug("total time: %i", total_time.stop())
-            return
+            return None
 
         await self._top(ctx, page)
 
@@ -631,7 +631,6 @@ class Levels(commands.Cog):
 
         sorted_d, dict_nicknames = dicts
         fg = self.bot.fm.fg
-        bg = self.bot.fm.bg
         page = list(sorted_d.items())[(page - 1) * 20 : page * 20]
 
         # Longest string length, then +1 if it is odd
@@ -682,19 +681,17 @@ class Levels(commands.Cog):
             cen = "%d:%02d" % divmod(divmod(member_seconds, 60)[0], 60)
             cen = aligners.get(len(str(cen)), "") + cen
 
-            nickname = dict_nicknames.get(member_id, member_id)
-            rank = fg.r(f"{str(list(sorted_d).index(member_id) + 1)+'.':<4}")
-            hours = bg.k(f"{cen:^7}" if longest_time < 6 else f"{cen:>7}")
-            level = f"{get_level(member_seconds):^5}"
-
-            rank, hours, level, nickname = (
-                highlight()(rank),
-                highlight()(hours),
-                highlight(fg.y)(level),
-                highlight(fg.b)(nickname),
+            fmt.append(  # rank hours level | name
+                f""" {highlight()(
+                    fg.r(f'{str(list(sorted_d).index(member_id) + 1)+chr(46):<4}')
+                )}  {highlight(fg.y)(
+                    self.bot.fm.bg.k(f'{cen:^7}' if longest_time < 6 else f'{cen:>7}')
+                )}  {highlight(fg.b)(
+                    f'{get_level(member_seconds):^5}'
+                )} {highlight(fg.k)(
+                    '|')} {highlight()(dict_nicknames.get(member_id, member_id)
+                )}\n"""
             )
-
-            fmt.append(f" {rank}  {hours}  {level} {highlight(fg.k)('|')} {nickname}\n")
 
         fmt.append("```")
         fmt = "".join(fmt)
@@ -702,7 +699,12 @@ class Levels(commands.Cog):
         # Remove colour formatting if user is on mobile
         # Discord mobile does not support colour rendering in code blocks yet
         if ctx.author.is_on_mobile():
-            fmt = re.sub(r"(?<=^.{14} ).{6}", "", re.sub(r"\033\[(\d*;?)*m", "", fmt), flags=re.MULTILINE)
+            fmt = re.sub(
+                r"(?<=^.{14} ).{6}",
+                "",
+                re.sub(r"\033\[(\d*;?)*m", "", fmt),
+                flags=re.MULTILINE,
+            )
             fmt = re.sub(r"-* Name -*", "Name", fmt, count=1)
         else:
             # Removes colour formatting until within message length limit
