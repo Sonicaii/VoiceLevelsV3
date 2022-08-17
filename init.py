@@ -16,7 +16,6 @@ from discord.ext.commands import Context, Greedy
 from dotenv import load_dotenv
 from header import (
     cogpr,
-    discord_escape,
     fm,
     get_token,
     get_prefix,
@@ -119,9 +118,11 @@ async def on_guild_join(guild) -> None:
 
 @bot.event
 async def on_command_error(ctx, error):
+    """Outputs error of command if in debug and sent by a sudo user"""
     log.error(error)
     if log.level <= 10 and ctx.author.id in bot.sudo:
-        await ctx.send(str(error)[:2000])
+        for msg in discord.utils.as_chunks(error, 2000):
+            await ctx.send("".join(msg))
 
 
 @bot.command(aliases=("r",), hidden=True)
@@ -138,10 +139,11 @@ async def reload(ctx: Context, cog: str = ""):
 
     try:
         await bot.reload_extension(name="cogs." + cog)
-    except Exception as error:  # Error can be anything that happens inside the cog
+    except Exception as error:  # pylint: disable=broad-except
+        # Error can be anything that happens inside the cog
         msg = error
 
-    log.warning(msg)
+    log.warning(msg.with_traceback)
     return await ctx.send(msg)
 
 
@@ -197,7 +199,6 @@ def main():
     """Main function, load variables as attributes into bot, start bot"""
     bot.cogpr = cogpr
     bot.deliver = deliver
-    bot.discord_escape = discord_escape
     bot.fm = fm
     bot.start_time = datetime.now()
 

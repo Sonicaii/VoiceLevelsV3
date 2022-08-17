@@ -252,11 +252,6 @@ def cogpr(name: str, bot: object, colour: str = "w") -> str:
     log.info("Activated %s %s", fg[colour]+bot.user.name, fg.G(name))
 
 
-def discord_escape(string) -> str:
-    """Escape discord formatting"""
-    return sub(r"(?=\W)", "\\\\", string).replace("\\:", ":").replace("\\ ", " ")
-
-
 def refresh_conn() -> Union[psycopg2.extensions.connection, None]:
     """Returns a new connection object"""
     log.debug("Refreshing connection to database")

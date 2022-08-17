@@ -226,7 +226,7 @@ class Misc(commands.Cog):
                         """,
                         (str(ctx.guild.id), prefix),
                     )
-                    await self.deliver(ctx)(msg % self.bot.discord_escape(prefix))
+                    await self.deliver(ctx)(msg % discord.utils.escape_markdown(prefix))
             else:
                 cur.execute(
                     "DELETE FROM prefixes WHERE id ~ %s",
