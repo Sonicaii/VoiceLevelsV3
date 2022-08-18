@@ -38,9 +38,11 @@ These instructions shouldn't be too hard. If you need any help, contact me, deta
 2. Install the [Heroku Postgres Add-on](https://dashboard.heroku.com/provision-addon?addonServiceId=6c67493d-8fc2-4cd4-9161-4f1ec11cbe69&planId=062a1cc7-f79f-404c-9f91-135f70175577) for the database
 3. Create a discord application on [Discord Developer Portal](https://discord.com/developers/applications)
 4. Get new bot token from Discord Developer Portal -> Your Application -> Bot -> (Add bot if you don't have one) / get / reset token
-5. Add new enviornment variable on heroku as `BOT_TOKEN` with your bot token and `BOT_PREFIX` with your desired prefix. [Heroku Application -> Settings -> Config Vars](https://dashboard.heroku.com/apps/). `DATABASE_URL` should be already set from installing the Add-on.
-6. Enable [privileged intents](https://discord.com/developers/applications/). From Your Application -> Bot -> Privileged Gateway Intents, enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
-7. enable python dyno to start the bot in the resources tab
+5. Add new enviornment variable on heroku as `BOT_TOKEN` with your bot token and `BOT_PREFIX` with your desired prefix.<br />
+[Heroku Application -> Settings -> Config Vars](https://dashboard.heroku.com/apps/). `DATABASE_URL` should be already set from installing the Add-on.
+6. Enable [privileged intents](https://discord.com/developers/applications/). From Your Application -> Bot -> Privileged Gateway Intents,<br />
+Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
+7. Enable python dyno to start the bot in the resources tab
 8. Invite to your server(s) using this link, with your bot id:<br />
 > `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
 
@@ -50,11 +52,13 @@ These instructions shouldn't be too hard. If you need any help, contact me, deta
 1. Download code
 2. Create a discord application on [Discord Developer Portal](https://discord.com/developers/applications)
 4. Get new bot token from Discord Developer Portal -> Your Application -> Bot -> (Add bot if you don't have one) / get / reset token
-3. Use make_env.py to create an .env file or set environment variables, set `DATABASE_URL` to your postgres database (uses ssl connection), `BOT_TOKEN` and `BOT_PREFIX` to your token and preferred default prefix
-4. Enable [privileged intents](https://discord.com/developers/applications/). From Your Application -> Bot -> Privileged Gateway Intents, enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
+3. Use make_env.py to create an .env file or set environment variables.<br />Set `DATABASE_URL` to your postgres database (uses ssl connection), `BOT_TOKEN` and `BOT_PREFIX` to your token and preferred default prefix
+4. Enable [privileged intents](https://discord.com/developers/applications/). From Your Application -> Bot -> Privileged Gateway Intents,<br />
+Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
 5. Run `init.py` to start bot (see below for instructions to run as a service in background)
 6. Invite to your server(s) using this link, with your bot id:<br />
-> `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
+> `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />
+Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
 
 ### ☆ Running as linux service
 > (tested on ubuntu 22.04, some commands may be different depending on your distro)
@@ -96,7 +100,7 @@ These instructions shouldn't be too hard. If you need any help, contact me, deta
 #### Using NSSM (not working?)
 1. Install [NSSM](http://nssm.cc/download)
 2. `nssm install voicelevels "path to python/pipenv" "path to init.py (run /path if you are using pipenv)"`
-3. Start and stop service with `nssm start voicelevels` and `nssm stop voicelevels`
+3. Start and stop service with `nssm start voicelevels` and `nssm stop voicelevels`<br />
 If you want to remove the service, stop it and run `nssm remove "voicelevels"`
 #### start on boot (working!)
 1. Press <kbd>windows</kbd> + <kbd>r</kbd> to bring up run
