@@ -1,5 +1,5 @@
 # Using pipfile lock? poetry?
-git+https://github.com/Rapptz/discord.py#egg=discord.py
+discord.py>=2.0.0
 psycopg2-binary>=2.9.3
 # cachetools
 python-dotenv
