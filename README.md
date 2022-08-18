@@ -4,6 +4,7 @@
 [![Pull Requests](https://img.shields.io/github/issues-pr/Sonicaii/VoiceLevelsV3)](https://github.com/Sonicaii/VoiceLevelsV3/pulls)
 [![Issues](https://img.shields.io/github/issues/Sonicaii/VoiceLevelsV3)](https://github.com/Sonicaii/VoiceLevelsV3/issues)
 [![Size](https://img.shields.io/github/repo-size/Sonicaii/VoiceLevelsV3)](/)
+[![Pylint](https://github.com/Sonicaii/VoiceLevelsV3/actions/workflows/pylint.yml/badge.svg)](https://github.com/Sonicaii/VoiceLevelsV3/actions/)
 
 The new and improved **Voice Levels** discord.py bot with slash commands and Postgres database
 
