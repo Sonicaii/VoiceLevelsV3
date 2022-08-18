@@ -21,7 +21,7 @@ import new_db
 # from cachetools import cached, cachedmethod, LRUCache, TTLCache, keys
 
 if not os.path.isfile("./.env"):
-    with open("./.env", "w") as file:
+    with open("./.env", "w", encoding="utf-8") as file:
         file.write("""# Voice Levels .env
 # Uncomment DATABASE_URL below and paste your own postgresql url (uses ssl connection)
 # If you are on Heroku, they set DATABASE_URL for you. No need to Uncomment
@@ -129,7 +129,7 @@ class ColourFormat(dict):
 
         def __init__(self, num: int) -> None:
             self._int = int(num)
-            self._str = "\033[%sm" % num
+            self._str = f"\033[{num}m"
 
         def __repr__(self) -> str:
             return self._str
@@ -147,7 +147,7 @@ class ColourFormat(dict):
             return other + self._str
 
         def __call__(self, string="", after="") -> str:
-            return "%s%s%s\033[0m" % (self, string, after)
+            return f"{self}{string}{after}\033[0m"
 
     def __init__(self, offset: int, doc: str, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -248,7 +248,7 @@ Console text formatter
 
 def cogpr(name: str, bot: object, colour: str = "w") -> str:
     """Format cog start output"""
-    log.info("Activated %s %s", fg[colour]+bot.user.name, fg.G(name))
+    log.info("Activated %s %s", fg[colour]+bot.user.name, fg.G(name))  # pylint: disable=no-member
 
 
 def refresh_conn() -> Union[psycopg2.extensions.connection, None]:
@@ -341,8 +341,8 @@ class ServerPrefix:
         try:
             bot.conn.poll()
             bot.conn.poll()
-        except Exception as error:
-            log.warning("Polling database has returned an error.\n%s", str(error.with_traceback))
+        except psycopg2.Error as error:
+            log.warning("Polling database has returned an error.\n%s", str(error))
             log.info("Attempting to reconnect")
             bot.conn = bot.refresh_conn()
             log.info("Reconnected")

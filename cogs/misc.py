@@ -18,7 +18,7 @@ log = logging.getLogger("vl")
 def reverse_readline(filename, buf_size=8192):
     """A generator that returns the lines of a file in reverse order"""
     # https://stackoverflow.com/questions/2301789/how-to-read-a-file-in-reverse-order
-    with open(filename) as file:
+    with open(filename, encoding="utf-8") as file:
         segment = None
         offset = 0
         file.seek(0, SEEK_END)
@@ -64,12 +64,11 @@ class Misc(commands.Cog):
     async def uptime(self, ctx: commands.Context):
         """Uptime of bot, in duration and timestamp when it started"""
         if ctx.author.id in self.bot.sudo:
+            delta = timedelta(seconds=(datetime.now()-self.bot.start_time).seconds)
+            timestamp = int(datetime.timestamp(self.bot.start_time))
             await self.deliver(ctx)(
-                "Time since last restart: %s\nOn <t:%i:D>" % (
-                    timedelta(seconds=(datetime.now()-self.bot.start_time).seconds),
-                    int(datetime.timestamp(self.bot.start_time)),
+                f"Time since last restart: {delta}\nOn <t:{timestamp}:D>"
                 )
-            )
 
     @commands.hybrid_command(description="Gets the number of members in the server")
     async def members(self, ctx: commands.Context):
@@ -147,11 +146,8 @@ class Misc(commands.Cog):
         await self._process_id(
             interaction,
             user,
-            "Account creation of %s with the ID of `%i`\ntranslates to %s" % (
-                user.name,
-                user.id,
-                "{snowflake_time}",
-            ),
+            f"Account creation of {user.name} with the ID of `{user.id}`\n"
+            "translates to {{snowflake_time}}",
         )
 
     @app_commands.command(description="Get when channel was made")
@@ -166,10 +162,7 @@ class Misc(commands.Cog):
         await self._process_id(
             interaction,
             channel,
-            "%s with the ID of `%s`\nwas created at {snowflake_time}" % (
-                channel.name,
-                channel.id,
-            ),
+            f"{channel.name} with the ID of `{channel.id}`\nwas created at {{snowflake_time}}",
         )
 
     @commands.hybrid_command(with_app_command=True)
@@ -317,14 +310,14 @@ class Misc(commands.Cog):
                 cur.execute("INSERT INTO sudo VALUES (%s)", (str(user),))
                 self.bot.sudo.add(int(user))
                 log.warning("Successfully added")
-                await ctx.send("Added %s to sudo" % user)
+                await ctx.send(f"Added {user} to sudo")
             elif mode in ("del", "remove", "rm", "-") and int(user) in self.bot.sudo:
                 cur.execute("DELETE FROM sudo WHERE id = %s", (str(user),))
                 self.bot.sudo.remove(int(user))
                 log.warning("Successfully removed")
-                await ctx.send("Removed %s from sudo" % user)
+                await ctx.send(f"Removed {user} from sudo")
             else:
-                await ctx.send("%s was not in sudo" % user)
+                await ctx.send(f"{user} was not in sudo")
         self.bot.conn.commit()
 
 
