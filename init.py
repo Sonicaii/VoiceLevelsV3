@@ -136,7 +136,7 @@ async def reload(ctx: Context, cog: str = ""):
         # Error can be anything that happens inside the cog
         msg = error
 
-    log.warning(msg.with_traceback)
+    log.warning(msg)
     return await ctx.send(msg)
 
 
@@ -157,10 +157,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
     if spec == "~" and ctx.guild:
         log.warning(
             msg,
-            "has requested to sync commands to guild %i: %s" % (
-                ctx.guild.id,
-                ctx.guild.name,
-            ),
+            f"has requested to sync commands to guild {ctx.guild.id}: {ctx.guild.name}",
         )
         await ctx.send("Syncing for this guild")
         return await ctx.bot.tree.sync(guild=ctx.guild)
@@ -173,7 +170,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
                 synced += 1
             except discord.HTTPException:
                 pass
-        log.warning(msg, "has synced for guilds %s" % str(guilds))
+        log.warning(msg, f"has synced for guilds {guilds}")
         return await ctx.send("Synced for %i/%i guilds", synced, len(guilds))
 
     await ctx.send("Sycning global...")

@@ -19,10 +19,11 @@ maxlen = int(getenv("BOT_SNIPE_MAX", "35"))
 snipe_target = {}
 log = logging.getLogger("vl")
 
-
+# pylint: disable=no-member
 class View(discord.ui.View):
     """A discord view, handling binning of messages"""
     __slots__ = "msg", "sniper", "deliver"
+
     def __init__(self, **kwargs):
         super().__init__()
         for key, value in kwargs.items():
@@ -45,17 +46,15 @@ class View(discord.ui.View):
         else:
             self.msg.add(self.sniper.id)
             await self.deliver(interaction)(
-                "<@%i> denied hit and destroyed %s's ammunition." % (
-                    interaction.user.id,
-                    self.sniper.display_name,
-                )
+                f"<@{interaction.user.id}> denied hit and destroyed"
+                f"{self.sniper.display_name}'s ammunition."
             )
         await interaction.message.delete()
 
         # Delete after ...
         await asyncio.sleep(5)
         return await interaction.delete_original_message()
-
+# pylint: enable=no-member
 
 class Msg:
     """Contains message attributes"""
@@ -184,11 +183,10 @@ class Snipe(commands.Cog):
             msg = snipe_target[m_c_id][0]
             range_msg = "the closest target"
 
-        send = "<@%i> hit %s, %s, who said\n%s\n" % (
-            ctx.author.id,
-            "themselves" if msg.author.id == ctx.author.id else msg.author.name,
-            range_msg,
-            msg.content,
+        send = (
+            f"<@{ctx.author.id}> hit "
+            + ('themselves' if msg.author.id == ctx.author.id else msg.author.name)
+            + f"{range_msg}, who said\n{msg.content}\n"
         )
         file = None
         if len(msg.attachments) == 1:
