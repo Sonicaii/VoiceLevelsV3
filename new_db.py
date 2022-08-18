@@ -4,13 +4,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+_empties = "\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(",")
+
 DETECT = """
 SELECT COUNT(DISTINCT table_name)
 FROM information_schema.columns
 WHERE table_schema = current_database()
 """
 
-CREATE_VL = """
+CREATE_VL = f"""
 --
 -- Database: voice_levels
 --
@@ -23,7 +25,7 @@ CREATE_VL = """
 
 CREATE TABLE levels (
   right_two char(2) NOT NULL,
-  json_contents json NOT NULL DEFAULT '{}',
+  json_contents json NOT NULL DEFAULT '{{}}',
   PRIMARY KEY (right_two)
 );
 
@@ -32,7 +34,7 @@ CREATE TABLE levels (
 --
 
 INSERT INTO levels (right_two, json_contents) VALUES
-%s;
+{_empties};
 
 CREATE TABLE prefixes (
   id char(19) NOT NULL,
@@ -40,7 +42,7 @@ CREATE TABLE prefixes (
   PRIMARY KEY (id)
 );
 
-INSERT INTO prefixes (id, prefix) VALUES (0, '%s');
+INSERT INTO prefixes (id, prefix) VALUES (0, '{environ.get("BOT_PREFIX", ",,")}');
 
 CREATE TABLE sudo (
   id char(19) NOT NULL,
@@ -48,13 +50,10 @@ CREATE TABLE sudo (
 );
 
 COMMIT;
-""" % (
-    "\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(","),
-    environ.get("BOT_PREFIX"),  # Default bot prefix
-)
+"""
 
 # Create token now unused
-CREATE_TOKEN = """
+CREATE_TOKEN = f"""
 --
 -- Database: voice_levels
 --
@@ -74,9 +73,7 @@ CREATE TABLE token (
 --
 
 INSERT INTO token (token) VALUES
-('%s');
+('{environ.get("BOT_TOKEN", "")}');
 
 COMMIT;
-""" % environ.get(
-    "BOT_TOKEN"
-)
+"""
