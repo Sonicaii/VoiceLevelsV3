@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-_empties = "\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(",")
+_EMPTIES = "\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(",")
 
 DETECT = """
 SELECT COUNT(DISTINCT table_name)
@@ -34,7 +34,7 @@ CREATE TABLE levels (
 --
 
 INSERT INTO levels (right_two, json_contents) VALUES
-{_empties};
+{_EMPTIES};
 
 CREATE TABLE prefixes (
   id char(19) NOT NULL,
