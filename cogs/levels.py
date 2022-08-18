@@ -96,7 +96,7 @@ class Levels(commands.Cog):
 
         self.deliver = bot.deliver
         self.startup = True
-        self.updater.start()
+        self.updater.start()  # pylint: disable=no-member
 
     @commands.command(hidden=True)
     async def var(self, ctx, var):
@@ -144,7 +144,7 @@ class Levels(commands.Cog):
             log.warning("Successfully executed disconnect_all and _update")
             return await ctx.send("Updated")
 
-    @tasks.loop(minutes=INTERVAL)
+    @tasks.loop(minutes=INTERVAL, reconnect=True)
     async def updater(self):
         """Submits recorded seconds for each user into database every 30 mins"""
         if self.startup:
@@ -418,15 +418,13 @@ class Levels(commands.Cog):
         cut = datetime.timedelta(seconds=total_seconds)
         hours, minutes, seconds = str(cut).split()[-1].split(":")
 
+        minutes = minutes[-1] if minutes.startswith("0") else minutes
+        seconds = seconds[-1] if seconds.startswith("0") else seconds
+        total_seconds = get_level(total_seconds)
+
         return await self.deliver(ctx)(
-            "%s has spent %s days, %s hours, %s minutes and %s seconds on call: level %i" % (
-                lookup.name,
-                cut.days,
-                hours,
-                minutes[-1] if minutes.startswith("0") else minutes,
-                seconds[-1] if seconds.startswith("0") else seconds,
-                get_level(total_seconds),
-            )
+            f"""{lookup.name} has spent {cut.days} days, {hours} hours, {minutes
+            } minutes and {seconds} seconds on call: level {total_seconds}"""
         )
 
     @commands.hybrid_command(name="all", description="Leaderboard for this server")
@@ -621,6 +619,39 @@ class Levels(commands.Cog):
                     ctx_reply,
                 )
 
+    def _format_highlighter(self, ctx, id_):
+        if id_ == ctx.author.id:
+            return lambda *_: self.bot.fm.fg.w
+        return lambda default=lambda _: _: default
+
+    def _format_row(self, ctx, entry, dicts, longest_time):
+        sorted_d, dict_nicknames = dicts
+        fg = self.bot.fm.fg  # pylint: disable=invalid-name
+        member_id, member_seconds = entry
+        highlight = self._format_highlighter(ctx, member_id)
+
+         # Add current time
+        if member_id in self.user_joins:
+            member_seconds += int(time.time()) - self.user_joins[member_id]
+        if member_id in self.user_updates[to2(member_id)].keys():
+            member_seconds += self.user_updates[to2(member_id)][member_id]
+
+        # Centering
+        cen = divmod(divmod(member_seconds, 60)[0], 60)
+        cen = f"{cen[0]}:{cen[1]:.2f}"
+        cen = {4: "0", 6: " "}.get(len(str(cen)), "") + cen
+
+        # Titles: rank hours level | name
+        return f""" {highlight()(
+                fg.r(f'{str(list(sorted_d).index(member_id) + 1)+chr(46):<4}')
+            )}  {highlight(fg.y)(
+                self.bot.fm.bg.k(f'{cen:^7}' if longest_time < 6 else f'{cen:>7}')
+            )}  {highlight(fg.b)(
+                f'{get_level(member_seconds):^5}'
+            )} {highlight(fg.k)(
+                '|')} {highlight()(dict_nicknames.get(member_id, member_id)
+            )}\n"""
+
     def _format_top(
             self, ctx, dicts, page, fmt="from users of this server"
     ):
@@ -631,7 +662,7 @@ class Levels(commands.Cog):
         format_time = Timer()
 
         sorted_d, dict_nicknames = dicts
-        fg = self.bot.fm.fg
+        fg = self.bot.fm.fg  # pylint: disable=invalid-name
         page = list(sorted_d.items())[(page - 1) * 20 : page * 20]
 
         # Longest string length, then +1 if it is odd
@@ -647,55 +678,20 @@ class Levels(commands.Cog):
         )
         # Used to center and align the colons
         longest_time = max(
-            len("%d:%02d" % divmod(divmod(j, 60)[0], 60)) for i, j in page
+            len(f"{(k:=divmod(divmod(j, 60)[0], 60))[0]}:{k[1]:.2f}") for i, j in page
         )
-
         name = " Name ".center(longest_name, "-").replace(
             "Name", "\033[0;1;4mName" + fg.k
         )
-
         titles = self.bot.fm[4](self.bot.fm[1]((
             f"{fg.k} {fg.r}Rank{fg.k}   {fg.c}Hours{fg.k}   {fg.y}Level{fg.k} | {name}"
         )))
-
-        fmt = [f"Leaderboard of global scores {fmt}\n>>> ```ansi\n{titles}\n"]
-
-        highlighter = (
-            lambda id_:
-            (lambda *_: fg.w)
-            if id_ == ctx.author.id else
-            (lambda default=lambda _: _: default)
+        fmt = (
+            f"Leaderboard of global scores {fmt}\n>>> ```ansi\n{titles}\n"
+            + ''.join(map(
+                lambda x: self._format_row(ctx, x, dicts, longest_time), page))
+            + "```"
         )
-
-        aligners = {4: "0", 6: " "}
-
-        for member_id, member_seconds in page:
-
-            highlight = highlighter(member_id)
-
-            # Add current time
-            if member_id in self.user_joins:
-                member_seconds += int(time.time()) - self.user_joins[member_id]
-            if member_id in self.user_updates[to2(member_id)].keys():
-                member_seconds += self.user_updates[to2(member_id)][member_id]
-
-            cen = "%d:%02d" % divmod(divmod(member_seconds, 60)[0], 60)
-            cen = aligners.get(len(str(cen)), "") + cen
-
-            fmt.append(  # rank hours level | name
-                f""" {highlight()(
-                    fg.r(f'{str(list(sorted_d).index(member_id) + 1)+chr(46):<4}')
-                )}  {highlight(fg.y)(
-                    self.bot.fm.bg.k(f'{cen:^7}' if longest_time < 6 else f'{cen:>7}')
-                )}  {highlight(fg.b)(
-                    f'{get_level(member_seconds):^5}'
-                )} {highlight(fg.k)(
-                    '|')} {highlight()(dict_nicknames.get(member_id, member_id)
-                )}\n"""
-            )
-
-        fmt.append("```")
-        fmt = "".join(fmt)
 
         # Remove colour formatting if user is on mobile
         # Discord mobile does not support colour rendering in code blocks yet
@@ -711,7 +707,7 @@ class Levels(commands.Cog):
             # Removes colour formatting until within message length limit
             removes = iter([40, 34, 33, 36, 31])
             while len(fmt) > 1900:
-                fmt = re.sub(r"\033\[(%i;?)*m" % next(removes), "", fmt)
+                fmt = re.sub(fr"\033\[({next(removes)};?)*m", "", fmt)
         log.debug(fmt)
         log.debug("format time: %i", format_time.stop())
         return fmt
