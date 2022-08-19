@@ -637,9 +637,9 @@ class Levels(commands.Cog):
         # Titles: rank hours level | name
         return f""" {highlight()(
                 fg.r(f'{str(list(sorted_d).index(member_id) + 1)+chr(46):<4}')
-            )}  {highlight(fg.y)(
+            )}  {highlight()(
                 self.bot.fm.bg.k(f'{cen:^7}' if longest_time < 6 else f'{cen:>7}')
-            )}  {highlight(fg.b)(
+            )}  {highlight(fg.y)(
                 f'{get_level(member_seconds):^5}'
             )} {highlight(fg.k)(
                 '|')} {highlight()(dict_nicknames.get(member_id, member_id)
