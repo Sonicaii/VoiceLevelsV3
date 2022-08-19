@@ -56,6 +56,7 @@ def get_level_f(seconds: int) -> (int, str):
     decimal, integer = modf((0.75 * ((seconds / 360) ** 0.5) + 0.05 * seconds / 360) / 4)
     return int(integer), decimal
 
+
 def get_level(seconds: int) -> int:
     """Function gets level as int"""
     return get_level_f(seconds)[0]
