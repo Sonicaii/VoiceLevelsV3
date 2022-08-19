@@ -295,9 +295,7 @@ class Levels(commands.Cog):
 
         # Add duration
         duration = int(time.time()) - self.user_joins[member.id]
-        self.user_updates[to2(member.id)][member.id] += (
-            duration
-        )
+        self.user_updates[to2(member.id)][member.id] += duration
 
         # Removes from needing updates
         if after.channel is None:
@@ -336,11 +334,7 @@ class Levels(commands.Cog):
             return await self.deliver(ctx)(f"<@!{lookup.id}> has no time saved yet.")
 
         # Gets live info and the user times
-        current_user_time = (
-            user_times[str(lookup.id)] + int(time.time()) - self.user_joins[lookup.id]
-            if lookup.id in self.user_joins
-            else user_times[str(lookup.id)]
-        )
+        current_user_time = user_times[str(lookup.id)] + self._add_current_time(lookup.id)
 
         return await self.deliver(ctx)(
             f"{lookup.name} has spent {current_user_time} seconds in voice channels"
@@ -410,11 +404,7 @@ class Levels(commands.Cog):
             return await self.deliver(ctx)(f"{lookup.name} has no time saved yet.")
 
         # Gets live info and the user times
-        total_seconds = user_times[str(lookup.id)]
-        if lookup.id in self.user_joins:
-            total_seconds += int(time.time()) - self.user_joins[lookup.id]
-        if lookup.id in self.user_updates[to2(lookup.id)]:
-            total_seconds += self.user_updates[to2(lookup.id)][lookup.id]
+        total_seconds = user_times[str(lookup.id)] + self._add_current_time(lookup.id)
 
         cut = datetime.timedelta(seconds=total_seconds)
         hours, minutes, seconds = str(cut).split()[-1].split(":")
@@ -620,6 +610,12 @@ class Levels(commands.Cog):
                     ctx_reply,
                 )
 
+    def _add_current_time(self, id_):
+        return int(
+            time.time() - self.user_joins.get(str(id_), time.time())
+            + self.user_updates[to2(id_)].get(str(id_), 0)
+        )
+
     def _format_highlighter(self, ctx, id_):
         if id_ == ctx.author.id:
             return lambda *_: self.bot.fm.fg.w
@@ -631,15 +627,11 @@ class Levels(commands.Cog):
         member_id, member_seconds = entry
         highlight = self._format_highlighter(ctx, member_id)
 
-         # Add current time
-        if member_id in self.user_joins:
-            member_seconds += int(time.time()) - self.user_joins[member_id]
-        if member_id in self.user_updates[to2(member_id)].keys():
-            member_seconds += self.user_updates[to2(member_id)][member_id]
+        member_seconds += self._add_current_time(member_id)
 
         # Centering
         cen = divmod(divmod(member_seconds, 60)[0], 60)
-        cen = f"{cen[0]}:{cen[1]:.2f}"
+        cen = f"{cen[0]}:{cen[1]:02}"
         cen = {4: "0", 6: " "}.get(len(str(cen)), "") + cen
 
         # Titles: rank hours level | name
@@ -679,7 +671,7 @@ class Levels(commands.Cog):
         )
         # Used to center and align the colons
         longest_time = max(
-            len(f"{(k:=divmod(divmod(j, 60)[0], 60))[0]}:{k[1]:.2f}") for i, j in page
+            len(f"{(k:=divmod(divmod(j, 60)[0], 60))[0]}:{k[1]:02}") for i, j in page
         )
         name = " Name ".center(longest_name, "-").replace(
             "Name", "\033[0;1;4mName" + fg.k
