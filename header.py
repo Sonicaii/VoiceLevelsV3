@@ -254,7 +254,7 @@ def cogpr(name: str, bot: object, colour: str = "w") -> str:
 def refresh_conn() -> Union[psycopg2.extensions.connection, None]:
     """Returns a new connection object"""
     log.debug("Refreshing connection to database")
-    db_url = os.getenv("DATABASE_URL", "")
+    db_url = os.getenv("DATABASE_URL_O", os.getenv("DATABASE_URL", ""))
     conn = None
     try:
         conn = psycopg2.connect(db_url, sslmode="require")
