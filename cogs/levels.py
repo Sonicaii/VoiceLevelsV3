@@ -48,7 +48,7 @@ class Timer():
 
     def elapsed(self):
         """Returns time since object creation or timer start"""
-        return time.time_ns() - self.start_time
+        return (time.time_ns() - self.start_time)/1_000_000_000
 
 
 def get_level_f(seconds: int) -> (int, str):
@@ -578,7 +578,7 @@ class Levels(commands.Cog):
     ) -> (Any, commands.Context):
         """Helper functions for leaderboard
 
-        delivers a pending message if main content takes too long to process
+        Delivers a pending message if main content takes too long to process
         then edits original message to loaded content
         """
         async with ctx_main.channel.typing():
@@ -679,12 +679,10 @@ class Levels(commands.Cog):
         titles = self.bot.fm[4](self.bot.fm[1]((
             f"{fg.k} {fg.r}Rank{fg.k}   {fg.c}Hours{fg.k}   {fg.y}Level{fg.k} | {name}"
         )))
-        fmt = (
-            f"Leaderboard of global scores {fmt}\n>>> ```ansi\n{titles}\n"
-            + ''.join(map(
-                lambda x: self._format_row(ctx, x, dicts, longest_time), page))
-            + "```"
-        )
+        fmt = f"""Leaderboard of global scores {fmt}\n>>> ```ansi\n{titles}\n{
+            ''.join(map(lambda x: self._format_row(ctx, x, dicts, longest_time), page))
+            }```
+        """
 
         # Remove colour formatting if user is on mobile
         # Discord mobile does not support colour rendering in code blocks yet
