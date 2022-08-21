@@ -68,8 +68,8 @@ class Misc(commands.Cog):
             timestamp = int(datetime.timestamp(self.bot.start_time))
             try:
                 update_delta = timedelta(seconds=(datetime.now()-self.bot.update_time).seconds)
-                timestamp = int(datetime.timestamp(self.bot.update_time))
-                msg = f"Time since last update: `{delta}`\nOn <t:{timestamp}:D>"
+                update_timestamp = int(datetime.timestamp(self.bot.update_time))
+                msg = f"Time since last update: `{update_delta}`\nOn <t:{update_timestamp}:D>"
             except AttributeError:
                 msg = "Data has not been written in yet"
             await self.deliver(ctx)(
