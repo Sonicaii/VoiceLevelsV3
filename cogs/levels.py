@@ -256,6 +256,7 @@ class Levels(commands.Cog):
             self.user_actions.discard(uid)
 
         self.bot.conn.commit()
+        self.bot.update_time = datetime.now()
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -450,7 +451,7 @@ class Levels(commands.Cog):
                 with self.bot.conn.cursor() as cur:
                     cur.execute("SELECT json_contents FROM levels")
                     results = cur.fetchall()
-                log.debug("sql_time: %i", sql_time.stop())
+                log.debug("sql_time: %f", sql_time.stop())
                 organise_time = Timer()
                 large_dict = {
                     k: v
@@ -478,7 +479,7 @@ class Levels(commands.Cog):
                         for member in server.members
                     },
                 )
-                log.debug("organise_time: %i", organise_time.stop())
+                log.debug("organise_time: %f", organise_time.stop())
                 return self._format_top(
                     ctx, ret, page, "from users of *all* servers"
                 ), True
@@ -489,7 +490,7 @@ class Levels(commands.Cog):
                 process,
                 page,
             )
-            log.debug("predeliver_time: %i", predeliver_time.stop())
+            log.debug("predeliver_time: %f", predeliver_time.stop())
             if not formatted:
                 return None
 
@@ -499,7 +500,7 @@ class Levels(commands.Cog):
             await self.deliver(ctx)(
                 content=formatted
             )
-            log.debug("total time: %i", total_time.stop())
+            log.debug("total time: %f", total_time.stop())
             return None
 
         await self._top(ctx, page)
@@ -700,7 +701,7 @@ class Levels(commands.Cog):
             while len(fmt) > 1900:
                 fmt = re.sub(fr"\033\[({next(removes)};?)*m", "", fmt)
         log.debug(fmt)
-        log.debug("format time: %i", format_time.stop())
+        log.debug("format time: %f", format_time.stop())
         return fmt
 
 
