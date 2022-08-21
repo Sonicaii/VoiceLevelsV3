@@ -66,8 +66,15 @@ class Misc(commands.Cog):
         if ctx.author.id in self.bot.sudo:
             delta = timedelta(seconds=(datetime.now()-self.bot.start_time).seconds)
             timestamp = int(datetime.timestamp(self.bot.start_time))
+            try:
+                update_delta = timedelta(seconds=(datetime.now()-self.bot.update_time).seconds)
+                timestamp = int(datetime.timestamp(self.bot.update_time))
+                msg = f"Time since last update: `{delta}`\nOn <t:{timestamp}:D>"
+            except AttributeError:
+                msg = "Data has not been written in yet"
             await self.deliver(ctx)(
-                f"Time since last restart: {delta}\nOn <t:{timestamp}:D>"
+                f"Time since last restart: `{delta}`\nOn <t:{timestamp}:D>\n"
+                + msg
                 )
 
     @commands.hybrid_command(description="Gets the number of members in the server")
