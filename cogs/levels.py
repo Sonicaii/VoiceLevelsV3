@@ -612,8 +612,8 @@ class Levels(commands.Cog):
 
     def _add_current_time(self, id_):
         return int(
-            time.time() - self.user_joins.get(str(id_), time.time())
-            + self.user_updates[to2(id_)].get(str(id_), 0)
+            time.time() - self.user_joins.get(id_, time.time())
+            + self.user_updates[to2(id_)].get(id_, 0)
         )
 
     def _format_highlighter(self, ctx, id_):
