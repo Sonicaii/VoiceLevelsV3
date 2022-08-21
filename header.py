@@ -23,12 +23,12 @@ import new_db
 if not os.path.isfile("./.env"):
     with open("./.env", "w", encoding="utf-8") as file:
         file.write("""# Voice Levels .env
-# Uncomment DATABASE_URL below and paste your own postgresql url (uses ssl connection)
+# Uncomment (remove hashtag infront of) DATABASE_URL below and paste your own postgresql url (uses ssl connection)
 # If you are on Heroku, they set DATABASE_URL for you. No need to Uncomment
 
 # DATABASE_URL=
+# BOT_PREFIX=,,
 BOT_TOKEN=
-BOT_PREFIX=,,
 
 # Arbitrary value of 35: 3500m furthest sniper kill distance
 BOT_SNIPE_MAX=35
