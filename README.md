@@ -39,7 +39,8 @@ These instructions shouldn't be too hard. If you need any help, contact me, deta
 3. Create a discord application on [Discord Developer Portal](https://discord.com/developers/applications)
 4. Get new bot token from Discord Developer Portal -> Your Application -> Bot -> (Add bot if you don't have one) / get / reset token
 5. Add new enviornment variable on heroku as `BOT_TOKEN` with your bot token and `BOT_PREFIX` with your desired prefix.<br />
-[Heroku Application -> Settings -> Config Vars](https://dashboard.heroku.com/apps/). `DATABASE_URL` should be already set from installing the Add-on.
+[Heroku Application -> Settings -> Config Vars](https://dashboard.heroku.com/apps/). `DATABASE_URL` should be already set from installing the Add-on.<br />
+If you have your own database, set `DATABASE_URL_O` to you url, `postgres://user:pass@hostname:port/dbname`
 6. Enable [privileged intents](https://discord.com/developers/applications/). From Your Application -> Bot -> Privileged Gateway Intents,<br />
 Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
 7. Enable python dyno to start the bot in the resources tab
