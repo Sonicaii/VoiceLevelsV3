@@ -256,7 +256,7 @@ class Levels(commands.Cog):
             self.user_actions.discard(uid)
 
         self.bot.conn.commit()
-        self.bot.update_time = datetime.now()
+        self.bot.update_time = datetime.datetime.now()
 
     @commands.Cog.listener()
     async def on_ready(self):
