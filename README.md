@@ -58,7 +58,7 @@ Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
 Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
 5. Run `init.py` to start bot (see below for instructions to run as a service in background)
 6. Invite to your server(s) using this link, with your bot id:<br />
-> `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />
+> `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands+bot`<br />
 Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
 
 ### ☆ Running as linux service
