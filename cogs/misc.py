@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 import logging
 from os import SEEK_END
 from sys import exit as exit_
+from time import perf_counter
 from typing import Literal, Optional, Union
 from re import findall, sub
 import discord
@@ -96,9 +97,18 @@ class Misc(commands.Cog):
         """Returns the bot ping"""
         # if ctx.interaction:
         # return await ctx.interaction.response.pong()  # What does this even do
-        await self.deliver(ctx)(
-            f"Current latency is {round(self.bot.latency * 1000)}ms"
+        start = perf_counter()
+        response = await self.deliver(ctx)(
+            f"Pinging... ~{round(self.bot.latency * 1000)}ms"
         )
+        msg = f"Current latency is {(perf_counter() - start) * 1000:.2f}ms"
+        try:
+            if hasattr(response, "edit"):
+                await response.edit(msg)
+            else:
+                await response.edit_message(msg)
+        except discord.HTTPException:
+            await self.deliver(ctx)(msg)
 
     async def _process_id(
             self,
