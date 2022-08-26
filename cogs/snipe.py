@@ -187,7 +187,7 @@ class Snipe(commands.Cog):
         send = (
             f"<@{ctx.author.id}> hit "
             + ('themselves' if msg.author.id == ctx.author.id else msg.author.name)
-            + f"{range_msg}, who said\n{msg.content}\n"
+            + f" {range_msg}, who said\n{msg.content}\n"
         )
         file = None
         if len(msg.attachments) == 1:
