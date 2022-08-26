@@ -46,8 +46,9 @@ class View(discord.ui.View):
         else:
             self.msg.add(self.sniper.id)
             await self.deliver(interaction)(
-                f"<@{interaction.user.id}> denied hit and destroyed"
-                f"{self.sniper.display_name}'s ammunition."
+                f"<@{interaction.user.id}> denied hit and destroyed "
+                f"{self.sniper.display_name}'s ammunition.",
+                delete_after=5
             )
         await interaction.message.delete()
 
