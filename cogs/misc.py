@@ -104,9 +104,9 @@ class Misc(commands.Cog):
         msg = f"Current latency is {(perf_counter() - start) * 1000:.2f}ms"
         try:
             if hasattr(response, "edit"):
-                await response.edit(msg)
+                await response.edit(content=msg)
             else:
-                await response.edit_message(msg)
+                await response.edit_message(content=msg)
         except discord.HTTPException:
             await self.deliver(ctx)(msg)
 
