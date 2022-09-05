@@ -109,7 +109,7 @@ class Snipe(commands.Cog):
             return
 
         # Split deleted message into 1000 char chunks to avoid 2k char limit
-        string = message.content
+        string = message.content + " "  # Will run at least once
         for content in (
                 string[0 + i : 1000 + i] for i in range(0, len(string) + 1, 1000)
         ):
