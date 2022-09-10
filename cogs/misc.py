@@ -102,7 +102,7 @@ class Misc(commands.Cog):
         # return await ctx.interaction.response.pong()  # What does this even do
         await self.edit_add_ping(ctx, f"Pinging... ~{round(self.bot.latency * 1000)}ms")
 
-    async def edit_add_ping(self, ctx, *msg_args, *msg_kwargs):
+    async def edit_add_ping(self, ctx, *msg_args, **msg_kwargs):
         """Send message, then add the latency to the end of it"""
         start = perf_counter()
         response = await self.deliver(ctx)(*msg_args, **msg_kwargs)
