@@ -1,6 +1,7 @@
 """misc cog with miscellaneous commands"""
 
 from datetime import datetime, timedelta
+from getpass import getuser
 import logging
 from os import SEEK_END
 from sys import exit as exit_
@@ -16,7 +17,7 @@ from discord.utils import snowflake_time
 log = logging.getLogger("vl")
 
 
-def reverse_readline(filename, buf_size=8192):
+def reverse_readline(filename: str, buf_size: int=8192):
     """A generator that returns the lines of a file in reverse order"""
     # https://stackoverflow.com/questions/2301789/how-to-read-a-file-in-reverse-order
     with open(filename, encoding="utf-8") as file:
@@ -61,6 +62,13 @@ class Misc(commands.Cog):
         """Log cog activation"""
         self.bot.cogpr("Misc", self.bot)
 
+    @commands.hybrid_command(description="Gets the number of members in the server")
+    async def members(self, ctx: commands.Context):
+        """Get total number of members in server"""
+        await self.deliver(ctx)(
+            f"Number of members in this server: {ctx.guild.member_count}"
+        )
+
     @commands.command(pass_context=True, description="Get uptime of bot")
     async def uptime(self, ctx: commands.Context):
         """Uptime of bot, in duration and timestamp when it started"""
@@ -73,40 +81,38 @@ class Misc(commands.Cog):
                 msg = f"Time since last update: `{update_delta}`\nOn <t:{update_timestamp}:D>"
             except AttributeError:
                 msg = "Data has not been written in yet"
-            await self.deliver(ctx)(
+            await self.edit_add_ping(
+                ctx,
+                f"Running from: {getuser()}\n"
                 f"Time since last restart: `{delta}`\nOn <t:{timestamp}:D>\n"
                 + msg
-                )
-
-    @commands.hybrid_command(description="Gets the number of members in the server")
-    async def members(self, ctx: commands.Context):
-        """Get total number of members in server"""
-        await self.deliver(ctx)(
-            f"Number of members in this server: {ctx.guild.member_count}"
-        )
+            )
 
     @commands.hybrid_command(description="current latency of bot")
     async def latency(self, ctx: commands.Context):
-        """Returns the bot ping"""
-        await self.deliver(ctx)(
-            f"Current latency is {round(self.bot.latency * 1000)}ms"
-        )
+        """Alias for ping"""
+        await self._ping(ctx)
 
     @commands.hybrid_command(description="current latency of bot")
     async def ping(self, ctx: commands.Context):
         """Returns the bot ping"""
+        await self._ping(ctx)
+
+    async def _ping(self, ctx: commands.Context):
         # if ctx.interaction:
         # return await ctx.interaction.response.pong()  # What does this even do
+        await self.edit_add_ping(ctx, f"Pinging... ~{round(self.bot.latency * 1000)}ms")
+
+    async def edit_add_ping(self, ctx: commands.Context, *msg_args, **msg_kwargs):
+        """Send message, then add the latency to the end of it"""
         start = perf_counter()
-        response = await self.deliver(ctx)(
-            f"Pinging... ~{round(self.bot.latency * 1000)}ms"
-        )
-        msg = f"Current latency is {(perf_counter() - start) * 1000:.2f}ms"
+        response = await self.deliver(ctx)(*msg_args, **msg_kwargs)
+        msg = f"\nCurrent latency is {(perf_counter() - start) * 1000:.2f}ms"
         try:
             if hasattr(response, "edit"):
-                await response.edit(content=msg)
+                await response.edit(content=response.content + msg)
             else:
-                await response.edit_message(content=msg)
+                await response.edit_message(content=response.content + msg)
         except discord.HTTPException:
             await self.deliver(ctx)(msg)
 
@@ -114,7 +120,7 @@ class Misc(commands.Cog):
             self,
             interaction: discord.Interaction,
             thing: Union[discord.Object, int, str],
-            fmt,
+            fmt: str,
     ) -> None:
         """Takes anything that can have an id extracted from it and returns with formatting"""
         try:
@@ -193,7 +199,7 @@ class Misc(commands.Cog):
 
     @commands.command(name="prefix")
     @commands.has_permissions(manage_guild=True)
-    async def cmd_prefix(self, ctx):
+    async def cmd_prefix(self, ctx: commands.Context):
         """Classic discord command of prefix command
 
         To recover / reset the bot's prefix, it is possible to mention the bot as prefix
@@ -206,14 +212,22 @@ class Misc(commands.Cog):
 
     @app_commands.command(name="prefix")
     @commands.has_permissions(manage_guild=True)
-    async def app_cmd_prefix(self, ctx, prefix: Optional[str]):
+    async def app_cmd_prefix(
+        self,
+        interaction: discord.Interaction,
+        prefix: Optional[str],
+    ):
         """Slash command version of prefix command, use this to recover bot prefix
 
         This can be accessed at any time and is useful to reset prefix without using it
         """
-        await self.prefix(ctx, prefix)
+        await self.prefix(interaction, prefix)
 
-    async def prefix(self, ctx, prefix):
+    async def prefix(
+        self,
+        ctx: Union[commands.Context, discord.Interaction],
+        prefix: str
+    ):
         """Actual prefix command"""
         if not ctx.guild:
             self.deliver(ctx)("Setting prefixes outside servers unsupported")
@@ -247,7 +261,7 @@ class Misc(commands.Cog):
         self.bot.prefix_cache_pop(ctx.guild.id)
 
     @commands.command()
-    async def tail(self, ctx, lines: Optional[int] = 10):
+    async def tail(self, ctx: commands.Context, lines: Optional[int] = 10):
         """Print out tail of discord.log"""
         if ctx.author.id not in self.bot.sudo:
             return
@@ -292,7 +306,7 @@ class Misc(commands.Cog):
     @commands.command(hidden=True)
     async def sudo(
             self,
-            ctx,
+            ctx: commands.Context,
             mode: Optional[
                 Literal["add", "new", "+", "remove", "rm", "-", "del", "get", "refresh"]
             ],
@@ -305,7 +319,7 @@ class Misc(commands.Cog):
         except AttributeError:
             return await ctx.send("Reached AttributeError")
 
-        # We can use match statement! But don't because of compatibility
+        # We can use match statement here, but did not because of compatibility
         if mode in ("get", None):
             return await ctx.send(self.bot.sudo)
         if mode == "refresh":

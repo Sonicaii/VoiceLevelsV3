@@ -54,9 +54,12 @@ BOT_LOG_BACKUP_COUNT=2
 # Follow log in powershell `Get-Content discord.log -Wait -Tail lines`
 """)
     print(
+        # "If you are using Heroku or railway.app, please set your environment variables\n"
+        # "You need BOT_TOKEN and DATABASE_URL / DATABASE_URL_O (for override)\n"
+        "If you are using Heroku or railway.app, disregard the following\n"
         ".env was not found, "
         "making .env file now, "
-        "please insert the bot token and other information"
+        "please insert the bot token and other information\n"
     )
 
 load_dotenv()
@@ -290,7 +293,10 @@ def get_token(conn: connection) -> str:
     else:
         log.error("NO TOKEN IN ENVIRONMENT VARS!")
         log.error(
-            "Head to your Heroku dashboard->settings and add the config var BOT_TOKEN"
+            "Heroku:  from dashboard->settings, add the config var BOT_TOKEN"
+        )
+        log.error(
+            "railway: from project->worker->variables, add BOT_TOKEN"
         )
         log.error("If you're hosting locally, edit .env and update your BOT_TOKEN")
     return token
@@ -375,6 +381,7 @@ class ServerPrefix:
     def prefix_cache_pop(self, gid: int) -> None:
         """Pops the requested guild id from cache, forcing a prefix refresh next time"""
         self.cache.pop(gid, None)
+
 
 server_prefix = ServerPrefix()
 

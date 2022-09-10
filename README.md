@@ -33,7 +33,8 @@ Run `pip install -r requirements.txt`
 These instructions shouldn't be too hard. If you need any help, contact me, details at the bottom.
 ## Hosting on Heroku*:
 
-\* Actually not too great... only 550 free hours per month, not enough to have the dyno 24/7 online.
+\* **NO MORE FREE HEROKU HOSTING AFTER 28/11/2022!!!**
+\* *Actually not too great... only 550 free hours per month, not enough to have the dyno 24/7 online.*
 1. Make Heroku account and deploy!<br />[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Sonicaii/VoiceLevelsV3/)
 2. Install the [Heroku Postgres Add-on](https://dashboard.heroku.com/provision-addon?addonServiceId=6c67493d-8fc2-4cd4-9161-4f1ec11cbe69&planId=062a1cc7-f79f-404c-9f91-135f70175577) for the database
 3. Create a discord application on [Discord Developer Portal](https://discord.com/developers/applications)
@@ -47,7 +48,24 @@ Enable `PRESENCE INTENT`, `SERVER MEMBERS INTENT` and `MESSAGE CONTENT INTENT`
 8. Invite to your server(s) using this link, with your bot id:<br />
 > `https://discord.com/api/oauth2/authorize?client_id=`**`YOUR_BOT_ID`**`&permissions=2684456000&scope=applications.commands%20bot`<br />Get ID under [applications -> Application ID](https://discord.com/developers/applications/)
 
-
+## Hosting on railway.app
+\* 500 Free hours (20 days uptime per month)
+1. Do steps 3 and 4 from above.
+2. Fork this repo
+3. Go to https://railway.app/new/github
+4. Log in through GitHub
+5. Select your newly created repository to deploy
+6. Press add variables, set
+	- `BOT_PREFIX`
+	- `BOT_TOKEN` to your bot token
+	- `DATABASE_URL_O` to your Postgresql database URL if you have your own database
+7. Go to the settings tab and change the branch to `railway`
+8. Return to the project main menu (there should be a floating box called worker, `+ new` and `Settings` button on the top right)
+9. Press `+ new` and under databases, add a Postgresql database
+10. Go to the variables tab for the database and copy all
+11. Return to the worker and go to the variables tab
+12. Edit raw, and paste all the variables you got from the database
+13. Restart the deployment with your fresh Postgresql database
 
 ## Hosting on local machine / server
 1. Download code
