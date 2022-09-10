@@ -1,8 +1,9 @@
 """misc cog with miscellaneous commands"""
 
 from datetime import datetime, timedelta
+from getpass import getuser
 import logging
-from os import getlogin, SEEK_END
+from os import SEEK_END
 from sys import exit as exit_
 from time import perf_counter
 from typing import Literal, Optional, Union
@@ -82,7 +83,7 @@ class Misc(commands.Cog):
                 msg = "Data has not been written in yet"
             await self.edit_add_ping(
                 ctx,
-                f"Running from: {getlogin()}\n"
+                f"Running from: {getpass()}\n"
                 f"Time since last restart: `{delta}`\nOn <t:{timestamp}:D>\n"
                 + msg
             )
