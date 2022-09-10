@@ -83,7 +83,7 @@ class Misc(commands.Cog):
                 msg = "Data has not been written in yet"
             await self.edit_add_ping(
                 ctx,
-                f"Running from: {getpass()}\n"
+                f"Running from: {getuser()}\n"
                 f"Time since last restart: `{delta}`\nOn <t:{timestamp}:D>\n"
                 + msg
             )
