@@ -293,7 +293,9 @@ def get_token(conn: connection) -> str:
     else:
         log.error("NO TOKEN IN ENVIRONMENT VARS!")
         log.error(
-            "Heroku:  from dashboard->settings, add the config var BOT_TOKEN\n"
+            "Heroku:  from dashboard->settings, add the config var BOT_TOKEN"
+        )
+        log.error(
             "railway: from project->worker->variables, add BOT_TOKEN"
         )
         log.error("If you're hosting locally, edit .env and update your BOT_TOKEN")
@@ -379,6 +381,7 @@ class ServerPrefix:
     def prefix_cache_pop(self, gid: int) -> None:
         """Pops the requested guild id from cache, forcing a prefix refresh next time"""
         self.cache.pop(gid, None)
+
 
 server_prefix = ServerPrefix()
 
