@@ -56,7 +56,7 @@ BOT_LOG_BACKUP_COUNT=2
     print(
         # "If you are using Heroku or railway.app, please set your environment variables\n"
         # "You need BOT_TOKEN and DATABASE_URL / DATABASE_URL_O (for override)\n"
-        "If you are using Heroku or railway.app, disregard the following"
+        "If you are using Heroku or railway.app, disregard the following\n"
         ".env was not found, "
         "making .env file now, "
         "please insert the bot token and other information\n"
