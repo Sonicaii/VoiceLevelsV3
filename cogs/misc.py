@@ -2,7 +2,7 @@
 
 from datetime import datetime, timedelta
 import logging
-from os import SEEK_END
+from os import getlogin, SEEK_END
 from sys import exit as exit_
 from time import perf_counter
 from typing import Literal, Optional, Union
@@ -61,6 +61,13 @@ class Misc(commands.Cog):
         """Log cog activation"""
         self.bot.cogpr("Misc", self.bot)
 
+    @commands.hybrid_command(description="Gets the number of members in the server")
+    async def members(self, ctx: commands.Context):
+        """Get total number of members in server"""
+        await self.deliver(ctx)(
+            f"Number of members in this server: {ctx.guild.member_count}"
+        )
+
     @commands.command(pass_context=True, description="Get uptime of bot")
     async def uptime(self, ctx: commands.Context):
         """Uptime of bot, in duration and timestamp when it started"""
@@ -73,40 +80,38 @@ class Misc(commands.Cog):
                 msg = f"Time since last update: `{update_delta}`\nOn <t:{update_timestamp}:D>"
             except AttributeError:
                 msg = "Data has not been written in yet"
-            await self.deliver(ctx)(
+            await self.edit_add_ping(
+                ctx,
+                f"Running from: {getlogin()}\n"
                 f"Time since last restart: `{delta}`\nOn <t:{timestamp}:D>\n"
                 + msg
-                )
-
-    @commands.hybrid_command(description="Gets the number of members in the server")
-    async def members(self, ctx: commands.Context):
-        """Get total number of members in server"""
-        await self.deliver(ctx)(
-            f"Number of members in this server: {ctx.guild.member_count}"
-        )
+            )
 
     @commands.hybrid_command(description="current latency of bot")
     async def latency(self, ctx: commands.Context):
-        """Returns the bot ping"""
-        await self.deliver(ctx)(
-            f"Current latency is {round(self.bot.latency * 1000)}ms"
-        )
+        """Alias for ping"""
+        await self._ping(ctx)
 
     @commands.hybrid_command(description="current latency of bot")
     async def ping(self, ctx: commands.Context):
         """Returns the bot ping"""
+        await self._ping(ctx)
+
+    async def _ping(self, ctx):
         # if ctx.interaction:
         # return await ctx.interaction.response.pong()  # What does this even do
+        await self.edit_add_ping(ctx, f"Pinging... ~{round(self.bot.latency * 1000)}ms")
+
+    async def edit_add_ping(self, ctx, *msg_args, *msg_kwargs):
+        """Send message, then add the latency to the end of it"""
         start = perf_counter()
-        response = await self.deliver(ctx)(
-            f"Pinging... ~{round(self.bot.latency * 1000)}ms"
-        )
-        msg = f"Current latency is {(perf_counter() - start) * 1000:.2f}ms"
+        response = await self.deliver(ctx)(*msg_args, **msg_kwargs)
+        msg = f"\nCurrent latency is {(perf_counter() - start) * 1000:.2f}ms"
         try:
             if hasattr(response, "edit"):
-                await response.edit(content=msg)
+                await response.edit(content=response.content + msg)
             else:
-                await response.edit_message(content=msg)
+                await response.edit_message(content=response.content + msg)
         except discord.HTTPException:
             await self.deliver(ctx)(msg)
 
