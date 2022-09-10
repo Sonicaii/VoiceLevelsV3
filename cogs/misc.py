@@ -214,7 +214,7 @@ class Misc(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     async def app_cmd_prefix(
         self,
-        interaction: app_commands.Interaction,
+        interaction: discord.Interaction,
         prefix: Optional[str],
     ):
         """Slash command version of prefix command, use this to recover bot prefix
@@ -225,7 +225,7 @@ class Misc(commands.Cog):
 
     async def prefix(
         self,
-        ctx: Union[commands.Context, app_commands.Interaction],
+        ctx: Union[commands.Context, discord.Interaction],
         prefix: str
     ):
         """Actual prefix command"""
