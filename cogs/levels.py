@@ -95,6 +95,7 @@ class Levels(commands.Cog):
 
         self.mimic = Mimic
 
+        self.bot.interval = INTERVAL  # for use in the uptime command
         self.deliver = bot.deliver
         self.startup = True
         self.updater.start()  # pylint: disable=no-member
