@@ -81,7 +81,11 @@ class Misc(commands.Cog):
                 msg = f"Time since last update: `{update_delta}`\nOn <t:{update_timestamp}:D>\n"
             except AttributeError:
                 msg = "Data has not been written in yet\n"
-            msg += f"interval: {self.bot.interval}" if hasattr(self.bot, "interval") else "No interval set"
+            msg += (
+                f"interval: {self.bot.interval}"
+                if hasattr(self.bot, "interval")
+                else "No interval set"
+            )
             await self.edit_add_ping(
                 ctx,
                 f"Running from: {getuser()}\n"
