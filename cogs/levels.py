@@ -158,7 +158,7 @@ class Levels(commands.Cog):
             # Reset when activated, prevents faulty join times due to downtime
             self._update()
             self.startup = False
-            log.warning("sudo has loaded, now updating times. Interval: %f", INTERVAL)
+            log.warning("sudo has loaded, now updating times. Interval: %.2f", INTERVAL)
         else:
             # async with self.lock:
             self.write_in_data()
