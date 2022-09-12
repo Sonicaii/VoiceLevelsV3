@@ -96,7 +96,7 @@ class Levels(commands.Cog):
         self.mimic = Mimic
 
         self.deliver = bot.deliver
-        # self.startup = True
+        self.startup = True
         self.updater.start()  # pylint: disable=no-member
 
     @commands.command(hidden=True)
@@ -145,33 +145,23 @@ class Levels(commands.Cog):
             log.warning("Successfully executed disconnect_all and _update")
             return await ctx.send("Updated")
 
-    @tasks.loop(seconds=10, reconnect=True, count=None)
-    async def updater(self):  #pylint: disable=method-hidden
-        """Replaces this function to the proper update function once sudo has loaded"""
-        if hasattr(self.bot, "sudo"):
+    @tasks.loop(minutes=INTERVAL, count=None)
+    async def updater(self):
+        """Submits recorded seconds for each user into database every 30 mins"""
+        # """Replaces this function to the proper update function once sudo has loaded"""
 
-            @tasks.loop(minutes=INTERVAL, reconnect=True, count=None)
-            async def updater(self):
-                """Submits recorded seconds for each user into database every 30 mins"""
-                self.write_in_data()
-
+        if self.startup:
+            sleep = 10  # Wait for sudo to load in init.py
+            while not hasattr(self.bot, "sudo"):
+                log.warning("sudo has not loaded, delaying update for %i seconds", sleep)
+                await asyncio.sleep(sleep := sleep + 10)
+            # Reset when activated, prevents faulty join times due to downtime
             self._update()
-            self.updater = updater
-            log.warning("sudo has loaded, now updating times.")
+            self.startup = False
+            log.warning("sudo has loaded, now updating times. Interval: %f", INTERVAL)
         else:
-            log.warning("sudo has not loaded as of now. Not updating times.")
-
-        # if self.startup:
-        #     sleep = 10  # Wait for sudo to load in init.py
-        #     while not hasattr(self.bot, "sudo"):
-        #         log.warning("sudo has not loaded, delaying update for %i seconds", sleep)
-        #         await asyncio.sleep(sleep := sleep + 10)
-        #     # Reset when activated, prevents faulty join times due to downtime
-        #     self._update()
-        #     self.startup = False
-        # else:
-        #     # async with self.lock:
-        #     self.write_in_data()
+            # async with self.lock:
+            self.write_in_data()
 
     def _update(self):
         # async with self.lock(): used to be here
@@ -202,7 +192,7 @@ class Levels(commands.Cog):
     def write_in_data(self) -> None:
         """This function writes the data into the database
 
-        Don't even try to sql inject only with discord user id and time in seconds
+        SQL inject only with discord user id and time in seconds?
            Manual import (Sometimes gets stuck if your self.bot is running.)
            >>> import psycopg2, json
            >>> var = {"id": time, "id": time ... }
@@ -331,7 +321,7 @@ class Levels(commands.Cog):
         """Returns the user's time in seconds"""
         await self._total(ctx, user)
 
-    async def _total(self, ctx, user):
+    async def _total(self, ctx: commands.Context, user: Optional[discord.User]):
         """Gets total time of user in seconds"""
         lookup = ctx.author if user is None else user
 
