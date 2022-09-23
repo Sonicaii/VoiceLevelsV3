@@ -95,6 +95,7 @@ class Levels(commands.Cog):
 
         self.mimic = Mimic
 
+        self.bot.interval = INTERVAL  # for use in the uptime command
         self.deliver = bot.deliver
         self.startup = True
         self.updater.start()  # pylint: disable=no-member
@@ -145,16 +146,20 @@ class Levels(commands.Cog):
             log.warning("Successfully executed disconnect_all and _update")
             return await ctx.send("Updated")
 
-    @tasks.loop(minutes=INTERVAL, reconnect=True)
+    @tasks.loop(minutes=INTERVAL, count=None)
     async def updater(self):
         """Submits recorded seconds for each user into database every 30 mins"""
+        # """Replaces this function to the proper update function once sudo has loaded"""
+
         if self.startup:
-            sleep = 0  # Wait for sudo to load in init.py
+            sleep = 10  # Wait for sudo to load in init.py
             while not hasattr(self.bot, "sudo"):
+                log.warning("sudo has not loaded, delaying update for %i seconds", sleep)
                 await asyncio.sleep(sleep := sleep + 10)
             # Reset when activated, prevents faulty join times due to downtime
             self._update()
             self.startup = False
+            log.warning("sudo has loaded, now updating times. Interval: %.2f", INTERVAL)
         else:
             # async with self.lock:
             self.write_in_data()
@@ -188,7 +193,7 @@ class Levels(commands.Cog):
     def write_in_data(self) -> None:
         """This function writes the data into the database
 
-        Don't even try to sql inject only with discord user id and time in seconds
+        SQL inject only with discord user id and time in seconds?
            Manual import (Sometimes gets stuck if your self.bot is running.)
            >>> import psycopg2, json
            >>> var = {"id": time, "id": time ... }
@@ -317,7 +322,7 @@ class Levels(commands.Cog):
         """Returns the user's time in seconds"""
         await self._total(ctx, user)
 
-    async def _total(self, ctx, user):
+    async def _total(self, ctx: commands.Context, user: Optional[discord.User]):
         """Gets total time of user in seconds"""
         lookup = ctx.author if user is None else user
 
