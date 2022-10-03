@@ -6,13 +6,20 @@ init.py
     discord bot token and postgresql database URL set in .env
 """
 
-import os
+from os import getenv
 from datetime import datetime
 from typing import Any, Awaitable, Literal, Optional, Union
-import discord
-from discord import Object
-from discord.ext import commands
-from discord.ext.commands import Context, Greedy
+from discord.ext.commands import Bot, CommandNotFound, Context, Greedy
+from discord import (
+    Activity,
+    ActivityType,
+    errors,
+    HTTPException,
+    Intents,
+    Interaction,
+    Object,
+    utils,
+)
 from dotenv import load_dotenv
 from header import (
     cogpr,
@@ -28,11 +35,11 @@ from header import (
 load_dotenv()
 
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
-bot = commands.Bot(
+bot = Bot(
     case_insensitive=True,
     help_command=None,
     command_prefix=get_prefix,
-    intents=discord.Intents(
+    intents=Intents(
         **{
             i: True
             for i in [
@@ -72,9 +79,9 @@ async def on_ready():
     """Bot on_ready, changes status and loads sudo users from database"""
     cogpr("Main", bot, "Y")
     await bot.change_presence(
-        activity=discord.Activity(
-            name=f"for {os.getenv('BOT_PREFIX', '@'+bot.user.name)} | Voice Levels V3",
-            type=discord.ActivityType.watching,
+        activity=Activity(
+            name=f"for {getenv('BOT_PREFIX', '@'+bot.user.name)} | Voice Levels V3",
+            type=ActivityType.watching,
         )
     )
     await refresh_sudo()
@@ -106,10 +113,10 @@ async def on_guild_join(guild) -> None:
 @bot.event
 async def on_command_error(ctx, error):
     """Outputs error of command if in debug and sent by a sudo user"""
-    if not (str(error).startswith("Command ") and str(error).endswith("is not found")):
+    if isinstance(error, CommandNotFound):
         log.error(error)
     if log.level <= 10 and ctx.author.id in bot.sudo:
-        for msg in discord.utils.as_chunks(error, 2000):
+        for msg in utils.as_chunks(error, 2000):
             await ctx.send("".join(msg))
 
 
@@ -163,7 +170,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
             try:
                 await ctx.bot.tree.sync(guild=guild)
                 synced += 1
-            except discord.HTTPException:
+            except HTTPException:
                 pass
         log.warning(msg, f"has synced for guilds {guilds}")
         return await ctx.send("Synced for %i/%i guilds", synced, len(guilds))
@@ -173,10 +180,10 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
     log.warning(msg, "synced global slash commands tree")
 
 
-def deliver(obj: Union[commands.Context, discord.Interaction, Any]) -> Awaitable:
+def deliver(obj: Union[Context, Interaction, Any]) -> Awaitable:
     """Returns an async function that will send message"""
     return (
-        obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
+        obj.response.send_message if isinstance(obj, Interaction) else obj.send
     )
 
 
@@ -200,7 +207,7 @@ def main():
     token = get_token(bot.conn)
     try:
         bot.run(token, log_handler=None)
-    except discord.errors.LoginFailure:
+    except errors.LoginFailure:
         log.error("Invalid token!")
 
     if bot.conn is not None:
