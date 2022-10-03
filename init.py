@@ -10,9 +10,7 @@ import os
 from datetime import datetime
 from typing import Any, Awaitable, Literal, Optional, Union
 import discord
-from discord import Object
-from discord.ext import commands
-from discord.ext.commands import Context, Greedy
+from discord.ext.commands import Bot, CommandNotFound, Context, Greedy
 from dotenv import load_dotenv
 from header import (
     cogpr,
@@ -28,7 +26,7 @@ from header import (
 load_dotenv()
 
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
-bot = commands.Bot(
+bot = Bot(
     case_insensitive=True,
     help_command=None,
     command_prefix=get_prefix,
@@ -106,7 +104,7 @@ async def on_guild_join(guild) -> None:
 @bot.event
 async def on_command_error(ctx, error):
     """Outputs error of command if in debug and sent by a sudo user"""
-    if not (str(error).startswith("Command ") and str(error).endswith("is not found")):
+    if type(error) == CommandNotFound:
         log.error(error)
     if log.level <= 10 and ctx.author.id in bot.sudo:
         for msg in discord.utils.as_chunks(error, 2000):
@@ -136,7 +134,7 @@ async def reload(ctx: Context, cog: str = ""):
 
 
 @bot.command(hidden=True)
-async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
+async def sync(ctx: Context, guilds: Greedy[discord.Object], spec: Optional[Literal["~"]] = None) -> None:
     """Sync slash commands
     https://gist.github.com/AbstractUmbra/a9c188797ae194e592efe05fa129c57f
         Usage:
@@ -173,7 +171,7 @@ async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]
     log.warning(msg, "synced global slash commands tree")
 
 
-def deliver(obj: Union[commands.Context, discord.Interaction, Any]) -> Awaitable:
+def deliver(obj: Union[Context, discord.Interaction, Any]) -> Awaitable:
     """Returns an async function that will send message"""
     return (
         obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
