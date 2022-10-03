@@ -6,11 +6,20 @@ init.py
     discord bot token and postgresql database URL set in .env
 """
 
-import os
+from os import getenv
 from datetime import datetime
 from typing import Any, Awaitable, Literal, Optional, Union
-import discord
 from discord.ext.commands import Bot, CommandNotFound, Context, Greedy
+from discord import (
+    Activity,
+    ActivityType,
+    errors,
+    HTTPException,
+    Intents,
+    Interaction,
+    Object,
+    utils,
+)
 from dotenv import load_dotenv
 from header import (
     cogpr,
@@ -30,7 +39,7 @@ bot = Bot(
     case_insensitive=True,
     help_command=None,
     command_prefix=get_prefix,
-    intents=discord.Intents(
+    intents=Intents(
         **{
             i: True
             for i in [
@@ -70,9 +79,9 @@ async def on_ready():
     """Bot on_ready, changes status and loads sudo users from database"""
     cogpr("Main", bot, "Y")
     await bot.change_presence(
-        activity=discord.Activity(
-            name=f"for {os.getenv('BOT_PREFIX', '@'+bot.user.name)} | Voice Levels V3",
-            type=discord.ActivityType.watching,
+        activity=Activity(
+            name=f"for {getenv('BOT_PREFIX', '@'+bot.user.name)} | Voice Levels V3",
+            type=ActivityType.watching,
         )
     )
     await refresh_sudo()
@@ -107,7 +116,7 @@ async def on_command_error(ctx, error):
     if isinstance(error, CommandNotFound):
         log.error(error)
     if log.level <= 10 and ctx.author.id in bot.sudo:
-        for msg in discord.utils.as_chunks(error, 2000):
+        for msg in utils.as_chunks(error, 2000):
             await ctx.send("".join(msg))
 
 
@@ -134,7 +143,7 @@ async def reload(ctx: Context, cog: str = ""):
 
 
 @bot.command(hidden=True)
-async def sync(ctx: Context, guilds: Greedy[discord.Object], spec: Optional[Literal["~"]] = None) -> None:
+async def sync(ctx: Context, guilds: Greedy[Object], spec: Optional[Literal["~"]] = None) -> None:
     """Sync slash commands
     https://gist.github.com/AbstractUmbra/a9c188797ae194e592efe05fa129c57f
         Usage:
@@ -161,7 +170,7 @@ async def sync(ctx: Context, guilds: Greedy[discord.Object], spec: Optional[Lite
             try:
                 await ctx.bot.tree.sync(guild=guild)
                 synced += 1
-            except discord.HTTPException:
+            except HTTPException:
                 pass
         log.warning(msg, f"has synced for guilds {guilds}")
         return await ctx.send("Synced for %i/%i guilds", synced, len(guilds))
@@ -171,10 +180,10 @@ async def sync(ctx: Context, guilds: Greedy[discord.Object], spec: Optional[Lite
     log.warning(msg, "synced global slash commands tree")
 
 
-def deliver(obj: Union[Context, discord.Interaction, Any]) -> Awaitable:
+def deliver(obj: Union[Context, Interaction, Any]) -> Awaitable:
     """Returns an async function that will send message"""
     return (
-        obj.response.send_message if isinstance(obj, discord.Interaction) else obj.send
+        obj.response.send_message if isinstance(obj, Interaction) else obj.send
     )
 
 
@@ -198,7 +207,7 @@ def main():
     token = get_token(bot.conn)
     try:
         bot.run(token, log_handler=None)
-    except discord.errors.LoginFailure:
+    except errors.LoginFailure:
         log.error("Invalid token!")
 
     if bot.conn is not None:
