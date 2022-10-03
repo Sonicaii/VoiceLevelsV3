@@ -106,7 +106,8 @@ async def on_guild_join(guild) -> None:
 @bot.event
 async def on_command_error(ctx, error):
     """Outputs error of command if in debug and sent by a sudo user"""
-    log.error(error)
+    if not (str(error).startswith("Command ") and str(error).endswith("is not found")):
+        log.error(error)
     if log.level <= 10 and ctx.author.id in bot.sudo:
         for msg in discord.utils.as_chunks(error, 2000):
             await ctx.send("".join(msg))

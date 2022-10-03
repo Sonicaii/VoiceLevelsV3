@@ -73,7 +73,8 @@ class Misc(commands.Cog):
     async def uptime(self, ctx: commands.Context):
         """Uptime of bot, in duration and timestamp when it started"""
         if ctx.author.id in self.bot.sudo:
-            delta = timedelta(seconds=(datetime.now()-self.bot.start_time).seconds)
+            diff = datetime.now() - self.bot.start_time
+            delta = timedelta(days=diff.days, seconds=diff.seconds)
             timestamp = int(datetime.timestamp(self.bot.start_time))
             try:
                 update_delta = timedelta(seconds=(datetime.now()-self.bot.update_time).seconds)
