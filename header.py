@@ -20,6 +20,8 @@ import new_db
 
 # from cachetools import cached, cachedmethod, LRUCache, TTLCache, keys
 
+PREFIX = new_db.PREFIX
+
 if not os.path.isfile("./.env"):
     with open("./.env", "w", encoding="utf-8") as file:
         file.write("""# Voice Levels .env
@@ -27,7 +29,7 @@ if not os.path.isfile("./.env"):
 # If you are on Heroku, they set DATABASE_URL for you. No need to Uncomment
 
 # DATABASE_URL=
-# BOT_PREFIX=,,
+# BOT_PREFIX={}
 BOT_TOKEN=
 
 # Arbitrary value of 35: 3500m furthest sniper kill distance
@@ -52,7 +54,7 @@ BOT_LOG_BACKUP_COUNT=2
 
 # Follow log in bash using `tail discord.log -f -n lines`
 # Follow log in powershell `Get-Content discord.log -Wait -Tail lines`
-""")
+""".format(PREFIX))
     print(
         # "If you are using Heroku or railway.app, please set your environment variables\n"
         # "You need BOT_TOKEN and DATABASE_URL / DATABASE_URL_O (for override)\n"
@@ -321,7 +323,7 @@ def get_token(conn: connection) -> str:
 #       with conn.cursor() as cur:
 #           cur.execute("SELECT TRIM(prefix) FROM prefixes WHERE id = %s", (str(guild.id),))
 #           prefix = cur.fetchone()
-#       return ',,' if prefix is None else prefix[0]
+#       return PREFIX if prefix is None else prefix[0]
 
 # class _prefix_factory_returner:
 #   def make_factory(self, bot):
@@ -338,7 +340,7 @@ class ServerPrefix:
     def __init__(self):
         self.cache_size = 1000
         self.cache = OrderedDict()
-        self.default_prefix = os.getenv("BOT_PREFIX", ",,")  # Hard coded default
+        self.default_prefix = os.getenv("BOT_PREFIX", PREFIX)
 
     def __call__(self, bot, guild):
         if not guild:

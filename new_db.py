@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+PREFIX = ",,"  # Hard coded default
 _EMPTIES = "\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(",")
 
 DETECT = """
@@ -42,7 +43,7 @@ CREATE TABLE prefixes (
   PRIMARY KEY (id)
 );
 
-INSERT INTO prefixes (id, prefix) VALUES (0, '{environ.get("BOT_PREFIX", ",,")}');
+INSERT INTO prefixes (id, prefix) VALUES (0, '{environ.get("BOT_PREFIX", PREFIX)}');
 
 CREATE TABLE sudo (
   id char(19) NOT NULL,
