@@ -24,12 +24,12 @@ PREFIX = new_db.PREFIX
 
 if not os.path.isfile("./.env"):
     with open("./.env", "w", encoding="utf-8") as file:
-        file.write("""# Voice Levels .env
+        file.write(f"""# Voice Levels .env
 # Uncomment (remove hashtag infront of) DATABASE_URL below and paste your own postgresql url (uses ssl connection)
 # If you are on Heroku, they set DATABASE_URL for you. No need to Uncomment
 
 # DATABASE_URL=
-# BOT_PREFIX={}
+# BOT_PREFIX={PREFIX}
 BOT_TOKEN=
 
 # Arbitrary value of 35: 3500m furthest sniper kill distance
@@ -54,7 +54,7 @@ BOT_LOG_BACKUP_COUNT=2
 
 # Follow log in bash using `tail discord.log -f -n lines`
 # Follow log in powershell `Get-Content discord.log -Wait -Tail lines`
-""".format(PREFIX))
+""")
     print(
         # "If you are using Heroku or railway.app, please set your environment variables\n"
         # "You need BOT_TOKEN and DATABASE_URL / DATABASE_URL_O (for override)\n"
