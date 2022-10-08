@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 PREFIX = ",,"  # Hard coded default
-_EMPTIES = "\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(",")
 
 DETECT = """
 SELECT COUNT(DISTINCT table_name)
@@ -35,7 +34,7 @@ CREATE TABLE levels (
 --
 
 INSERT INTO levels (right_two, json_contents) VALUES
-{_EMPTIES};
+{", ".join(f"('{i:02d}', '{{}}')" for i in range(100))};
 
 CREATE TABLE prefixes (
   id char(19) NOT NULL,
