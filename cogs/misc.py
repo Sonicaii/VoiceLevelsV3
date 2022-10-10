@@ -83,7 +83,7 @@ class Misc(commands.Cog):
             except AttributeError:
                 msg = "Data has not been written in yet\n"
             msg += (
-                f"interval: {self.bot.interval}"
+                f"interval: {self.bot.interval} minutes"
                 if hasattr(self.bot, "interval")
                 else "No interval set"
             )
