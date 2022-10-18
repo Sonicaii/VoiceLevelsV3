@@ -12,11 +12,11 @@ if __name__ == "__main__":
         txt = txt.replace("BOT_TOKEN=", "BOT_TOKEN=" + input("bot token: "))
         print(f"The next options are {header.fg.y('optional')}, leave empty for default value")
         if i := input("bot prefix: "):
-            txt = txt.replace("BOT_PREFIX=,,", "BOT_PREFIX="+i)
+            txt = txt.replace("BOT_PREFIX=" + header.PREFIX, "BOT_PREFIX=" + i)
         print("Valid levels: debug, info, warning, error, critical")
         if i := input("Logging level: "):
-            txt = txt.replace("BOT_LOG_LEVEL=info", "BOT_LOG_LEVEL="+i)
+            txt = txt.replace("BOT_LOG_LEVEL=info", "BOT_LOG_LEVEL=" + i)
         if i := input("Postgres database ssl url: "):
-            txt = txt.replace("# DATABASE_URL=", "DATABASE_URL="+i)
+            txt = txt.replace("# DATABASE_URL=", "DATABASE_URL=" + i)
         file.write(txt)
         input(header.fg.G(".env has been successfully updated!\n"))

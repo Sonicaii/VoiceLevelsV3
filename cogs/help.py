@@ -52,7 +52,8 @@ class Help(commands.Cog):
                 "This command gives you the most recent message that was deleted.\n"
                 "Putting a number after \"snipe\" will get you the message that was "
                 "deleted at the specified distance away.\n"
-                "*``e.g. snipe 3 will get the message 3 deleted messages ago.``*",
+                "*``e.g. snipe 3 will get the message 3 deleted messages ago.``*"
+                "> Currently deletion is broken, only slash command version for now.",
             ),
         ]
 

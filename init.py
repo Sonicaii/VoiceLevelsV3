@@ -38,8 +38,9 @@ load_dotenv()
 # Bot is a wrapper around discord.Client, therefore called bot instead of client
 bot = Bot(
     case_insensitive=True,
-    help_command=None,
     command_prefix=get_prefix,
+    description="""User levels based on time spent in voice channels.""",
+    help_command=None,
     intents=Intents(
         **{
             i: True
@@ -55,7 +56,6 @@ bot = Bot(
             ]
         }
     ),
-    description="""User levels based on time spent in voice channels.""",
 )
 
 

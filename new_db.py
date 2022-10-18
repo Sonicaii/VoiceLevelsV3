@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-_EMPTIES = "\n".join(f"('{i:02d}', '{{}}')," for i in range(100)).rstrip(",")
+PREFIX = ",,"  # Hard coded default
 
 DETECT = """
 SELECT COUNT(DISTINCT table_name)
@@ -34,7 +34,7 @@ CREATE TABLE levels (
 --
 
 INSERT INTO levels (right_two, json_contents) VALUES
-{_EMPTIES};
+{", ".join(f"('{i:02d}', '{{}}')" for i in range(100))};
 
 CREATE TABLE prefixes (
   id char(19) NOT NULL,
@@ -42,7 +42,7 @@ CREATE TABLE prefixes (
   PRIMARY KEY (id)
 );
 
-INSERT INTO prefixes (id, prefix) VALUES (0, '{environ.get("BOT_PREFIX", ",,")}');
+INSERT INTO prefixes (id, prefix) VALUES (0, '{environ.get("BOT_PREFIX", PREFIX)}');
 
 CREATE TABLE sudo (
   id char(19) NOT NULL,
