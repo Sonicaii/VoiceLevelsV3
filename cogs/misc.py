@@ -12,6 +12,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.utils import snowflake_time
+import distro
 
 
 log = logging.getLogger("vl")
@@ -89,7 +90,7 @@ class Misc(commands.Cog):
             )
             await self.edit_add_ping(
                 ctx,
-                f"Running from: {getuser()}\n"
+                f"Running from: {getuser()} {distro.id()} {distro.version()} {distro.name()}\n"
                 f"Time since last restart: `{delta}`\nOn <t:{timestamp}:D>\n"
                 + msg
             )
