@@ -290,7 +290,7 @@ class Misc(commands.Cog):
         await self.deliver(ctx)("```ansi\n" + "\n".join(txt[::-1]) + "```")
 
     @commands.command(description="STOP")
-    async def stop(self, ctx: discord.Interaction):
+    async def kill(self, ctx: discord.Interaction):
         """Stop bot"""
         try:
             if ctx.author.id not in self.bot.sudo:
