@@ -530,22 +530,23 @@ class Levels(commands.Cog):
 
         if ctx.guild is None:
             ctx.guild = discord.Guild
-            ctx.guild.members = [ctx.author, self.bot.user]
+            members = [ctx.author, self.bot.user]
             fmt = "between us"
         else:
+            members = ctx.guild.members
             fmt = "from users of this server"
 
-        async def process(ctx, page, fmt):
+        async def process(ctx, members, page, fmt):
             with self.bot.conn.cursor() as cur:
                 cur.execute(
                     "SELECT json_contents FROM levels WHERE right_two IN %s",
-                    (tuple(set(to2(i.id) for i in ctx.guild.members)),),
+                    (tuple(set(to2(i.id) for i in members)),),
                 )
                 large_dict = {
                     k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()
                 }.items()
 
-            list_of_ids = [i.id for i in ctx.guild.members]
+            list_of_ids = [i.id for i in members]
             sorted_d = {
                 int(k): v
                 for k, v in sorted(large_dict, key=lambda item: item[1], reverse=True)
@@ -560,9 +561,9 @@ class Levels(commands.Cog):
 
             formatted = self._format_top(
                 ctx,
-                (sorted_d, {i.id: i.display_name for i in ctx.guild.members}),
+                (sorted_d, {i.id: i.display_name for i in members}),
                 page,
-                fmt
+                fmt,
             )
             return formatted, True
 
@@ -570,15 +571,14 @@ class Levels(commands.Cog):
             ctx,
             ("Loading leaderboard...", "Took too long loading leaderboard"),
             process,
+            members,
             page,
-            fmt
+            fmt,
         )
         if not formatted:
             return
 
-        return await self.deliver(ctx)(
-            content=formatted
-        )
+        return await self.deliver(ctx)(content=formatted)
 
     async def predeliver(
             self, ctx_main, reply_msg: Tuple[str, str], process, *args
