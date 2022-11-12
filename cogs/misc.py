@@ -8,12 +8,12 @@ from sys import exit as exit_
 from time import perf_counter
 from typing import Literal, Optional, Union
 from re import findall, sub
+import platform
 import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.utils import snowflake_time
 import distro  # pylint: disable=import-error
-import platform
 
 
 log = logging.getLogger("vl")
