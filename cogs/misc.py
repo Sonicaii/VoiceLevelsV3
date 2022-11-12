@@ -12,7 +12,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 from discord.utils import snowflake_time
-import distro
+import distro  # pylint: ignore=import-error
 
 
 log = logging.getLogger("vl")
