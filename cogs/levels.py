@@ -23,6 +23,7 @@ try:
 except ValueError:
     INTERVAL = 30.0
 GLOBAL_ALL_ACCESS = getenv("BOT_GLOBAL_ALL_LEADERBOARD_ACCESS") == "yes"
+LEGACY_MOBILE_FILTER = getenv("BOT_LEGACY_MOBILE_FILTER") == "yes"
 
 
 class DefaultDict(defaultdict):
@@ -690,9 +691,13 @@ class Levels(commands.Cog):
             }```
         """
 
-        # Remove colour formatting if user is on mobile
-        # Discord mobile does not support colour rendering in code blocks yet
-        if ctx.author.is_on_mobile():
+        # Discord mobile now supports colour rendering in code blocks!
+        # This was supposed to remove the colours, but now is redundant
+        if (
+                LEGACY_MOBILE_FILTER and
+                hasattr(ctx.author, "is_on_mobile") and
+                ctx.author.is_on_mobile()
+        ):
             fmt = re.sub(
                 r"(?<=^.{14} ).{6}",
                 "",
@@ -700,11 +705,12 @@ class Levels(commands.Cog):
                 flags=re.MULTILINE,
             )
             fmt = re.sub(r"-* Name -*", "Name", fmt, count=1)
-        else:
-            # Removes colour formatting until within message length limit
-            removes = iter([40, 34, 33, 36, 31])
-            while len(fmt) > 1900:
-                fmt = re.sub(fr"\033\[({next(removes)};?)*m", "", fmt)
+
+        # Removes colour formatting until within message length limit
+        removes = iter([40, 34, 33, 36, 31])
+        while len(fmt) > 2000:
+            fmt = re.sub(fr"\033\[({next(removes)};?)*m", "", fmt)
+
         log.debug(fmt)
         log.debug("format time: %f", format_time.stop())
         return fmt
