@@ -121,6 +121,7 @@ async def on_command_error(ctx, error):
     """The event triggered when an error is raised while invoking a command.
     Parameters
     Outputs error of command if in debug and sent by a sudo user
+    https://gist.github.com/EvieePy/7822af90858ef65012ea500bcecf1612
     ------------
     ctx: commands.Context
         The context used for command invocation.
