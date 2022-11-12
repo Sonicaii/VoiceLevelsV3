@@ -128,7 +128,7 @@ async def on_command_error(ctx, error):
         The Exception raised.
     """
 
-    if isinstance(getattr(error, "original", error), commands.CommandNotFound):
+    if isinstance(getattr(error, "original", error), CommandNotFound):
         return
 
     log.error("Ignoring exception in command %s:", ctx.command)
