@@ -39,6 +39,8 @@ BOT_SAVE_TIME=30
 
 # Allows everyone to use the `all` command fully (yes/no)
 BOT_GLOBAL_ALL_LEADERBOARD_ACCESS=no
+# Colour formatting used to not work in mobile. Keep at (no)
+BOT_LEGACY_MOBILE_FILTER=no
 
 # Print output as well: yes/no
 # This must be yes for a Heroku deployment if you want to view logs

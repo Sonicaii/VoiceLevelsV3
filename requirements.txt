@@ -1,8 +1,10 @@
 # Using pipfile lock? poetry?
 discord.py>=2.0.0
+PyNaCl
 psycopg2-binary>=2.9.3
 # cachetools
 python-dotenv
+youtube-dl
 
 bing_image_urls
 requests

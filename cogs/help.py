@@ -84,10 +84,10 @@ class Help(commands.Cog):
         ]
 
         if ctx.author.id in self.bot.sudo and not ctx.guild:
-            msg = "**IMPORTANT**\n**RUN \"STOP\" TO KILL BOT IN CASE OF EMERGENCY**"
+            msg = "**IMPORTANT**\n**RUN \"KILL\" TO KILL BOT IN CASE OF EMERGENCY**"
             embed.add_field(
                 name="**IMPORTANT**",
-                value="**RUN \"STOP\" TO KILL BOT IN CASE OF EMERGENCY**",
+                value="**RUN \"KILL\" TO KILL BOT IN CASE OF EMERGENCY**",
                 inline=False,
             )
 
