@@ -13,6 +13,7 @@ from discord import app_commands
 from discord.ext import commands
 from discord.utils import snowflake_time
 import distro  # pylint: disable=import-error
+import platform
 
 
 log = logging.getLogger("vl")
@@ -91,8 +92,8 @@ class Misc(commands.Cog):
             await self.edit_add_ping(
                 ctx,
                 f"Running from: {getuser()} {distro.id()} {distro.version()} {distro.name()}\n"
-                f"Time since last restart: `{delta}`\nOn <t:{timestamp}:D>\n"
-                + msg
+                f"{platform.platform()}\n"
+                f"Time since last restart: `{delta}`\nOn <t:{timestamp}:D>\n{msg}"
             )
 
     @commands.hybrid_command(description="current latency of bot")
