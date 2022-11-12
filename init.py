@@ -8,6 +8,7 @@ init.py
 
 from os import getenv, system
 from datetime import datetime
+import traceback
 from typing import Any, Awaitable, Literal, Optional, Union
 from threading import Thread
 from discord.ext.commands import Bot, CommandNotFound, Context, Greedy
@@ -117,9 +118,22 @@ async def on_guild_join(guild) -> None:
 
 @bot.event
 async def on_command_error(ctx, error):
-    """Outputs error of command if in debug and sent by a sudo user"""
-    if isinstance(error, CommandNotFound):
-        log.error(error)
+    """The event triggered when an error is raised while invoking a command.
+    Parameters
+    Outputs error of command if in debug and sent by a sudo user
+    ------------
+    ctx: commands.Context
+        The context used for command invocation.
+    error: commands.CommandError
+        The Exception raised.
+    """
+
+    if isinstance(getattr(error, "original", error), commands.CommandNotFound):
+        return
+
+    log.error("Ignoring exception in command %s:", ctx.command)
+    log.error("".join(traceback.format_exception(type(error), error, error.__traceback__)))
+
     if log.level <= 10 and ctx.author.id in bot.sudo:
         for msg in utils.as_chunks(error, 2000):
             await ctx.send("".join(msg))
