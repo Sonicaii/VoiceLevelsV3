@@ -23,7 +23,7 @@ import random
 
 from typing import Literal, Optional
 import discord
-import youtube_dl
+import youtube_dl  # pylint: disable=import-error
 from async_timeout import timeout
 from discord.ext import commands
 
