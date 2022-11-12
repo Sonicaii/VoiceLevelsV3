@@ -436,7 +436,7 @@ class Music(commands.Cog):
             return await ctx.send('Volume must be between 0 and 100')
 
         ctx.voice_state.volume = volume / 100
-        await ctx.send(f'Volume of the player set to {volume}%'))
+        await ctx.send(f'Volume of the player set to {volume}%')
 
     @commands.command(name='now', aliases=['current', 'playing', 'np'])
     async def _now(self, ctx: commands.Context):
