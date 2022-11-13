@@ -8,6 +8,7 @@ from sys import exit as exit_
 from time import perf_counter
 from typing import Literal, Optional, Union
 from re import findall, sub
+import platform
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -91,8 +92,8 @@ class Misc(commands.Cog):
             await self.edit_add_ping(
                 ctx,
                 f"Running from: {getuser()} {distro.id()} {distro.version()} {distro.name()}\n"
-                f"Time since last restart: `{delta}`\nOn <t:{timestamp}:D>\n"
-                + msg
+                f"{platform.platform()}\n"
+                f"Time since last restart: `{delta}`\nOn <t:{timestamp}:D>\n{msg}"
             )
 
     @commands.hybrid_command(description="current latency of bot")
