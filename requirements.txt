@@ -1,5 +1,5 @@
 # Using pipfile lock? poetry?
-discord.py>=2.0.0
+discord.py[voice]>=2.0.0
 psycopg2-binary>=2.9.3
 # cachetools
 python-dotenv
