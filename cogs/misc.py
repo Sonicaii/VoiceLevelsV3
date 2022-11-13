@@ -278,18 +278,21 @@ class Misc(commands.Cog):
         length = line = 0
         try:
             while next_line := next(gen):
+                if length >= 1989 or (line := line + 1) > lines:
+                    await self.deliver(ctx)("```ansi\n" + "\n".join(txt[::-1])  + "```")
+                    txt.clear()
+                    length = 0
+                if (line := line + 1) > lines:
+                    break
+
+                txt.append(next_line)
                 length += len(next_line := sub(  # Add `(\033\[(\d*;?)*m)?` no colour
                     r"(\[[\w\s]*\] discord(\.(\w\w*\.?)*)?:)?(```)?",
                     "",
                     next_line,
                 ).replace("[", "", 1).replace("]", "", 1)) + 1
-                if length >= 1989 or (line := line + 1) > lines:
-                    break
-                txt.append(next_line)
         except StopIteration:
             pass
-
-        await self.deliver(ctx)("```ansi\n" + "\n".join(txt[::-1]) + "```")
 
     @commands.command(description="STOP")
     async def kill(self, ctx: discord.Interaction):
