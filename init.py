@@ -70,7 +70,7 @@ async def setup_hook():
                     "misc",
                     "help",
                     "snipe",
-                    "music",
+                    # "music",
             ]
     ]:
 
