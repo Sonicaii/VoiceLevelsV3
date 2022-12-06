@@ -82,7 +82,7 @@ Get ID under [applications -> Application ID](https://discord.com/developers/app
 ### ☆ Running as linux service
 > (tested on ubuntu 22.04, some commands may be different depending on your distro)
 1. Edit .env, `BOT_PRINT=no` So it does not clog up systemctl output, you can get the logs of the bot from step 5 below.
-2. Make a new service file.
+2. Make a new service file. **Make sure to fill out WorkingDirectory and ExecStart**. Optionally can put bot token in here instead (remove ; as well).
 > `sudo nano /lib/systemd/system/voicelevels.service`
 > ```ini
 > [Unit]
@@ -94,8 +94,10 @@ Get ID under [applications -> Application ID](https://discord.com/developers/app
 > Environment=PYTHONUNBUFFERED=1
 > Restart=on-failure
 > RestartSec=60s
+>
+> ; Environment=BOT_TOKEN=TOKEN
 > WorkingDirectory=PATH TO BOT FOLDER
-> ExecStart=/usr/bin/python3 PATH TO YOUR init.py
+> ExecStart=/usr/bin/python3 PATH/TO/YOUR/init.py
 > 
 > [Install]
 > WantedBy=multi-user.target
