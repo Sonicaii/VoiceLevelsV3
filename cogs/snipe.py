@@ -142,10 +142,10 @@ class Snipe(commands.Cog):
         ctx = await commands.Context.from_interaction(interaction)
         return await self._snipe(ctx, dist)
 
-    # @commands.command(name="snipe")
-    # async def cmd_snipe(self, ctx: commands.Context, dist: Optional[int] = 1):
-    #     """Snipe command as classic command"""
-    #     return await self._snipe(ctx, dist)
+    @commands.command(name="snipe")
+    async def cmd_snipe(self, ctx: commands.Context, dist: Optional[int] = 1):
+        """Snipe command as classic command"""
+        return await self._snipe(ctx, dist)
 
     async def _snipe(self, ctx, dist):
         """The snipe command retrieves the latest or specified deleted message"""
