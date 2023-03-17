@@ -6,7 +6,7 @@
 [![Size](https://img.shields.io/github/repo-size/Sonicaii/VoiceLevelsV3)](/)
 [![Pylint](https://github.com/Sonicaii/VoiceLevelsV3/actions/workflows/pylint.yml/badge.svg)](https://github.com/Sonicaii/VoiceLevelsV3/actions/)
 
-The new and improved **Voice Levels** discord.py bot with slash commands and Postgres database
+The new and improved **Voice Levels** discord.py bot (also written by me) with slash commands and Postgres database
 
 ### Requirements
 Python Version 3.8+
