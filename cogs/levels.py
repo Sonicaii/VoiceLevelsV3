@@ -543,7 +543,8 @@ class Levels(commands.Cog):
                     (tuple(set(to2(i.id) for i in members)),),
                 )
                 large_dict = {
-                    k: v for d in [i[0] for i in cur.fetchall()] for k, v in d.items()
+                    k: v + self._add_current_time(k)
+                    for d in [i[0] for i in cur.fetchall()] for k, v in d.items()
                 }.items()
 
             list_of_ids = [i.id for i in members]
@@ -633,8 +634,6 @@ class Levels(commands.Cog):
         fg = self.bot.fm.fg  # pylint: disable=invalid-name
         member_id, member_seconds = entry
         highlight = self._format_highlighter(ctx, member_id)
-
-        member_seconds += self._add_current_time(member_id)
 
         # Centering
         cen = divmod(divmod(member_seconds, 60)[0], 60)
