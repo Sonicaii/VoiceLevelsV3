@@ -264,7 +264,7 @@ def refresh_conn() -> Union[psycopg2.extensions.connection, None]:
     db_url = os.getenv("DATABASE_URL_O", os.getenv("DATABASE_URL", ""))
     conn = None
     try:
-        conn = psycopg2.connect(db_url, sslmode="require")
+        conn = psycopg2.connect(db_url, sslmode="prefer")
         conn.set_session(autocommit=True)
     except psycopg2.OperationalError:
         log.error(
