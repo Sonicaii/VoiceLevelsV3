@@ -200,7 +200,7 @@ class Levels(commands.Cog):
            >>> var = {"id": time, "id": time ... }
            >>> results = [(str(i).zfill(2), {},) for i in range(100)]
            >>> for k, v in var.items(): results[int(str(k)[-2:])][1][k] = v
-           >>> conn = psycopg2.connect( 'YOUR_DATABASE_URL', sslmode='require')
+           >>> conn = psycopg2.connect( 'YOUR_DATABASE_URL', sslmode='prefer')
            >>> cur = conn.cursor()
            >>> cur.execute('''
                 UPDATE levels SET
