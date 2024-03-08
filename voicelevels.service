@@ -1,0 +1,16 @@
+[Unit]
+Description=Voice Levels bot run service
+After=multi-user.target
+
+[Service]
+Type=simple
+Environment=PYTHONUNBUFFERED=1
+Restart=on-failure
+RestartSec=60s
+
+; Environment=BOT_TOKEN=TOKEN
+WorkingDirectory=PATH TO BOT FOLDER
+ExecStart=/usr/bin/python3 PATH/TO/YOUR/init.py
+
+[Install]
+WantedBy=multi-user.target
